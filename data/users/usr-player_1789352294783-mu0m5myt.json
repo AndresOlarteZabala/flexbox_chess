@@ -1,0 +1,15 @@
+{
+  "id": "usr-player_1789352294783-mu0m5myt",
+  "name": "Jugador Prueba",
+  "username": "player_1789352294783",
+  "email": "player_1789352294783@example.com",
+  "password_hash": "1715532a0ac53c3eb232e803ea3d34306b3863efc8e2128ea9d221636e057fcecddad7af6216f51b2908a7c745bc57b0856811e6c8399c1dc3b24709387a83d6",
+  "salt": "faf2d2ac0f278291c195b3213f4b0128",
+  "rating": 1200,
+  "games_played": 0,
+  "games_won": 0,
+  "games_lost": 0,
+  "games_drawn": 0,
+  "created_at": "2026-09-14T02:18:14.794Z",
+  "updated_at": "2026-09-14T02:18:14.794Z"
+}

@@ -1,0 +1,450 @@
+{
+  "id": "partida-prueba",
+  "status": "IN_PROGRESS",
+  "mode": "timed",
+  "turn": "white",
+  "turn_count": 4,
+  "board": {
+    "a1": {
+      "id": "tw1",
+      "name": "tower",
+      "side": "white",
+      "symbol": "♜",
+      "points": 5,
+      "col": 1,
+      "row": 1
+    },
+    "a2": {
+      "id": "pw1",
+      "name": "pawn",
+      "side": "white",
+      "symbol": "♟",
+      "points": 1,
+      "col": 1,
+      "row": 2
+    },
+    "a3": null,
+    "a4": null,
+    "a5": null,
+    "a6": null,
+    "a7": {
+      "id": "pb1",
+      "name": "pawn",
+      "side": "black",
+      "symbol": "♟",
+      "points": 1,
+      "col": 1,
+      "row": 7
+    },
+    "a8": {
+      "id": "tb1",
+      "name": "tower",
+      "side": "black",
+      "symbol": "♜",
+      "points": 5,
+      "col": 1,
+      "row": 8
+    },
+    "b1": {
+      "id": "hw1",
+      "name": "horse",
+      "side": "white",
+      "symbol": "♞",
+      "points": 3,
+      "col": 2,
+      "row": 1
+    },
+    "b2": {
+      "id": "pw2",
+      "name": "pawn",
+      "side": "white",
+      "symbol": "♟",
+      "points": 1,
+      "col": 2,
+      "row": 2
+    },
+    "b3": null,
+    "b4": null,
+    "b5": null,
+    "b6": null,
+    "b7": {
+      "id": "pb2",
+      "name": "pawn",
+      "side": "black",
+      "symbol": "♟",
+      "points": 1,
+      "col": 2,
+      "row": 7
+    },
+    "b8": {
+      "id": "hb1",
+      "name": "horse",
+      "side": "black",
+      "symbol": "♞",
+      "points": 3,
+      "col": 2,
+      "row": 8
+    },
+    "c1": {
+      "id": "bw1",
+      "name": "bishop",
+      "side": "white",
+      "symbol": "♝",
+      "points": 3,
+      "col": 3,
+      "row": 1
+    },
+    "c2": {
+      "id": "pw3",
+      "name": "pawn",
+      "side": "white",
+      "symbol": "♟",
+      "points": 1,
+      "col": 3,
+      "row": 2
+    },
+    "c3": null,
+    "c4": null,
+    "c5": null,
+    "c6": null,
+    "c7": {
+      "id": "pb3",
+      "name": "pawn",
+      "side": "black",
+      "symbol": "♟",
+      "points": 1,
+      "col": 3,
+      "row": 7
+    },
+    "c8": {
+      "id": "bb1",
+      "name": "bishop",
+      "side": "black",
+      "symbol": "♝",
+      "points": 3,
+      "col": 3,
+      "row": 8
+    },
+    "d1": {
+      "id": "qw",
+      "name": "queen",
+      "side": "white",
+      "symbol": "♛",
+      "points": 9,
+      "col": 4,
+      "row": 1
+    },
+    "d2": {
+      "id": "pw4",
+      "name": "pawn",
+      "side": "white",
+      "symbol": "♟",
+      "points": 1,
+      "col": 4,
+      "row": 2
+    },
+    "d3": null,
+    "d4": null,
+    "d5": null,
+    "d6": null,
+    "d7": {
+      "id": "pb4",
+      "name": "pawn",
+      "side": "black",
+      "symbol": "♟",
+      "points": 1,
+      "col": 4,
+      "row": 7
+    },
+    "d8": {
+      "id": "qb",
+      "name": "queen",
+      "side": "black",
+      "symbol": "♛",
+      "points": 9,
+      "col": 4,
+      "row": 8
+    },
+    "e1": {
+      "id": "kw",
+      "name": "king",
+      "side": "white",
+      "symbol": "♚",
+      "points": 34,
+      "col": 5,
+      "row": 1
+    },
+    "e2": null,
+    "e3": null,
+    "e4": {
+      "id": "pw5",
+      "name": "pawn",
+      "side": "white",
+      "symbol": "♟",
+      "points": 1,
+      "col": 5,
+      "row": 4,
+      "state": "moved"
+    },
+    "e5": {
+      "id": "pb5",
+      "name": "pawn",
+      "side": "black",
+      "symbol": "♟",
+      "points": 1,
+      "col": 5,
+      "row": 5,
+      "state": "moved"
+    },
+    "e6": null,
+    "e7": null,
+    "e8": {
+      "id": "kb",
+      "name": "king",
+      "side": "black",
+      "symbol": "♚",
+      "points": 34,
+      "col": 5,
+      "row": 8
+    },
+    "f1": {
+      "id": "bw2",
+      "name": "bishop",
+      "side": "white",
+      "symbol": "♝",
+      "points": 3,
+      "col": 6,
+      "row": 1
+    },
+    "f2": {
+      "id": "pw6",
+      "name": "pawn",
+      "side": "white",
+      "symbol": "♟",
+      "points": 1,
+      "col": 6,
+      "row": 2
+    },
+    "f3": {
+      "id": "hw2",
+      "name": "horse",
+      "side": "white",
+      "symbol": "♞",
+      "points": 3,
+      "col": 6,
+      "row": 3,
+      "state": "moved"
+    },
+    "f4": null,
+    "f5": null,
+    "f6": {
+      "id": "pb6",
+      "name": "pawn",
+      "side": "black",
+      "symbol": "♟",
+      "points": 1,
+      "col": 6,
+      "row": 6,
+      "state": "moved"
+    },
+    "f7": null,
+    "f8": {
+      "id": "bb2",
+      "name": "bishop",
+      "side": "black",
+      "symbol": "♝",
+      "points": 3,
+      "col": 6,
+      "row": 8
+    },
+    "g1": null,
+    "g2": {
+      "id": "pw7",
+      "name": "pawn",
+      "side": "white",
+      "symbol": "♟",
+      "points": 1,
+      "col": 7,
+      "row": 2
+    },
+    "g3": null,
+    "g4": null,
+    "g5": null,
+    "g6": null,
+    "g7": {
+      "id": "pb7",
+      "name": "pawn",
+      "side": "black",
+      "symbol": "♟",
+      "points": 1,
+      "col": 7,
+      "row": 7
+    },
+    "g8": {
+      "id": "hb2",
+      "name": "horse",
+      "side": "black",
+      "symbol": "♞",
+      "points": 3,
+      "col": 7,
+      "row": 8
+    },
+    "h1": {
+      "id": "tw2",
+      "name": "tower",
+      "side": "white",
+      "symbol": "♜",
+      "points": 5,
+      "col": 8,
+      "row": 1
+    },
+    "h2": {
+      "id": "pw8",
+      "name": "pawn",
+      "side": "white",
+      "symbol": "♟",
+      "points": 1,
+      "col": 8,
+      "row": 2
+    },
+    "h3": null,
+    "h4": null,
+    "h5": null,
+    "h6": null,
+    "h7": {
+      "id": "pb8",
+      "name": "pawn",
+      "side": "black",
+      "symbol": "♟",
+      "points": 1,
+      "col": 8,
+      "row": 7
+    },
+    "h8": {
+      "id": "tb2",
+      "name": "tower",
+      "side": "black",
+      "symbol": "♜",
+      "points": 5,
+      "col": 8,
+      "row": 8
+    }
+  },
+  "captured_pieces": {
+    "white": [],
+    "black": []
+  },
+  "points": {
+    "white": 0,
+    "black": 0
+  },
+  "clocks": {
+    "white": 0,
+    "black": 0,
+    "last_turn_started_at": "2026-09-13T19:57:05.945Z"
+  },
+  "movements": [
+    {
+      "id": "pw5",
+      "type": "pawn",
+      "side": "white",
+      "turn": 1,
+      "from": "e2",
+      "to": "e4",
+      "date": "13/9/2026",
+      "time": "02:57:05 p. m.",
+      "san": "e4",
+      "classic_val": "pw5 -> 4e",
+      "captured": null,
+      "pos": {
+        "initial": {
+          "id": "e2",
+          "col": 5,
+          "row": 2
+        },
+        "final": {
+          "id": "e4",
+          "col": 5,
+          "row": 4
+        }
+      }
+    },
+    {
+      "id": "pb5",
+      "type": "pawn",
+      "side": "black",
+      "turn": 2,
+      "from": "e7",
+      "to": "e5",
+      "date": "13/9/2026",
+      "time": "02:57:05 p. m.",
+      "san": "e5",
+      "classic_val": "pb5 -> 5e",
+      "captured": null,
+      "pos": {
+        "initial": {
+          "id": "e7",
+          "col": 5,
+          "row": 7
+        },
+        "final": {
+          "id": "e5",
+          "col": 5,
+          "row": 5
+        }
+      }
+    },
+    {
+      "id": "hw2",
+      "type": "horse",
+      "side": "white",
+      "turn": 3,
+      "from": "g1",
+      "to": "f3",
+      "date": "13/9/2026",
+      "time": "02:57:05 p. m.",
+      "san": "Nf3",
+      "classic_val": "hw2 -> 3f",
+      "captured": null,
+      "pos": {
+        "initial": {
+          "id": "g1",
+          "col": 7,
+          "row": 1
+        },
+        "final": {
+          "id": "f3",
+          "col": 6,
+          "row": 3
+        }
+      }
+    },
+    {
+      "id": "pb6",
+      "type": "pawn",
+      "side": "black",
+      "turn": 4,
+      "from": "f7",
+      "to": "f6",
+      "date": "13/9/2026",
+      "time": "02:59:09 p. m.",
+      "san": "f6",
+      "classic_val": "pb6 -> 6f",
+      "captured": null,
+      "pos": {
+        "initial": {
+          "id": "f7",
+          "col": 6,
+          "row": 7
+        },
+        "final": {
+          "id": "f6",
+          "col": 6,
+          "row": 6
+        }
+      }
+    }
+  ],
+  "created_at": "2026-09-13T19:57:05.945Z",
+  "updated_at": "2026-09-13T19:59:09.532Z"
+}

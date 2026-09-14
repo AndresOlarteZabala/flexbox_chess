@@ -1,0 +1,891 @@
+{
+  "id": "checkmate-demo",
+  "status": "CHECKMATE",
+  "winner": "black",
+  "in_check": true,
+  "mode": "timed",
+  "turn": "black",
+  "turn_count": 18,
+  "board": {
+    "a1": {
+      "id": "tw1",
+      "name": "tower",
+      "side": "white",
+      "symbol": "♜",
+      "points": 5,
+      "col": 1,
+      "row": 1
+    },
+    "a2": {
+      "id": "pw1",
+      "name": "pawn",
+      "side": "white",
+      "symbol": "♟",
+      "points": 1,
+      "col": 1,
+      "row": 2
+    },
+    "a3": null,
+    "a4": null,
+    "a5": null,
+    "a6": null,
+    "a7": {
+      "id": "pb1",
+      "name": "pawn",
+      "side": "black",
+      "symbol": "♟",
+      "points": 1,
+      "col": 1,
+      "row": 7
+    },
+    "a8": {
+      "id": "tb1",
+      "name": "tower",
+      "side": "black",
+      "symbol": "♜",
+      "points": 5,
+      "col": 1,
+      "row": 8
+    },
+    "b1": null,
+    "b2": {
+      "id": "pw2",
+      "name": "pawn",
+      "side": "white",
+      "symbol": "♟",
+      "points": 1,
+      "col": 2,
+      "row": 2
+    },
+    "b3": null,
+    "b4": null,
+    "b5": null,
+    "b6": null,
+    "b7": {
+      "id": "pb2",
+      "name": "pawn",
+      "side": "black",
+      "symbol": "♟",
+      "points": 1,
+      "col": 2,
+      "row": 7
+    },
+    "b8": null,
+    "c1": null,
+    "c2": {
+      "id": "pw3",
+      "name": "pawn",
+      "side": "white",
+      "symbol": "♟",
+      "points": 1,
+      "col": 3,
+      "row": 2
+    },
+    "c3": null,
+    "c4": null,
+    "c5": null,
+    "c6": {
+      "id": "hb1",
+      "name": "horse",
+      "side": "black",
+      "symbol": "♞",
+      "points": 3,
+      "col": 3,
+      "row": 6,
+      "state": "moved"
+    },
+    "c7": null,
+    "c8": {
+      "id": "bb1",
+      "name": "bishop",
+      "side": "black",
+      "symbol": "♝",
+      "points": 3,
+      "col": 3,
+      "row": 8
+    },
+    "d1": {
+      "id": "qw",
+      "name": "queen",
+      "side": "white",
+      "symbol": "♛",
+      "points": 9,
+      "col": 4,
+      "row": 1
+    },
+    "d2": null,
+    "d3": null,
+    "d4": null,
+    "d5": null,
+    "d6": null,
+    "d7": null,
+    "d8": null,
+    "e1": {
+      "id": "kw",
+      "name": "king",
+      "side": "white",
+      "symbol": "♚",
+      "points": 34,
+      "col": 5,
+      "row": 1
+    },
+    "e2": {
+      "id": "bw2",
+      "name": "bishop",
+      "side": "white",
+      "symbol": "♝",
+      "points": 3,
+      "col": 5,
+      "row": 2,
+      "state": "moved"
+    },
+    "e3": null,
+    "e4": {
+      "id": "hb2",
+      "name": "horse",
+      "side": "black",
+      "symbol": "♞",
+      "points": 3,
+      "col": 5,
+      "row": 4,
+      "state": "moved"
+    },
+    "e5": null,
+    "e6": {
+      "id": "pb5",
+      "name": "pawn",
+      "side": "black",
+      "symbol": "♟",
+      "points": 1,
+      "col": 5,
+      "row": 6,
+      "state": "moved"
+    },
+    "e7": null,
+    "e8": {
+      "id": "kb",
+      "name": "king",
+      "side": "black",
+      "symbol": "♚",
+      "points": 34,
+      "col": 5,
+      "row": 8
+    },
+    "f1": null,
+    "f2": {
+      "id": "qb",
+      "name": "queen",
+      "side": "black",
+      "symbol": "♛",
+      "points": 9,
+      "col": 6,
+      "row": 2,
+      "state": "moved"
+    },
+    "f3": {
+      "id": "hw2",
+      "name": "horse",
+      "side": "white",
+      "symbol": "♞",
+      "points": 3,
+      "col": 6,
+      "row": 3,
+      "state": "moved"
+    },
+    "f4": null,
+    "f5": null,
+    "f6": null,
+    "f7": {
+      "id": "pb6",
+      "name": "pawn",
+      "side": "black",
+      "symbol": "♟",
+      "points": 1,
+      "col": 6,
+      "row": 7
+    },
+    "f8": {
+      "id": "bb2",
+      "name": "bishop",
+      "side": "black",
+      "symbol": "♝",
+      "points": 3,
+      "col": 6,
+      "row": 8
+    },
+    "g1": null,
+    "g2": {
+      "id": "pw7",
+      "name": "pawn",
+      "side": "white",
+      "symbol": "♟",
+      "points": 1,
+      "col": 7,
+      "row": 2
+    },
+    "g3": null,
+    "g4": null,
+    "g5": null,
+    "g6": null,
+    "g7": {
+      "id": "pb7",
+      "name": "pawn",
+      "side": "black",
+      "symbol": "♟",
+      "points": 1,
+      "col": 7,
+      "row": 7
+    },
+    "g8": null,
+    "h1": {
+      "id": "tw2",
+      "name": "tower",
+      "side": "white",
+      "symbol": "♜",
+      "points": 5,
+      "col": 8,
+      "row": 1
+    },
+    "h2": {
+      "id": "pw8",
+      "name": "pawn",
+      "side": "white",
+      "symbol": "♟",
+      "points": 1,
+      "col": 8,
+      "row": 2
+    },
+    "h3": null,
+    "h4": null,
+    "h5": null,
+    "h6": {
+      "id": "bw1",
+      "name": "bishop",
+      "side": "white",
+      "symbol": "♝",
+      "points": 3,
+      "col": 8,
+      "row": 6,
+      "state": "moved"
+    },
+    "h7": {
+      "id": "pb8",
+      "name": "pawn",
+      "side": "black",
+      "symbol": "♟",
+      "points": 1,
+      "col": 8,
+      "row": 7
+    },
+    "h8": {
+      "id": "tb2",
+      "name": "tower",
+      "side": "black",
+      "symbol": "♜",
+      "points": 5,
+      "col": 8,
+      "row": 8
+    }
+  },
+  "captured_pieces": {
+    "white": [
+      {
+        "id": "pb4",
+        "name": "pawn",
+        "side": "black",
+        "points": 1,
+        "square": "d5"
+      },
+      {
+        "id": "pb3",
+        "name": "pawn",
+        "side": "black",
+        "points": 1,
+        "square": "c7"
+      }
+    ],
+    "black": [
+      {
+        "id": "hw1",
+        "name": "horse",
+        "side": "white",
+        "points": 3,
+        "square": "c7"
+      },
+      {
+        "id": "pw5",
+        "name": "pawn",
+        "side": "white",
+        "points": 1,
+        "square": "e4"
+      },
+      {
+        "id": "pw4",
+        "name": "pawn",
+        "side": "white",
+        "points": 1,
+        "square": "d4"
+      },
+      {
+        "id": "pw6",
+        "name": "pawn",
+        "side": "white",
+        "points": 1,
+        "square": "f2"
+      }
+    ]
+  },
+  "points": {
+    "white": 2,
+    "black": 6
+  },
+  "clocks": {
+    "white": 0,
+    "black": 0,
+    "last_turn_started_at": "2026-09-14T00:07:31.098Z"
+  },
+  "movements": [
+    {
+      "id": "hw2",
+      "type": "horse",
+      "side": "white",
+      "turn": 1,
+      "from": "g1",
+      "to": "f3",
+      "date": "13/9/2026",
+      "time": "07:07:31 p. m.",
+      "san": "Nf3",
+      "classic_val": "hw2 -> 3f",
+      "captured": null,
+      "is_check": false,
+      "is_checkmate": false,
+      "is_stalemate": false,
+      "pos": {
+        "initial": {
+          "id": "g1",
+          "col": 7,
+          "row": 1
+        },
+        "final": {
+          "id": "f3",
+          "col": 6,
+          "row": 3
+        }
+      }
+    },
+    {
+      "id": "pb4",
+      "type": "pawn",
+      "side": "black",
+      "turn": 2,
+      "from": "d7",
+      "to": "d5",
+      "date": "13/9/2026",
+      "time": "07:07:46 p. m.",
+      "san": "d5",
+      "classic_val": "pb4 -> 5d",
+      "captured": null,
+      "is_check": false,
+      "is_checkmate": false,
+      "is_stalemate": false,
+      "pos": {
+        "initial": {
+          "id": "d7",
+          "col": 4,
+          "row": 7
+        },
+        "final": {
+          "id": "d5",
+          "col": 4,
+          "row": 5
+        }
+      }
+    },
+    {
+      "id": "hw1",
+      "type": "horse",
+      "side": "white",
+      "turn": 3,
+      "from": "b1",
+      "to": "c3",
+      "date": "13/9/2026",
+      "time": "07:07:46 p. m.",
+      "san": "Nc3",
+      "classic_val": "hw1 -> 3c",
+      "captured": null,
+      "is_check": false,
+      "is_checkmate": false,
+      "is_stalemate": false,
+      "pos": {
+        "initial": {
+          "id": "b1",
+          "col": 2,
+          "row": 1
+        },
+        "final": {
+          "id": "c3",
+          "col": 3,
+          "row": 3
+        }
+      }
+    },
+    {
+      "id": "hb1",
+      "type": "horse",
+      "side": "black",
+      "turn": 4,
+      "from": "b8",
+      "to": "c6",
+      "date": "13/9/2026",
+      "time": "07:07:49 p. m.",
+      "san": "Nc6",
+      "classic_val": "hb1 -> 6c",
+      "captured": null,
+      "is_check": false,
+      "is_checkmate": false,
+      "is_stalemate": false,
+      "pos": {
+        "initial": {
+          "id": "b8",
+          "col": 2,
+          "row": 8
+        },
+        "final": {
+          "id": "c6",
+          "col": 3,
+          "row": 6
+        }
+      }
+    },
+    {
+      "id": "hw1",
+      "type": "horse",
+      "side": "white",
+      "turn": 5,
+      "from": "c3",
+      "to": "d5",
+      "date": "13/9/2026",
+      "time": "07:07:50 p. m.",
+      "san": "Nxd5",
+      "classic_val": "hw1 -> 5d",
+      "captured": {
+        "id": "pb4",
+        "name": "pawn",
+        "side": "black",
+        "points": 1,
+        "square": "d5"
+      },
+      "is_check": false,
+      "is_checkmate": false,
+      "is_stalemate": false,
+      "pos": {
+        "initial": {
+          "id": "c3",
+          "col": 3,
+          "row": 3
+        },
+        "final": {
+          "id": "d5",
+          "col": 4,
+          "row": 5
+        }
+      }
+    },
+    {
+      "id": "pb5",
+      "type": "pawn",
+      "side": "black",
+      "turn": 6,
+      "from": "e7",
+      "to": "e6",
+      "date": "13/9/2026",
+      "time": "07:07:53 p. m.",
+      "san": "e6",
+      "classic_val": "pb5 -> 6e",
+      "captured": null,
+      "is_check": false,
+      "is_checkmate": false,
+      "is_stalemate": false,
+      "pos": {
+        "initial": {
+          "id": "e7",
+          "col": 5,
+          "row": 7
+        },
+        "final": {
+          "id": "e6",
+          "col": 5,
+          "row": 6
+        }
+      }
+    },
+    {
+      "id": "hw1",
+      "type": "horse",
+      "side": "white",
+      "turn": 7,
+      "from": "d5",
+      "to": "c7",
+      "date": "13/9/2026",
+      "time": "07:07:54 p. m.",
+      "san": "Nxc7+",
+      "classic_val": "hw1 -> 7c",
+      "captured": {
+        "id": "pb3",
+        "name": "pawn",
+        "side": "black",
+        "points": 1,
+        "square": "c7"
+      },
+      "is_check": true,
+      "is_checkmate": false,
+      "is_stalemate": false,
+      "pos": {
+        "initial": {
+          "id": "d5",
+          "col": 4,
+          "row": 5
+        },
+        "final": {
+          "id": "c7",
+          "col": 3,
+          "row": 7
+        }
+      }
+    },
+    {
+      "id": "qb",
+      "type": "queen",
+      "side": "black",
+      "turn": 8,
+      "from": "d8",
+      "to": "c7",
+      "date": "13/9/2026",
+      "time": "07:07:58 p. m.",
+      "san": "Qxc7",
+      "classic_val": "qb -> 7c",
+      "captured": {
+        "id": "hw1",
+        "name": "horse",
+        "side": "white",
+        "points": 3,
+        "square": "c7"
+      },
+      "is_check": false,
+      "is_checkmate": false,
+      "is_stalemate": false,
+      "pos": {
+        "initial": {
+          "id": "d8",
+          "col": 4,
+          "row": 8
+        },
+        "final": {
+          "id": "c7",
+          "col": 3,
+          "row": 7
+        }
+      }
+    },
+    {
+      "id": "pw5",
+      "type": "pawn",
+      "side": "white",
+      "turn": 9,
+      "from": "e2",
+      "to": "e4",
+      "date": "13/9/2026",
+      "time": "07:07:59 p. m.",
+      "san": "e4",
+      "classic_val": "pw5 -> 4e",
+      "captured": null,
+      "is_check": false,
+      "is_checkmate": false,
+      "is_stalemate": false,
+      "pos": {
+        "initial": {
+          "id": "e2",
+          "col": 5,
+          "row": 2
+        },
+        "final": {
+          "id": "e4",
+          "col": 5,
+          "row": 4
+        }
+      }
+    },
+    {
+      "id": "hb2",
+      "type": "horse",
+      "side": "black",
+      "turn": 10,
+      "from": "g8",
+      "to": "f6",
+      "date": "13/9/2026",
+      "time": "07:08:10 p. m.",
+      "san": "Nf6",
+      "classic_val": "hb2 -> 6f",
+      "captured": null,
+      "is_check": false,
+      "is_checkmate": false,
+      "is_stalemate": false,
+      "pos": {
+        "initial": {
+          "id": "g8",
+          "col": 7,
+          "row": 8
+        },
+        "final": {
+          "id": "f6",
+          "col": 6,
+          "row": 6
+        }
+      }
+    },
+    {
+      "id": "bw2",
+      "type": "bishop",
+      "side": "white",
+      "turn": 11,
+      "from": "f1",
+      "to": "e2",
+      "date": "13/9/2026",
+      "time": "07:08:11 p. m.",
+      "san": "Be2",
+      "classic_val": "bw2 -> 2e",
+      "captured": null,
+      "is_check": false,
+      "is_checkmate": false,
+      "is_stalemate": false,
+      "pos": {
+        "initial": {
+          "id": "f1",
+          "col": 6,
+          "row": 1
+        },
+        "final": {
+          "id": "e2",
+          "col": 5,
+          "row": 2
+        }
+      }
+    },
+    {
+      "id": "hb2",
+      "type": "horse",
+      "side": "black",
+      "turn": 12,
+      "from": "f6",
+      "to": "e4",
+      "date": "13/9/2026",
+      "time": "07:08:20 p. m.",
+      "san": "Nxe4",
+      "classic_val": "hb2 -> 4e",
+      "captured": {
+        "id": "pw5",
+        "name": "pawn",
+        "side": "white",
+        "points": 1,
+        "square": "e4"
+      },
+      "is_check": false,
+      "is_checkmate": false,
+      "is_stalemate": false,
+      "pos": {
+        "initial": {
+          "id": "f6",
+          "col": 6,
+          "row": 6
+        },
+        "final": {
+          "id": "e4",
+          "col": 5,
+          "row": 4
+        }
+      }
+    },
+    {
+      "id": "pw4",
+      "type": "pawn",
+      "side": "white",
+      "turn": 13,
+      "from": "d2",
+      "to": "d4",
+      "date": "13/9/2026",
+      "time": "07:08:21 p. m.",
+      "san": "d4",
+      "classic_val": "pw4 -> 4d",
+      "captured": null,
+      "is_check": false,
+      "is_checkmate": false,
+      "is_stalemate": false,
+      "pos": {
+        "initial": {
+          "id": "d2",
+          "col": 4,
+          "row": 2
+        },
+        "final": {
+          "id": "d4",
+          "col": 4,
+          "row": 4
+        }
+      }
+    },
+    {
+      "id": "qb",
+      "type": "queen",
+      "side": "black",
+      "turn": 14,
+      "from": "c7",
+      "to": "d7",
+      "date": "13/9/2026",
+      "time": "07:08:42 p. m.",
+      "san": "Qd7",
+      "classic_val": "qb -> 7d",
+      "captured": null,
+      "is_check": false,
+      "is_checkmate": false,
+      "is_stalemate": false,
+      "pos": {
+        "initial": {
+          "id": "c7",
+          "col": 3,
+          "row": 7
+        },
+        "final": {
+          "id": "d7",
+          "col": 4,
+          "row": 7
+        }
+      }
+    },
+    {
+      "id": "bw1",
+      "type": "bishop",
+      "side": "white",
+      "turn": 15,
+      "from": "c1",
+      "to": "f4",
+      "date": "13/9/2026",
+      "time": "07:08:43 p. m.",
+      "san": "Bf4",
+      "classic_val": "bw1 -> 4f",
+      "captured": null,
+      "is_check": false,
+      "is_checkmate": false,
+      "is_stalemate": false,
+      "pos": {
+        "initial": {
+          "id": "c1",
+          "col": 3,
+          "row": 1
+        },
+        "final": {
+          "id": "f4",
+          "col": 6,
+          "row": 4
+        }
+      }
+    },
+    {
+      "id": "qb",
+      "type": "queen",
+      "side": "black",
+      "turn": 16,
+      "from": "d7",
+      "to": "d4",
+      "date": "13/9/2026",
+      "time": "07:08:54 p. m.",
+      "san": "Qxd4",
+      "classic_val": "qb -> 4d",
+      "captured": {
+        "id": "pw4",
+        "name": "pawn",
+        "side": "white",
+        "points": 1,
+        "square": "d4"
+      },
+      "is_check": false,
+      "is_checkmate": false,
+      "is_stalemate": false,
+      "pos": {
+        "initial": {
+          "id": "d7",
+          "col": 4,
+          "row": 7
+        },
+        "final": {
+          "id": "d4",
+          "col": 4,
+          "row": 4
+        }
+      }
+    },
+    {
+      "id": "bw1",
+      "type": "bishop",
+      "side": "white",
+      "turn": 17,
+      "from": "f4",
+      "to": "h6",
+      "date": "13/9/2026",
+      "time": "07:08:55 p. m.",
+      "san": "Bh6",
+      "classic_val": "bw1 -> 6h",
+      "captured": null,
+      "is_check": false,
+      "is_checkmate": false,
+      "is_stalemate": false,
+      "pos": {
+        "initial": {
+          "id": "f4",
+          "col": 6,
+          "row": 4
+        },
+        "final": {
+          "id": "h6",
+          "col": 8,
+          "row": 6
+        }
+      }
+    },
+    {
+      "id": "qb",
+      "type": "queen",
+      "side": "black",
+      "turn": 18,
+      "from": "d4",
+      "to": "f2",
+      "date": "13/9/2026",
+      "time": "07:09:19 p. m.",
+      "san": "Qxf2#",
+      "classic_val": "qb -> 2f",
+      "captured": {
+        "id": "pw6",
+        "name": "pawn",
+        "side": "white",
+        "points": 1,
+        "square": "f2"
+      },
+      "is_check": false,
+      "is_checkmate": true,
+      "is_stalemate": false,
+      "pos": {
+        "initial": {
+          "id": "d4",
+          "col": 4,
+          "row": 4
+        },
+        "final": {
+          "id": "f2",
+          "col": 6,
+          "row": 2
+        }
+      }
+    }
+  ],
+  "created_at": "2026-09-14T00:07:31.098Z",
+  "updated_at": "2026-09-14T00:09:19.942Z"
+}

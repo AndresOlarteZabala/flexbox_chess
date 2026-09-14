@@ -1,0 +1,3464 @@
+{
+  "id": "game-1",
+  "status": "IN_PROGRESS",
+  "mode": "timed",
+  "turn": "white",
+  "turn_count": 124,
+  "board": {
+    "a1": null,
+    "a2": {
+      "id": "pw1",
+      "name": "pawn",
+      "side": "white",
+      "symbol": "♟",
+      "points": 1,
+      "col": 1,
+      "row": 2
+    },
+    "a3": null,
+    "a4": null,
+    "a5": null,
+    "a6": {
+      "id": "pb1",
+      "name": "pawn",
+      "side": "black",
+      "symbol": "♟",
+      "points": 1,
+      "col": 1,
+      "row": 6,
+      "state": "moved"
+    },
+    "a7": null,
+    "a8": null,
+    "b1": {
+      "id": "qw",
+      "name": "queen",
+      "side": "white",
+      "symbol": "♛",
+      "points": 9,
+      "col": 2,
+      "row": 1,
+      "state": "moved"
+    },
+    "b2": {
+      "id": "pw2",
+      "name": "pawn",
+      "side": "white",
+      "symbol": "♟",
+      "points": 1,
+      "col": 2,
+      "row": 2
+    },
+    "b3": null,
+    "b4": null,
+    "b5": null,
+    "b6": null,
+    "b7": {
+      "id": "pb2",
+      "name": "pawn",
+      "side": "black",
+      "symbol": "♟",
+      "points": 1,
+      "col": 2,
+      "row": 7
+    },
+    "b8": {
+      "id": "tb1",
+      "name": "tower",
+      "side": "black",
+      "symbol": "♜",
+      "points": 5,
+      "col": 2,
+      "row": 8,
+      "state": "moved"
+    },
+    "c1": null,
+    "c2": {
+      "id": "pw3",
+      "name": "pawn",
+      "side": "white",
+      "symbol": "♟",
+      "points": 1,
+      "col": 3,
+      "row": 2
+    },
+    "c3": {
+      "id": "hw1",
+      "name": "horse",
+      "side": "white",
+      "symbol": "♞",
+      "points": 3,
+      "col": 3,
+      "row": 3,
+      "state": "moved"
+    },
+    "c4": null,
+    "c5": null,
+    "c6": {
+      "id": "hb1",
+      "name": "horse",
+      "side": "black",
+      "symbol": "♞",
+      "points": 3,
+      "col": 3,
+      "row": 6,
+      "state": "moved"
+    },
+    "c7": {
+      "id": "pb3",
+      "name": "pawn",
+      "side": "black",
+      "symbol": "♟",
+      "points": 1,
+      "col": 3,
+      "row": 7
+    },
+    "c8": {
+      "id": "bb1",
+      "name": "bishop",
+      "side": "black",
+      "symbol": "♝",
+      "points": 3,
+      "col": 3,
+      "row": 8
+    },
+    "d1": {
+      "id": "tw1",
+      "name": "tower",
+      "side": "white",
+      "symbol": "♜",
+      "points": 5,
+      "col": 4,
+      "row": 1,
+      "state": "moved"
+    },
+    "d2": null,
+    "d3": {
+      "id": "pw4",
+      "name": "pawn",
+      "side": "white",
+      "symbol": "♟",
+      "points": 1,
+      "col": 4,
+      "row": 3,
+      "state": "moved"
+    },
+    "d4": null,
+    "d5": null,
+    "d6": {
+      "id": "bb2",
+      "name": "bishop",
+      "side": "black",
+      "symbol": "♝",
+      "points": 3,
+      "col": 4,
+      "row": 6,
+      "state": "moved"
+    },
+    "d7": {
+      "id": "pb4",
+      "name": "pawn",
+      "side": "black",
+      "symbol": "♟",
+      "points": 1,
+      "col": 4,
+      "row": 7
+    },
+    "d8": {
+      "id": "kb",
+      "name": "king",
+      "side": "black",
+      "symbol": "♚",
+      "points": 34,
+      "col": 4,
+      "row": 8,
+      "state": "moved"
+    },
+    "e1": {
+      "id": "kw",
+      "name": "king",
+      "side": "white",
+      "symbol": "♚",
+      "points": 34,
+      "col": 5,
+      "row": 1,
+      "state": "moved"
+    },
+    "e2": {
+      "id": "pw5",
+      "name": "pawn",
+      "side": "white",
+      "symbol": "♟",
+      "points": 1,
+      "col": 5,
+      "row": 2
+    },
+    "e3": {
+      "id": "bw1",
+      "name": "bishop",
+      "side": "white",
+      "symbol": "♝",
+      "points": 3,
+      "col": 5,
+      "row": 3,
+      "state": "moved"
+    },
+    "e4": null,
+    "e5": null,
+    "e6": {
+      "id": "pb5",
+      "name": "pawn",
+      "side": "black",
+      "symbol": "♟",
+      "points": 1,
+      "col": 5,
+      "row": 6,
+      "state": "moved"
+    },
+    "e7": {
+      "id": "qb",
+      "name": "queen",
+      "side": "black",
+      "symbol": "♛",
+      "points": 9,
+      "col": 5,
+      "row": 7,
+      "state": "moved"
+    },
+    "e8": null,
+    "f1": {
+      "id": "bw2",
+      "name": "bishop",
+      "side": "white",
+      "symbol": "♝",
+      "points": 3,
+      "col": 6,
+      "row": 1
+    },
+    "f2": {
+      "id": "pw6",
+      "name": "pawn",
+      "side": "white",
+      "symbol": "♟",
+      "points": 1,
+      "col": 6,
+      "row": 2
+    },
+    "f3": {
+      "id": "hw2",
+      "name": "horse",
+      "side": "white",
+      "symbol": "♞",
+      "points": 3,
+      "col": 6,
+      "row": 3,
+      "state": "moved"
+    },
+    "f4": null,
+    "f5": null,
+    "f6": {
+      "id": "hb2",
+      "name": "horse",
+      "side": "black",
+      "symbol": "♞",
+      "points": 3,
+      "col": 6,
+      "row": 6,
+      "state": "moved"
+    },
+    "f7": {
+      "id": "pb6",
+      "name": "pawn",
+      "side": "black",
+      "symbol": "♟",
+      "points": 1,
+      "col": 6,
+      "row": 7
+    },
+    "f8": null,
+    "g1": null,
+    "g2": {
+      "id": "pw7",
+      "name": "pawn",
+      "side": "white",
+      "symbol": "♟",
+      "points": 1,
+      "col": 7,
+      "row": 2
+    },
+    "g3": null,
+    "g4": null,
+    "g5": null,
+    "g6": null,
+    "g7": {
+      "id": "pb7",
+      "name": "pawn",
+      "side": "black",
+      "symbol": "♟",
+      "points": 1,
+      "col": 7,
+      "row": 7
+    },
+    "g8": {
+      "id": "tb2",
+      "name": "tower",
+      "side": "black",
+      "symbol": "♜",
+      "points": 5,
+      "col": 7,
+      "row": 8,
+      "state": "moved"
+    },
+    "h1": {
+      "id": "tw2",
+      "name": "tower",
+      "side": "white",
+      "symbol": "♜",
+      "points": 5,
+      "col": 8,
+      "row": 1,
+      "state": "moved"
+    },
+    "h2": null,
+    "h3": {
+      "id": "pw8",
+      "name": "pawn",
+      "side": "white",
+      "symbol": "♟",
+      "points": 1,
+      "col": 8,
+      "row": 3,
+      "state": "moved"
+    },
+    "h4": null,
+    "h5": null,
+    "h6": null,
+    "h7": {
+      "id": "pb8",
+      "name": "pawn",
+      "side": "black",
+      "symbol": "♟",
+      "points": 1,
+      "col": 8,
+      "row": 7
+    },
+    "h8": null
+  },
+  "captured_pieces": {
+    "white": [],
+    "black": []
+  },
+  "points": {
+    "white": 0,
+    "black": 0
+  },
+  "clocks": {
+    "white": 0,
+    "black": 0,
+    "last_turn_started_at": "2026-09-13T19:57:26.503Z"
+  },
+  "movements": [
+    {
+      "id": "hw1",
+      "type": "horse",
+      "side": "white",
+      "turn": 1,
+      "from": "b1",
+      "to": "c3",
+      "date": "13/9/2026",
+      "time": "03:07:05 p. m.",
+      "san": "Nc3",
+      "classic_val": "hw1 -> 3c",
+      "captured": null,
+      "pos": {
+        "initial": {
+          "id": "b1",
+          "col": 2,
+          "row": 1
+        },
+        "final": {
+          "id": "c3",
+          "col": 3,
+          "row": 3
+        }
+      }
+    },
+    {
+      "id": "hb1",
+      "type": "horse",
+      "side": "black",
+      "turn": 2,
+      "from": "b8",
+      "to": "c6",
+      "date": "13/9/2026",
+      "time": "03:09:00 p. m.",
+      "san": "Nc6",
+      "classic_val": "hb1 -> 6c",
+      "captured": null,
+      "pos": {
+        "initial": {
+          "id": "b8",
+          "col": 2,
+          "row": 8
+        },
+        "final": {
+          "id": "c6",
+          "col": 3,
+          "row": 6
+        }
+      }
+    },
+    {
+      "id": "hw2",
+      "type": "horse",
+      "side": "white",
+      "turn": 3,
+      "from": "g1",
+      "to": "f3",
+      "date": "13/9/2026",
+      "time": "03:09:06 p. m.",
+      "san": "Nf3",
+      "classic_val": "hw2 -> 3f",
+      "captured": null,
+      "pos": {
+        "initial": {
+          "id": "g1",
+          "col": 7,
+          "row": 1
+        },
+        "final": {
+          "id": "f3",
+          "col": 6,
+          "row": 3
+        }
+      }
+    },
+    {
+      "id": "hb2",
+      "type": "horse",
+      "side": "black",
+      "turn": 4,
+      "from": "g8",
+      "to": "f6",
+      "date": "13/9/2026",
+      "time": "03:09:12 p. m.",
+      "san": "Nf6",
+      "classic_val": "hb2 -> 6f",
+      "captured": null,
+      "pos": {
+        "initial": {
+          "id": "g8",
+          "col": 7,
+          "row": 8
+        },
+        "final": {
+          "id": "f6",
+          "col": 6,
+          "row": 6
+        }
+      }
+    },
+    {
+      "id": "pw4",
+      "type": "pawn",
+      "side": "white",
+      "turn": 5,
+      "from": "d2",
+      "to": "d3",
+      "date": "13/9/2026",
+      "time": "03:09:20 p. m.",
+      "san": "d3",
+      "classic_val": "pw4 -> 3d",
+      "captured": null,
+      "pos": {
+        "initial": {
+          "id": "d2",
+          "col": 4,
+          "row": 2
+        },
+        "final": {
+          "id": "d3",
+          "col": 4,
+          "row": 3
+        }
+      }
+    },
+    {
+      "id": "pb5",
+      "type": "pawn",
+      "side": "black",
+      "turn": 6,
+      "from": "e7",
+      "to": "e6",
+      "date": "13/9/2026",
+      "time": "03:09:23 p. m.",
+      "san": "e6",
+      "classic_val": "pb5 -> 6e",
+      "captured": null,
+      "pos": {
+        "initial": {
+          "id": "e7",
+          "col": 5,
+          "row": 7
+        },
+        "final": {
+          "id": "e6",
+          "col": 5,
+          "row": 6
+        }
+      }
+    },
+    {
+      "id": "bw1",
+      "type": "bishop",
+      "side": "white",
+      "turn": 7,
+      "from": "c1",
+      "to": "e3",
+      "date": "13/9/2026",
+      "time": "03:09:23 p. m.",
+      "san": "Be3",
+      "classic_val": "bw1 -> 3e",
+      "captured": null,
+      "pos": {
+        "initial": {
+          "id": "c1",
+          "col": 3,
+          "row": 1
+        },
+        "final": {
+          "id": "e3",
+          "col": 5,
+          "row": 3
+        }
+      }
+    },
+    {
+      "id": "pb1",
+      "type": "pawn",
+      "side": "black",
+      "turn": 8,
+      "from": "a7",
+      "to": "a6",
+      "date": "13/9/2026",
+      "time": "03:09:23 p. m.",
+      "san": "a6",
+      "classic_val": "pb1 -> 6a",
+      "captured": null,
+      "pos": {
+        "initial": {
+          "id": "a7",
+          "col": 1,
+          "row": 7
+        },
+        "final": {
+          "id": "a6",
+          "col": 1,
+          "row": 6
+        }
+      }
+    },
+    {
+      "id": "qw",
+      "type": "queen",
+      "side": "white",
+      "turn": 9,
+      "from": "d1",
+      "to": "d2",
+      "date": "13/9/2026",
+      "time": "03:09:24 p. m.",
+      "san": "Qd2",
+      "classic_val": "qw -> 2d",
+      "captured": null,
+      "pos": {
+        "initial": {
+          "id": "d1",
+          "col": 4,
+          "row": 1
+        },
+        "final": {
+          "id": "d2",
+          "col": 4,
+          "row": 2
+        }
+      }
+    },
+    {
+      "id": "bb2",
+      "type": "bishop",
+      "side": "black",
+      "turn": 10,
+      "from": "f8",
+      "to": "d6",
+      "date": "13/9/2026",
+      "time": "03:09:25 p. m.",
+      "san": "Bd6",
+      "classic_val": "bb2 -> 6d",
+      "captured": null,
+      "pos": {
+        "initial": {
+          "id": "f8",
+          "col": 6,
+          "row": 8
+        },
+        "final": {
+          "id": "d6",
+          "col": 4,
+          "row": 6
+        }
+      }
+    },
+    {
+      "id": "pw8",
+      "type": "pawn",
+      "side": "white",
+      "turn": 11,
+      "from": "h2",
+      "to": "h3",
+      "date": "13/9/2026",
+      "time": "03:09:25 p. m.",
+      "san": "h3",
+      "classic_val": "pw8 -> 3h",
+      "captured": null,
+      "pos": {
+        "initial": {
+          "id": "h2",
+          "col": 8,
+          "row": 2
+        },
+        "final": {
+          "id": "h3",
+          "col": 8,
+          "row": 3
+        }
+      }
+    },
+    {
+      "id": "kb",
+      "type": "king",
+      "side": "black",
+      "turn": 12,
+      "from": "e8",
+      "to": "f8",
+      "date": "13/9/2026",
+      "time": "03:09:25 p. m.",
+      "san": "Kf8",
+      "classic_val": "kb -> 8f",
+      "captured": null,
+      "pos": {
+        "initial": {
+          "id": "e8",
+          "col": 5,
+          "row": 8
+        },
+        "final": {
+          "id": "f8",
+          "col": 6,
+          "row": 8
+        }
+      }
+    },
+    {
+      "id": "tw1",
+      "type": "tower",
+      "side": "white",
+      "turn": 13,
+      "from": "a1",
+      "to": "b1",
+      "date": "13/9/2026",
+      "time": "03:09:26 p. m.",
+      "san": "Rb1",
+      "classic_val": "tw1 -> 1b",
+      "captured": null,
+      "pos": {
+        "initial": {
+          "id": "a1",
+          "col": 1,
+          "row": 1
+        },
+        "final": {
+          "id": "b1",
+          "col": 2,
+          "row": 1
+        }
+      }
+    },
+    {
+      "id": "kb",
+      "type": "king",
+      "side": "black",
+      "turn": 14,
+      "from": "f8",
+      "to": "e7",
+      "date": "13/9/2026",
+      "time": "03:09:26 p. m.",
+      "san": "Ke7",
+      "classic_val": "kb -> 7e",
+      "captured": null,
+      "pos": {
+        "initial": {
+          "id": "f8",
+          "col": 6,
+          "row": 8
+        },
+        "final": {
+          "id": "e7",
+          "col": 5,
+          "row": 7
+        }
+      }
+    },
+    {
+      "id": "tw1",
+      "type": "tower",
+      "side": "white",
+      "turn": 15,
+      "from": "b1",
+      "to": "c1",
+      "date": "13/9/2026",
+      "time": "03:09:27 p. m.",
+      "san": "Rc1",
+      "classic_val": "tw1 -> 1c",
+      "captured": null,
+      "pos": {
+        "initial": {
+          "id": "b1",
+          "col": 2,
+          "row": 1
+        },
+        "final": {
+          "id": "c1",
+          "col": 3,
+          "row": 1
+        }
+      }
+    },
+    {
+      "id": "qb",
+      "type": "queen",
+      "side": "black",
+      "turn": 16,
+      "from": "d8",
+      "to": "g8",
+      "date": "13/9/2026",
+      "time": "03:09:27 p. m.",
+      "san": "Qg8",
+      "classic_val": "qb -> 8g",
+      "captured": null,
+      "pos": {
+        "initial": {
+          "id": "d8",
+          "col": 4,
+          "row": 8
+        },
+        "final": {
+          "id": "g8",
+          "col": 7,
+          "row": 8
+        }
+      }
+    },
+    {
+      "id": "tw1",
+      "type": "tower",
+      "side": "white",
+      "turn": 17,
+      "from": "c1",
+      "to": "a1",
+      "date": "13/9/2026",
+      "time": "03:09:28 p. m.",
+      "san": "Ra1",
+      "classic_val": "tw1 -> 1a",
+      "captured": null,
+      "pos": {
+        "initial": {
+          "id": "c1",
+          "col": 3,
+          "row": 1
+        },
+        "final": {
+          "id": "a1",
+          "col": 1,
+          "row": 1
+        }
+      }
+    },
+    {
+      "id": "tb1",
+      "type": "tower",
+      "side": "black",
+      "turn": 18,
+      "from": "a8",
+      "to": "b8",
+      "date": "13/9/2026",
+      "time": "03:09:28 p. m.",
+      "san": "Rb8",
+      "classic_val": "tb1 -> 8b",
+      "captured": null,
+      "pos": {
+        "initial": {
+          "id": "a8",
+          "col": 1,
+          "row": 8
+        },
+        "final": {
+          "id": "b8",
+          "col": 2,
+          "row": 8
+        }
+      }
+    },
+    {
+      "id": "tw1",
+      "type": "tower",
+      "side": "white",
+      "turn": 19,
+      "from": "a1",
+      "to": "b1",
+      "date": "13/9/2026",
+      "time": "03:09:33 p. m.",
+      "san": "Rb1",
+      "classic_val": "tw1 -> 1b",
+      "captured": null,
+      "pos": {
+        "initial": {
+          "id": "a1",
+          "col": 1,
+          "row": 1
+        },
+        "final": {
+          "id": "b1",
+          "col": 2,
+          "row": 1
+        }
+      }
+    },
+    {
+      "id": "qb",
+      "type": "queen",
+      "side": "black",
+      "turn": 20,
+      "from": "g8",
+      "to": "e8",
+      "date": "13/9/2026",
+      "time": "03:09:33 p. m.",
+      "san": "Qe8",
+      "classic_val": "qb -> 8e",
+      "captured": null,
+      "pos": {
+        "initial": {
+          "id": "g8",
+          "col": 7,
+          "row": 8
+        },
+        "final": {
+          "id": "e8",
+          "col": 5,
+          "row": 8
+        }
+      }
+    },
+    {
+      "id": "tw1",
+      "type": "tower",
+      "side": "white",
+      "turn": 21,
+      "from": "b1",
+      "to": "a1",
+      "date": "13/9/2026",
+      "time": "03:09:34 p. m.",
+      "san": "Ra1",
+      "classic_val": "tw1 -> 1a",
+      "captured": null,
+      "pos": {
+        "initial": {
+          "id": "b1",
+          "col": 2,
+          "row": 1
+        },
+        "final": {
+          "id": "a1",
+          "col": 1,
+          "row": 1
+        }
+      }
+    },
+    {
+      "id": "qb",
+      "type": "queen",
+      "side": "black",
+      "turn": 22,
+      "from": "e8",
+      "to": "d8",
+      "date": "13/9/2026",
+      "time": "03:09:34 p. m.",
+      "san": "Qd8",
+      "classic_val": "qb -> 8d",
+      "captured": null,
+      "pos": {
+        "initial": {
+          "id": "e8",
+          "col": 5,
+          "row": 8
+        },
+        "final": {
+          "id": "d8",
+          "col": 4,
+          "row": 8
+        }
+      }
+    },
+    {
+      "id": "tw1",
+      "type": "tower",
+      "side": "white",
+      "turn": 23,
+      "from": "a1",
+      "to": "d1",
+      "date": "13/9/2026",
+      "time": "03:09:35 p. m.",
+      "san": "Rd1",
+      "classic_val": "tw1 -> 1d",
+      "captured": null,
+      "pos": {
+        "initial": {
+          "id": "a1",
+          "col": 1,
+          "row": 1
+        },
+        "final": {
+          "id": "d1",
+          "col": 4,
+          "row": 1
+        }
+      }
+    },
+    {
+      "id": "qb",
+      "type": "queen",
+      "side": "black",
+      "turn": 24,
+      "from": "d8",
+      "to": "f8",
+      "date": "13/9/2026",
+      "time": "03:09:36 p. m.",
+      "san": "Qf8",
+      "classic_val": "qb -> 8f",
+      "captured": null,
+      "pos": {
+        "initial": {
+          "id": "d8",
+          "col": 4,
+          "row": 8
+        },
+        "final": {
+          "id": "f8",
+          "col": 6,
+          "row": 8
+        }
+      }
+    },
+    {
+      "id": "tw1",
+      "type": "tower",
+      "side": "white",
+      "turn": 25,
+      "from": "d1",
+      "to": "b1",
+      "date": "13/9/2026",
+      "time": "03:09:36 p. m.",
+      "san": "Rb1",
+      "classic_val": "tw1 -> 1b",
+      "captured": null,
+      "pos": {
+        "initial": {
+          "id": "d1",
+          "col": 4,
+          "row": 1
+        },
+        "final": {
+          "id": "b1",
+          "col": 2,
+          "row": 1
+        }
+      }
+    },
+    {
+      "id": "qb",
+      "type": "queen",
+      "side": "black",
+      "turn": 26,
+      "from": "f8",
+      "to": "e8",
+      "date": "13/9/2026",
+      "time": "03:09:37 p. m.",
+      "san": "Qe8",
+      "classic_val": "qb -> 8e",
+      "captured": null,
+      "pos": {
+        "initial": {
+          "id": "f8",
+          "col": 6,
+          "row": 8
+        },
+        "final": {
+          "id": "e8",
+          "col": 5,
+          "row": 8
+        }
+      }
+    },
+    {
+      "id": "qw",
+      "type": "queen",
+      "side": "white",
+      "turn": 27,
+      "from": "d2",
+      "to": "d1",
+      "date": "13/9/2026",
+      "time": "03:09:37 p. m.",
+      "san": "Qd1",
+      "classic_val": "qw -> 1d",
+      "captured": null,
+      "pos": {
+        "initial": {
+          "id": "d2",
+          "col": 4,
+          "row": 2
+        },
+        "final": {
+          "id": "d1",
+          "col": 4,
+          "row": 1
+        }
+      }
+    },
+    {
+      "id": "tb1",
+      "type": "tower",
+      "side": "black",
+      "turn": 28,
+      "from": "b8",
+      "to": "a8",
+      "date": "13/9/2026",
+      "time": "03:09:37 p. m.",
+      "san": "Ra8",
+      "classic_val": "tb1 -> 8a",
+      "captured": null,
+      "pos": {
+        "initial": {
+          "id": "b8",
+          "col": 2,
+          "row": 8
+        },
+        "final": {
+          "id": "a8",
+          "col": 1,
+          "row": 8
+        }
+      }
+    },
+    {
+      "id": "tw1",
+      "type": "tower",
+      "side": "white",
+      "turn": 29,
+      "from": "b1",
+      "to": "c1",
+      "date": "13/9/2026",
+      "time": "03:09:38 p. m.",
+      "san": "Rc1",
+      "classic_val": "tw1 -> 1c",
+      "captured": null,
+      "pos": {
+        "initial": {
+          "id": "b1",
+          "col": 2,
+          "row": 1
+        },
+        "final": {
+          "id": "c1",
+          "col": 3,
+          "row": 1
+        }
+      }
+    },
+    {
+      "id": "qb",
+      "type": "queen",
+      "side": "black",
+      "turn": 30,
+      "from": "e8",
+      "to": "d8",
+      "date": "13/9/2026",
+      "time": "03:09:38 p. m.",
+      "san": "Qd8",
+      "classic_val": "qb -> 8d",
+      "captured": null,
+      "pos": {
+        "initial": {
+          "id": "e8",
+          "col": 5,
+          "row": 8
+        },
+        "final": {
+          "id": "d8",
+          "col": 4,
+          "row": 8
+        }
+      }
+    },
+    {
+      "id": "kw",
+      "type": "king",
+      "side": "white",
+      "turn": 31,
+      "from": "e1",
+      "to": "d2",
+      "date": "13/9/2026",
+      "time": "03:09:39 p. m.",
+      "san": "Kd2",
+      "classic_val": "kw -> 2d",
+      "captured": null,
+      "pos": {
+        "initial": {
+          "id": "e1",
+          "col": 5,
+          "row": 1
+        },
+        "final": {
+          "id": "d2",
+          "col": 4,
+          "row": 2
+        }
+      }
+    },
+    {
+      "id": "qb",
+      "type": "queen",
+      "side": "black",
+      "turn": 32,
+      "from": "d8",
+      "to": "f8",
+      "date": "13/9/2026",
+      "time": "03:09:39 p. m.",
+      "san": "Qf8",
+      "classic_val": "qb -> 8f",
+      "captured": null,
+      "pos": {
+        "initial": {
+          "id": "d8",
+          "col": 4,
+          "row": 8
+        },
+        "final": {
+          "id": "f8",
+          "col": 6,
+          "row": 8
+        }
+      }
+    },
+    {
+      "id": "qw",
+      "type": "queen",
+      "side": "white",
+      "turn": 33,
+      "from": "d1",
+      "to": "e1",
+      "date": "13/9/2026",
+      "time": "03:09:42 p. m.",
+      "san": "Qe1",
+      "classic_val": "qw -> 1e",
+      "captured": null,
+      "pos": {
+        "initial": {
+          "id": "d1",
+          "col": 4,
+          "row": 1
+        },
+        "final": {
+          "id": "e1",
+          "col": 5,
+          "row": 1
+        }
+      }
+    },
+    {
+      "id": "kb",
+      "type": "king",
+      "side": "black",
+      "turn": 34,
+      "from": "e7",
+      "to": "d8",
+      "date": "13/9/2026",
+      "time": "03:09:42 p. m.",
+      "san": "Kd8",
+      "classic_val": "kb -> 8d",
+      "captured": null,
+      "pos": {
+        "initial": {
+          "id": "e7",
+          "col": 5,
+          "row": 7
+        },
+        "final": {
+          "id": "d8",
+          "col": 4,
+          "row": 8
+        }
+      }
+    },
+    {
+      "id": "qw",
+      "type": "queen",
+      "side": "white",
+      "turn": 35,
+      "from": "e1",
+      "to": "d1",
+      "date": "13/9/2026",
+      "time": "03:09:43 p. m.",
+      "san": "Qd1",
+      "classic_val": "qw -> 1d",
+      "captured": null,
+      "pos": {
+        "initial": {
+          "id": "e1",
+          "col": 5,
+          "row": 1
+        },
+        "final": {
+          "id": "d1",
+          "col": 4,
+          "row": 1
+        }
+      }
+    },
+    {
+      "id": "qb",
+      "type": "queen",
+      "side": "black",
+      "turn": 36,
+      "from": "f8",
+      "to": "e7",
+      "date": "13/9/2026",
+      "time": "03:09:43 p. m.",
+      "san": "Qe7",
+      "classic_val": "qb -> 7e",
+      "captured": null,
+      "pos": {
+        "initial": {
+          "id": "f8",
+          "col": 6,
+          "row": 8
+        },
+        "final": {
+          "id": "e7",
+          "col": 5,
+          "row": 7
+        }
+      }
+    },
+    {
+      "id": "tw1",
+      "type": "tower",
+      "side": "white",
+      "turn": 37,
+      "from": "c1",
+      "to": "b1",
+      "date": "13/9/2026",
+      "time": "03:09:44 p. m.",
+      "san": "Rb1",
+      "classic_val": "tw1 -> 1b",
+      "captured": null,
+      "pos": {
+        "initial": {
+          "id": "c1",
+          "col": 3,
+          "row": 1
+        },
+        "final": {
+          "id": "b1",
+          "col": 2,
+          "row": 1
+        }
+      }
+    },
+    {
+      "id": "qb",
+      "type": "queen",
+      "side": "black",
+      "turn": 38,
+      "from": "e7",
+      "to": "e8",
+      "date": "13/9/2026",
+      "time": "03:09:44 p. m.",
+      "san": "Qe8",
+      "classic_val": "qb -> 8e",
+      "captured": null,
+      "pos": {
+        "initial": {
+          "id": "e7",
+          "col": 5,
+          "row": 7
+        },
+        "final": {
+          "id": "e8",
+          "col": 5,
+          "row": 8
+        }
+      }
+    },
+    {
+      "id": "tw1",
+      "type": "tower",
+      "side": "white",
+      "turn": 39,
+      "from": "b1",
+      "to": "a1",
+      "date": "13/9/2026",
+      "time": "03:09:45 p. m.",
+      "san": "Ra1",
+      "classic_val": "tw1 -> 1a",
+      "captured": null,
+      "pos": {
+        "initial": {
+          "id": "b1",
+          "col": 2,
+          "row": 1
+        },
+        "final": {
+          "id": "a1",
+          "col": 1,
+          "row": 1
+        }
+      }
+    },
+    {
+      "id": "qb",
+      "type": "queen",
+      "side": "black",
+      "turn": 40,
+      "from": "e8",
+      "to": "e7",
+      "date": "13/9/2026",
+      "time": "03:09:46 p. m.",
+      "san": "Qe7",
+      "classic_val": "qb -> 7e",
+      "captured": null,
+      "pos": {
+        "initial": {
+          "id": "e8",
+          "col": 5,
+          "row": 8
+        },
+        "final": {
+          "id": "e7",
+          "col": 5,
+          "row": 7
+        }
+      }
+    },
+    {
+      "id": "tw1",
+      "type": "tower",
+      "side": "white",
+      "turn": 41,
+      "from": "a1",
+      "to": "b1",
+      "date": "13/9/2026",
+      "time": "03:09:46 p. m.",
+      "san": "Rb1",
+      "classic_val": "tw1 -> 1b",
+      "captured": null,
+      "pos": {
+        "initial": {
+          "id": "a1",
+          "col": 1,
+          "row": 1
+        },
+        "final": {
+          "id": "b1",
+          "col": 2,
+          "row": 1
+        }
+      }
+    },
+    {
+      "id": "tb2",
+      "type": "tower",
+      "side": "black",
+      "turn": 42,
+      "from": "h8",
+      "to": "f8",
+      "date": "13/9/2026",
+      "time": "03:09:47 p. m.",
+      "san": "Rf8",
+      "classic_val": "tb2 -> 8f",
+      "captured": null,
+      "pos": {
+        "initial": {
+          "id": "h8",
+          "col": 8,
+          "row": 8
+        },
+        "final": {
+          "id": "f8",
+          "col": 6,
+          "row": 8
+        }
+      }
+    },
+    {
+      "id": "qw",
+      "type": "queen",
+      "side": "white",
+      "turn": 43,
+      "from": "d1",
+      "to": "c1",
+      "date": "13/9/2026",
+      "time": "03:09:47 p. m.",
+      "san": "Qc1",
+      "classic_val": "qw -> 1c",
+      "captured": null,
+      "pos": {
+        "initial": {
+          "id": "d1",
+          "col": 4,
+          "row": 1
+        },
+        "final": {
+          "id": "c1",
+          "col": 3,
+          "row": 1
+        }
+      }
+    },
+    {
+      "id": "tb1",
+      "type": "tower",
+      "side": "black",
+      "turn": 44,
+      "from": "a8",
+      "to": "b8",
+      "date": "13/9/2026",
+      "time": "03:09:48 p. m.",
+      "san": "Rb8",
+      "classic_val": "tb1 -> 8b",
+      "captured": null,
+      "pos": {
+        "initial": {
+          "id": "a8",
+          "col": 1,
+          "row": 8
+        },
+        "final": {
+          "id": "b8",
+          "col": 2,
+          "row": 8
+        }
+      }
+    },
+    {
+      "id": "qw",
+      "type": "queen",
+      "side": "white",
+      "turn": 45,
+      "from": "c1",
+      "to": "e1",
+      "date": "13/9/2026",
+      "time": "03:09:48 p. m.",
+      "san": "Qe1",
+      "classic_val": "qw -> 1e",
+      "captured": null,
+      "pos": {
+        "initial": {
+          "id": "c1",
+          "col": 3,
+          "row": 1
+        },
+        "final": {
+          "id": "e1",
+          "col": 5,
+          "row": 1
+        }
+      }
+    },
+    {
+      "id": "tb2",
+      "type": "tower",
+      "side": "black",
+      "turn": 46,
+      "from": "f8",
+      "to": "h8",
+      "date": "13/9/2026",
+      "time": "03:09:49 p. m.",
+      "san": "Rh8",
+      "classic_val": "tb2 -> 8h",
+      "captured": null,
+      "pos": {
+        "initial": {
+          "id": "f8",
+          "col": 6,
+          "row": 8
+        },
+        "final": {
+          "id": "h8",
+          "col": 8,
+          "row": 8
+        }
+      }
+    },
+    {
+      "id": "qw",
+      "type": "queen",
+      "side": "white",
+      "turn": 47,
+      "from": "e1",
+      "to": "d1",
+      "date": "13/9/2026",
+      "time": "03:09:49 p. m.",
+      "san": "Qd1",
+      "classic_val": "qw -> 1d",
+      "captured": null,
+      "pos": {
+        "initial": {
+          "id": "e1",
+          "col": 5,
+          "row": 1
+        },
+        "final": {
+          "id": "d1",
+          "col": 4,
+          "row": 1
+        }
+      }
+    },
+    {
+      "id": "tb2",
+      "type": "tower",
+      "side": "black",
+      "turn": 48,
+      "from": "h8",
+      "to": "f8",
+      "date": "13/9/2026",
+      "time": "03:09:50 p. m.",
+      "san": "Rf8",
+      "classic_val": "tb2 -> 8f",
+      "captured": null,
+      "pos": {
+        "initial": {
+          "id": "h8",
+          "col": 8,
+          "row": 8
+        },
+        "final": {
+          "id": "f8",
+          "col": 6,
+          "row": 8
+        }
+      }
+    },
+    {
+      "id": "kw",
+      "type": "king",
+      "side": "white",
+      "turn": 49,
+      "from": "d2",
+      "to": "c1",
+      "date": "13/9/2026",
+      "time": "03:09:50 p. m.",
+      "san": "Kc1",
+      "classic_val": "kw -> 1c",
+      "captured": null,
+      "pos": {
+        "initial": {
+          "id": "d2",
+          "col": 4,
+          "row": 2
+        },
+        "final": {
+          "id": "c1",
+          "col": 3,
+          "row": 1
+        }
+      }
+    },
+    {
+      "id": "tb2",
+      "type": "tower",
+      "side": "black",
+      "turn": 50,
+      "from": "f8",
+      "to": "h8",
+      "date": "13/9/2026",
+      "time": "03:09:51 p. m.",
+      "san": "Rh8",
+      "classic_val": "tb2 -> 8h",
+      "captured": null,
+      "pos": {
+        "initial": {
+          "id": "f8",
+          "col": 6,
+          "row": 8
+        },
+        "final": {
+          "id": "h8",
+          "col": 8,
+          "row": 8
+        }
+      }
+    },
+    {
+      "id": "qw",
+      "type": "queen",
+      "side": "white",
+      "turn": 51,
+      "from": "d1",
+      "to": "d2",
+      "date": "13/9/2026",
+      "time": "03:09:51 p. m.",
+      "san": "Qd2",
+      "classic_val": "qw -> 2d",
+      "captured": null,
+      "pos": {
+        "initial": {
+          "id": "d1",
+          "col": 4,
+          "row": 1
+        },
+        "final": {
+          "id": "d2",
+          "col": 4,
+          "row": 2
+        }
+      }
+    },
+    {
+      "id": "qb",
+      "type": "queen",
+      "side": "black",
+      "turn": 52,
+      "from": "e7",
+      "to": "f8",
+      "date": "13/9/2026",
+      "time": "03:09:52 p. m.",
+      "san": "Qf8",
+      "classic_val": "qb -> 8f",
+      "captured": null,
+      "pos": {
+        "initial": {
+          "id": "e7",
+          "col": 5,
+          "row": 7
+        },
+        "final": {
+          "id": "f8",
+          "col": 6,
+          "row": 8
+        }
+      }
+    },
+    {
+      "id": "qw",
+      "type": "queen",
+      "side": "white",
+      "turn": 53,
+      "from": "d2",
+      "to": "e1",
+      "date": "13/9/2026",
+      "time": "03:09:57 p. m.",
+      "san": "Qe1",
+      "classic_val": "qw -> 1e",
+      "captured": null,
+      "pos": {
+        "initial": {
+          "id": "d2",
+          "col": 4,
+          "row": 2
+        },
+        "final": {
+          "id": "e1",
+          "col": 5,
+          "row": 1
+        }
+      }
+    },
+    {
+      "id": "kb",
+      "type": "king",
+      "side": "black",
+      "turn": 54,
+      "from": "d8",
+      "to": "e8",
+      "date": "13/9/2026",
+      "time": "03:10:01 p. m.",
+      "san": "Ke8",
+      "classic_val": "kb -> 8e",
+      "captured": null,
+      "pos": {
+        "initial": {
+          "id": "d8",
+          "col": 4,
+          "row": 8
+        },
+        "final": {
+          "id": "e8",
+          "col": 5,
+          "row": 8
+        }
+      }
+    },
+    {
+      "id": "kw",
+      "type": "king",
+      "side": "white",
+      "turn": 55,
+      "from": "c1",
+      "to": "d2",
+      "date": "13/9/2026",
+      "time": "03:10:05 p. m.",
+      "san": "Kd2",
+      "classic_val": "kw -> 2d",
+      "captured": null,
+      "pos": {
+        "initial": {
+          "id": "c1",
+          "col": 3,
+          "row": 1
+        },
+        "final": {
+          "id": "d2",
+          "col": 4,
+          "row": 2
+        }
+      }
+    },
+    {
+      "id": "kb",
+      "type": "king",
+      "side": "black",
+      "turn": 56,
+      "from": "e8",
+      "to": "e7",
+      "date": "13/9/2026",
+      "time": "03:10:08 p. m.",
+      "san": "Ke7",
+      "classic_val": "kb -> 7e",
+      "captured": null,
+      "pos": {
+        "initial": {
+          "id": "e8",
+          "col": 5,
+          "row": 8
+        },
+        "final": {
+          "id": "e7",
+          "col": 5,
+          "row": 7
+        }
+      }
+    },
+    {
+      "id": "tw1",
+      "type": "tower",
+      "side": "white",
+      "turn": 57,
+      "from": "b1",
+      "to": "a1",
+      "date": "13/9/2026",
+      "time": "03:10:12 p. m.",
+      "san": "Ra1",
+      "classic_val": "tw1 -> 1a",
+      "captured": null,
+      "pos": {
+        "initial": {
+          "id": "b1",
+          "col": 2,
+          "row": 1
+        },
+        "final": {
+          "id": "a1",
+          "col": 1,
+          "row": 1
+        }
+      }
+    },
+    {
+      "id": "qb",
+      "type": "queen",
+      "side": "black",
+      "turn": 58,
+      "from": "f8",
+      "to": "d8",
+      "date": "13/9/2026",
+      "time": "03:10:21 p. m.",
+      "san": "Qd8",
+      "classic_val": "qb -> 8d",
+      "captured": null,
+      "pos": {
+        "initial": {
+          "id": "f8",
+          "col": 6,
+          "row": 8
+        },
+        "final": {
+          "id": "d8",
+          "col": 4,
+          "row": 8
+        }
+      }
+    },
+    {
+      "id": "tw1",
+      "type": "tower",
+      "side": "white",
+      "turn": 59,
+      "from": "a1",
+      "to": "c1",
+      "date": "13/9/2026",
+      "time": "03:10:50 p. m.",
+      "san": "Rc1",
+      "classic_val": "tw1 -> 1c",
+      "captured": null,
+      "pos": {
+        "initial": {
+          "id": "a1",
+          "col": 1,
+          "row": 1
+        },
+        "final": {
+          "id": "c1",
+          "col": 3,
+          "row": 1
+        }
+      }
+    },
+    {
+      "id": "tb2",
+      "type": "tower",
+      "side": "black",
+      "turn": 60,
+      "from": "h8",
+      "to": "g8",
+      "date": "13/9/2026",
+      "time": "03:10:58 p. m.",
+      "san": "Rg8",
+      "classic_val": "tb2 -> 8g",
+      "captured": null,
+      "pos": {
+        "initial": {
+          "id": "h8",
+          "col": 8,
+          "row": 8
+        },
+        "final": {
+          "id": "g8",
+          "col": 7,
+          "row": 8
+        }
+      }
+    },
+    {
+      "id": "tw1",
+      "type": "tower",
+      "side": "white",
+      "turn": 61,
+      "from": "c1",
+      "to": "d1",
+      "date": "13/9/2026",
+      "time": "03:10:59 p. m.",
+      "san": "Rd1",
+      "classic_val": "tw1 -> 1d",
+      "captured": null,
+      "pos": {
+        "initial": {
+          "id": "c1",
+          "col": 3,
+          "row": 1
+        },
+        "final": {
+          "id": "d1",
+          "col": 4,
+          "row": 1
+        }
+      }
+    },
+    {
+      "id": "qb",
+      "type": "queen",
+      "side": "black",
+      "turn": 62,
+      "from": "d8",
+      "to": "e8",
+      "date": "13/9/2026",
+      "time": "03:11:00 p. m.",
+      "san": "Qe8",
+      "classic_val": "qb -> 8e",
+      "captured": null,
+      "pos": {
+        "initial": {
+          "id": "d8",
+          "col": 4,
+          "row": 8
+        },
+        "final": {
+          "id": "e8",
+          "col": 5,
+          "row": 8
+        }
+      }
+    },
+    {
+      "id": "kw",
+      "type": "king",
+      "side": "white",
+      "turn": 63,
+      "from": "d2",
+      "to": "c1",
+      "date": "13/9/2026",
+      "time": "03:11:00 p. m.",
+      "san": "Kc1",
+      "classic_val": "kw -> 1c",
+      "captured": null,
+      "pos": {
+        "initial": {
+          "id": "d2",
+          "col": 4,
+          "row": 2
+        },
+        "final": {
+          "id": "c1",
+          "col": 3,
+          "row": 1
+        }
+      }
+    },
+    {
+      "id": "qb",
+      "type": "queen",
+      "side": "black",
+      "turn": 64,
+      "from": "e8",
+      "to": "f8",
+      "date": "13/9/2026",
+      "time": "03:11:01 p. m.",
+      "san": "Qf8",
+      "classic_val": "qb -> 8f",
+      "captured": null,
+      "pos": {
+        "initial": {
+          "id": "e8",
+          "col": 5,
+          "row": 8
+        },
+        "final": {
+          "id": "f8",
+          "col": 6,
+          "row": 8
+        }
+      }
+    },
+    {
+      "id": "kw",
+      "type": "king",
+      "side": "white",
+      "turn": 65,
+      "from": "c1",
+      "to": "d2",
+      "date": "13/9/2026",
+      "time": "03:11:01 p. m.",
+      "san": "Kd2",
+      "classic_val": "kw -> 2d",
+      "captured": null,
+      "pos": {
+        "initial": {
+          "id": "c1",
+          "col": 3,
+          "row": 1
+        },
+        "final": {
+          "id": "d2",
+          "col": 4,
+          "row": 2
+        }
+      }
+    },
+    {
+      "id": "qb",
+      "type": "queen",
+      "side": "black",
+      "turn": 66,
+      "from": "f8",
+      "to": "d8",
+      "date": "13/9/2026",
+      "time": "03:11:02 p. m.",
+      "san": "Qd8",
+      "classic_val": "qb -> 8d",
+      "captured": null,
+      "pos": {
+        "initial": {
+          "id": "f8",
+          "col": 6,
+          "row": 8
+        },
+        "final": {
+          "id": "d8",
+          "col": 4,
+          "row": 8
+        }
+      }
+    },
+    {
+      "id": "tw1",
+      "type": "tower",
+      "side": "white",
+      "turn": 67,
+      "from": "d1",
+      "to": "c1",
+      "date": "13/9/2026",
+      "time": "03:11:02 p. m.",
+      "san": "Rc1",
+      "classic_val": "tw1 -> 1c",
+      "captured": null,
+      "pos": {
+        "initial": {
+          "id": "d1",
+          "col": 4,
+          "row": 1
+        },
+        "final": {
+          "id": "c1",
+          "col": 3,
+          "row": 1
+        }
+      }
+    },
+    {
+      "id": "qb",
+      "type": "queen",
+      "side": "black",
+      "turn": 68,
+      "from": "d8",
+      "to": "e8",
+      "date": "13/9/2026",
+      "time": "03:11:03 p. m.",
+      "san": "Qe8",
+      "classic_val": "qb -> 8e",
+      "captured": null,
+      "pos": {
+        "initial": {
+          "id": "d8",
+          "col": 4,
+          "row": 8
+        },
+        "final": {
+          "id": "e8",
+          "col": 5,
+          "row": 8
+        }
+      }
+    },
+    {
+      "id": "qw",
+      "type": "queen",
+      "side": "white",
+      "turn": 69,
+      "from": "e1",
+      "to": "d1",
+      "date": "13/9/2026",
+      "time": "03:11:03 p. m.",
+      "san": "Qd1",
+      "classic_val": "qw -> 1d",
+      "captured": null,
+      "pos": {
+        "initial": {
+          "id": "e1",
+          "col": 5,
+          "row": 1
+        },
+        "final": {
+          "id": "d1",
+          "col": 4,
+          "row": 1
+        }
+      }
+    },
+    {
+      "id": "tb2",
+      "type": "tower",
+      "side": "black",
+      "turn": 70,
+      "from": "g8",
+      "to": "h8",
+      "date": "13/9/2026",
+      "time": "03:11:04 p. m.",
+      "san": "Rh8",
+      "classic_val": "tb2 -> 8h",
+      "captured": null,
+      "pos": {
+        "initial": {
+          "id": "g8",
+          "col": 7,
+          "row": 8
+        },
+        "final": {
+          "id": "h8",
+          "col": 8,
+          "row": 8
+        }
+      }
+    },
+    {
+      "id": "qw",
+      "type": "queen",
+      "side": "white",
+      "turn": 71,
+      "from": "d1",
+      "to": "e1",
+      "date": "13/9/2026",
+      "time": "03:11:04 p. m.",
+      "san": "Qe1",
+      "classic_val": "qw -> 1e",
+      "captured": null,
+      "pos": {
+        "initial": {
+          "id": "d1",
+          "col": 4,
+          "row": 1
+        },
+        "final": {
+          "id": "e1",
+          "col": 5,
+          "row": 1
+        }
+      }
+    },
+    {
+      "id": "kb",
+      "type": "king",
+      "side": "black",
+      "turn": 72,
+      "from": "e7",
+      "to": "d8",
+      "date": "13/9/2026",
+      "time": "03:11:05 p. m.",
+      "san": "Kd8",
+      "classic_val": "kb -> 8d",
+      "captured": null,
+      "pos": {
+        "initial": {
+          "id": "e7",
+          "col": 5,
+          "row": 7
+        },
+        "final": {
+          "id": "d8",
+          "col": 4,
+          "row": 8
+        }
+      }
+    },
+    {
+      "id": "tw1",
+      "type": "tower",
+      "side": "white",
+      "turn": 73,
+      "from": "c1",
+      "to": "b1",
+      "date": "13/9/2026",
+      "time": "03:11:05 p. m.",
+      "san": "Rb1",
+      "classic_val": "tw1 -> 1b",
+      "captured": null,
+      "pos": {
+        "initial": {
+          "id": "c1",
+          "col": 3,
+          "row": 1
+        },
+        "final": {
+          "id": "b1",
+          "col": 2,
+          "row": 1
+        }
+      }
+    },
+    {
+      "id": "tb1",
+      "type": "tower",
+      "side": "black",
+      "turn": 74,
+      "from": "b8",
+      "to": "a8",
+      "date": "13/9/2026",
+      "time": "03:11:06 p. m.",
+      "san": "Ra8",
+      "classic_val": "tb1 -> 8a",
+      "captured": null,
+      "pos": {
+        "initial": {
+          "id": "b8",
+          "col": 2,
+          "row": 8
+        },
+        "final": {
+          "id": "a8",
+          "col": 1,
+          "row": 8
+        }
+      }
+    },
+    {
+      "id": "tw2",
+      "type": "tower",
+      "side": "white",
+      "turn": 75,
+      "from": "h1",
+      "to": "g1",
+      "date": "13/9/2026",
+      "time": "03:11:06 p. m.",
+      "san": "Rg1",
+      "classic_val": "tw2 -> 1g",
+      "captured": null,
+      "pos": {
+        "initial": {
+          "id": "h1",
+          "col": 8,
+          "row": 1
+        },
+        "final": {
+          "id": "g1",
+          "col": 7,
+          "row": 1
+        }
+      }
+    },
+    {
+      "id": "qb",
+      "type": "queen",
+      "side": "black",
+      "turn": 76,
+      "from": "e8",
+      "to": "g8",
+      "date": "13/9/2026",
+      "time": "03:11:07 p. m.",
+      "san": "Qg8",
+      "classic_val": "qb -> 8g",
+      "captured": null,
+      "pos": {
+        "initial": {
+          "id": "e8",
+          "col": 5,
+          "row": 8
+        },
+        "final": {
+          "id": "g8",
+          "col": 7,
+          "row": 8
+        }
+      }
+    },
+    {
+      "id": "kw",
+      "type": "king",
+      "side": "white",
+      "turn": 77,
+      "from": "d2",
+      "to": "d1",
+      "date": "13/9/2026",
+      "time": "03:11:07 p. m.",
+      "san": "Kd1",
+      "classic_val": "kw -> 1d",
+      "captured": null,
+      "pos": {
+        "initial": {
+          "id": "d2",
+          "col": 4,
+          "row": 2
+        },
+        "final": {
+          "id": "d1",
+          "col": 4,
+          "row": 1
+        }
+      }
+    },
+    {
+      "id": "qb",
+      "type": "queen",
+      "side": "black",
+      "turn": 78,
+      "from": "g8",
+      "to": "f8",
+      "date": "13/9/2026",
+      "time": "03:11:07 p. m.",
+      "san": "Qf8",
+      "classic_val": "qb -> 8f",
+      "captured": null,
+      "pos": {
+        "initial": {
+          "id": "g8",
+          "col": 7,
+          "row": 8
+        },
+        "final": {
+          "id": "f8",
+          "col": 6,
+          "row": 8
+        }
+      }
+    },
+    {
+      "id": "kw",
+      "type": "king",
+      "side": "white",
+      "turn": 79,
+      "from": "d1",
+      "to": "c1",
+      "date": "13/9/2026",
+      "time": "03:11:08 p. m.",
+      "san": "Kc1",
+      "classic_val": "kw -> 1c",
+      "captured": null,
+      "pos": {
+        "initial": {
+          "id": "d1",
+          "col": 4,
+          "row": 1
+        },
+        "final": {
+          "id": "c1",
+          "col": 3,
+          "row": 1
+        }
+      }
+    },
+    {
+      "id": "kb",
+      "type": "king",
+      "side": "black",
+      "turn": 80,
+      "from": "d8",
+      "to": "e8",
+      "date": "13/9/2026",
+      "time": "03:11:09 p. m.",
+      "san": "Ke8",
+      "classic_val": "kb -> 8e",
+      "captured": null,
+      "pos": {
+        "initial": {
+          "id": "d8",
+          "col": 4,
+          "row": 8
+        },
+        "final": {
+          "id": "e8",
+          "col": 5,
+          "row": 8
+        }
+      }
+    },
+    {
+      "id": "qw",
+      "type": "queen",
+      "side": "white",
+      "turn": 81,
+      "from": "e1",
+      "to": "d2",
+      "date": "13/9/2026",
+      "time": "03:11:09 p. m.",
+      "san": "Qd2",
+      "classic_val": "qw -> 2d",
+      "captured": null,
+      "pos": {
+        "initial": {
+          "id": "e1",
+          "col": 5,
+          "row": 1
+        },
+        "final": {
+          "id": "d2",
+          "col": 4,
+          "row": 2
+        }
+      }
+    },
+    {
+      "id": "tb2",
+      "type": "tower",
+      "side": "black",
+      "turn": 82,
+      "from": "h8",
+      "to": "g8",
+      "date": "13/9/2026",
+      "time": "03:11:10 p. m.",
+      "san": "Rg8",
+      "classic_val": "tb2 -> 8g",
+      "captured": null,
+      "pos": {
+        "initial": {
+          "id": "h8",
+          "col": 8,
+          "row": 8
+        },
+        "final": {
+          "id": "g8",
+          "col": 7,
+          "row": 8
+        }
+      }
+    },
+    {
+      "id": "qw",
+      "type": "queen",
+      "side": "white",
+      "turn": 83,
+      "from": "d2",
+      "to": "e1",
+      "date": "13/9/2026",
+      "time": "03:11:10 p. m.",
+      "san": "Qe1",
+      "classic_val": "qw -> 1e",
+      "captured": null,
+      "pos": {
+        "initial": {
+          "id": "d2",
+          "col": 4,
+          "row": 2
+        },
+        "final": {
+          "id": "e1",
+          "col": 5,
+          "row": 1
+        }
+      }
+    },
+    {
+      "id": "tb2",
+      "type": "tower",
+      "side": "black",
+      "turn": 84,
+      "from": "g8",
+      "to": "h8",
+      "date": "13/9/2026",
+      "time": "03:11:11 p. m.",
+      "san": "Rh8",
+      "classic_val": "tb2 -> 8h",
+      "captured": null,
+      "pos": {
+        "initial": {
+          "id": "g8",
+          "col": 7,
+          "row": 8
+        },
+        "final": {
+          "id": "h8",
+          "col": 8,
+          "row": 8
+        }
+      }
+    },
+    {
+      "id": "qw",
+      "type": "queen",
+      "side": "white",
+      "turn": 85,
+      "from": "e1",
+      "to": "d2",
+      "date": "13/9/2026",
+      "time": "03:11:11 p. m.",
+      "san": "Qd2",
+      "classic_val": "qw -> 2d",
+      "captured": null,
+      "pos": {
+        "initial": {
+          "id": "e1",
+          "col": 5,
+          "row": 1
+        },
+        "final": {
+          "id": "d2",
+          "col": 4,
+          "row": 2
+        }
+      }
+    },
+    {
+      "id": "kb",
+      "type": "king",
+      "side": "black",
+      "turn": 86,
+      "from": "e8",
+      "to": "e7",
+      "date": "13/9/2026",
+      "time": "03:11:11 p. m.",
+      "san": "Ke7",
+      "classic_val": "kb -> 7e",
+      "captured": null,
+      "pos": {
+        "initial": {
+          "id": "e8",
+          "col": 5,
+          "row": 8
+        },
+        "final": {
+          "id": "e7",
+          "col": 5,
+          "row": 7
+        }
+      }
+    },
+    {
+      "id": "qw",
+      "type": "queen",
+      "side": "white",
+      "turn": 87,
+      "from": "d2",
+      "to": "e1",
+      "date": "13/9/2026",
+      "time": "03:11:12 p. m.",
+      "san": "Qe1",
+      "classic_val": "qw -> 1e",
+      "captured": null,
+      "pos": {
+        "initial": {
+          "id": "d2",
+          "col": 4,
+          "row": 2
+        },
+        "final": {
+          "id": "e1",
+          "col": 5,
+          "row": 1
+        }
+      }
+    },
+    {
+      "id": "qb",
+      "type": "queen",
+      "side": "black",
+      "turn": 88,
+      "from": "f8",
+      "to": "d8",
+      "date": "13/9/2026",
+      "time": "03:11:12 p. m.",
+      "san": "Qd8",
+      "classic_val": "qb -> 8d",
+      "captured": null,
+      "pos": {
+        "initial": {
+          "id": "f8",
+          "col": 6,
+          "row": 8
+        },
+        "final": {
+          "id": "d8",
+          "col": 4,
+          "row": 8
+        }
+      }
+    },
+    {
+      "id": "tw1",
+      "type": "tower",
+      "side": "white",
+      "turn": 89,
+      "from": "b1",
+      "to": "a1",
+      "date": "13/9/2026",
+      "time": "03:11:13 p. m.",
+      "san": "Ra1",
+      "classic_val": "tw1 -> 1a",
+      "captured": null,
+      "pos": {
+        "initial": {
+          "id": "b1",
+          "col": 2,
+          "row": 1
+        },
+        "final": {
+          "id": "a1",
+          "col": 1,
+          "row": 1
+        }
+      }
+    },
+    {
+      "id": "tb2",
+      "type": "tower",
+      "side": "black",
+      "turn": 90,
+      "from": "h8",
+      "to": "e8",
+      "date": "13/9/2026",
+      "time": "03:11:13 p. m.",
+      "san": "Re8",
+      "classic_val": "tb2 -> 8e",
+      "captured": null,
+      "pos": {
+        "initial": {
+          "id": "h8",
+          "col": 8,
+          "row": 8
+        },
+        "final": {
+          "id": "e8",
+          "col": 5,
+          "row": 8
+        }
+      }
+    },
+    {
+      "id": "tw1",
+      "type": "tower",
+      "side": "white",
+      "turn": 91,
+      "from": "a1",
+      "to": "b1",
+      "date": "13/9/2026",
+      "time": "03:11:14 p. m.",
+      "san": "Rb1",
+      "classic_val": "tw1 -> 1b",
+      "captured": null,
+      "pos": {
+        "initial": {
+          "id": "a1",
+          "col": 1,
+          "row": 1
+        },
+        "final": {
+          "id": "b1",
+          "col": 2,
+          "row": 1
+        }
+      }
+    },
+    {
+      "id": "tb2",
+      "type": "tower",
+      "side": "black",
+      "turn": 92,
+      "from": "e8",
+      "to": "h8",
+      "date": "13/9/2026",
+      "time": "03:11:14 p. m.",
+      "san": "Rh8",
+      "classic_val": "tb2 -> 8h",
+      "captured": null,
+      "pos": {
+        "initial": {
+          "id": "e8",
+          "col": 5,
+          "row": 8
+        },
+        "final": {
+          "id": "h8",
+          "col": 8,
+          "row": 8
+        }
+      }
+    },
+    {
+      "id": "qw",
+      "type": "queen",
+      "side": "white",
+      "turn": 93,
+      "from": "e1",
+      "to": "d1",
+      "date": "13/9/2026",
+      "time": "03:11:15 p. m.",
+      "san": "Qd1",
+      "classic_val": "qw -> 1d",
+      "captured": null,
+      "pos": {
+        "initial": {
+          "id": "e1",
+          "col": 5,
+          "row": 1
+        },
+        "final": {
+          "id": "d1",
+          "col": 4,
+          "row": 1
+        }
+      }
+    },
+    {
+      "id": "kb",
+      "type": "king",
+      "side": "black",
+      "turn": 94,
+      "from": "e7",
+      "to": "f8",
+      "date": "13/9/2026",
+      "time": "03:11:15 p. m.",
+      "san": "Kf8",
+      "classic_val": "kb -> 8f",
+      "captured": null,
+      "pos": {
+        "initial": {
+          "id": "e7",
+          "col": 5,
+          "row": 7
+        },
+        "final": {
+          "id": "f8",
+          "col": 6,
+          "row": 8
+        }
+      }
+    },
+    {
+      "id": "tw1",
+      "type": "tower",
+      "side": "white",
+      "turn": 95,
+      "from": "b1",
+      "to": "a1",
+      "date": "13/9/2026",
+      "time": "03:11:16 p. m.",
+      "san": "Ra1",
+      "classic_val": "tw1 -> 1a",
+      "captured": null,
+      "pos": {
+        "initial": {
+          "id": "b1",
+          "col": 2,
+          "row": 1
+        },
+        "final": {
+          "id": "a1",
+          "col": 1,
+          "row": 1
+        }
+      }
+    },
+    {
+      "id": "tb1",
+      "type": "tower",
+      "side": "black",
+      "turn": 96,
+      "from": "a8",
+      "to": "b8",
+      "date": "13/9/2026",
+      "time": "03:11:16 p. m.",
+      "san": "Rb8",
+      "classic_val": "tb1 -> 8b",
+      "captured": null,
+      "pos": {
+        "initial": {
+          "id": "a8",
+          "col": 1,
+          "row": 8
+        },
+        "final": {
+          "id": "b8",
+          "col": 2,
+          "row": 8
+        }
+      }
+    },
+    {
+      "id": "kw",
+      "type": "king",
+      "side": "white",
+      "turn": 97,
+      "from": "c1",
+      "to": "d2",
+      "date": "13/9/2026",
+      "time": "03:11:17 p. m.",
+      "san": "Kd2",
+      "classic_val": "kw -> 2d",
+      "captured": null,
+      "pos": {
+        "initial": {
+          "id": "c1",
+          "col": 3,
+          "row": 1
+        },
+        "final": {
+          "id": "d2",
+          "col": 4,
+          "row": 2
+        }
+      }
+    },
+    {
+      "id": "tb2",
+      "type": "tower",
+      "side": "black",
+      "turn": 98,
+      "from": "h8",
+      "to": "g8",
+      "date": "13/9/2026",
+      "time": "03:11:17 p. m.",
+      "san": "Rg8",
+      "classic_val": "tb2 -> 8g",
+      "captured": null,
+      "pos": {
+        "initial": {
+          "id": "h8",
+          "col": 8,
+          "row": 8
+        },
+        "final": {
+          "id": "g8",
+          "col": 7,
+          "row": 8
+        }
+      }
+    },
+    {
+      "id": "kw",
+      "type": "king",
+      "side": "white",
+      "turn": 99,
+      "from": "d2",
+      "to": "c1",
+      "date": "13/9/2026",
+      "time": "03:11:18 p. m.",
+      "san": "Kc1",
+      "classic_val": "kw -> 1c",
+      "captured": null,
+      "pos": {
+        "initial": {
+          "id": "d2",
+          "col": 4,
+          "row": 2
+        },
+        "final": {
+          "id": "c1",
+          "col": 3,
+          "row": 1
+        }
+      }
+    },
+    {
+      "id": "qb",
+      "type": "queen",
+      "side": "black",
+      "turn": 100,
+      "from": "d8",
+      "to": "e8",
+      "date": "13/9/2026",
+      "time": "03:11:18 p. m.",
+      "san": "Qe8",
+      "classic_val": "qb -> 8e",
+      "captured": null,
+      "pos": {
+        "initial": {
+          "id": "d8",
+          "col": 4,
+          "row": 8
+        },
+        "final": {
+          "id": "e8",
+          "col": 5,
+          "row": 8
+        }
+      }
+    },
+    {
+      "id": "kw",
+      "type": "king",
+      "side": "white",
+      "turn": 101,
+      "from": "c1",
+      "to": "b1",
+      "date": "13/9/2026",
+      "time": "03:11:19 p. m.",
+      "san": "Kb1",
+      "classic_val": "kw -> 1b",
+      "captured": null,
+      "pos": {
+        "initial": {
+          "id": "c1",
+          "col": 3,
+          "row": 1
+        },
+        "final": {
+          "id": "b1",
+          "col": 2,
+          "row": 1
+        }
+      }
+    },
+    {
+      "id": "tb2",
+      "type": "tower",
+      "side": "black",
+      "turn": 102,
+      "from": "g8",
+      "to": "h8",
+      "date": "13/9/2026",
+      "time": "03:11:19 p. m.",
+      "san": "Rh8",
+      "classic_val": "tb2 -> 8h",
+      "captured": null,
+      "pos": {
+        "initial": {
+          "id": "g8",
+          "col": 7,
+          "row": 8
+        },
+        "final": {
+          "id": "h8",
+          "col": 8,
+          "row": 8
+        }
+      }
+    },
+    {
+      "id": "qw",
+      "type": "queen",
+      "side": "white",
+      "turn": 103,
+      "from": "d1",
+      "to": "e1",
+      "date": "13/9/2026",
+      "time": "03:11:20 p. m.",
+      "san": "Qe1",
+      "classic_val": "qw -> 1e",
+      "captured": null,
+      "pos": {
+        "initial": {
+          "id": "d1",
+          "col": 4,
+          "row": 1
+        },
+        "final": {
+          "id": "e1",
+          "col": 5,
+          "row": 1
+        }
+      }
+    },
+    {
+      "id": "qb",
+      "type": "queen",
+      "side": "black",
+      "turn": 104,
+      "from": "e8",
+      "to": "d8",
+      "date": "13/9/2026",
+      "time": "03:11:20 p. m.",
+      "san": "Qd8",
+      "classic_val": "qb -> 8d",
+      "captured": null,
+      "pos": {
+        "initial": {
+          "id": "e8",
+          "col": 5,
+          "row": 8
+        },
+        "final": {
+          "id": "d8",
+          "col": 4,
+          "row": 8
+        }
+      }
+    },
+    {
+      "id": "tw2",
+      "type": "tower",
+      "side": "white",
+      "turn": 105,
+      "from": "g1",
+      "to": "h1",
+      "date": "13/9/2026",
+      "time": "03:11:21 p. m.",
+      "san": "Rh1",
+      "classic_val": "tw2 -> 1h",
+      "captured": null,
+      "pos": {
+        "initial": {
+          "id": "g1",
+          "col": 7,
+          "row": 1
+        },
+        "final": {
+          "id": "h1",
+          "col": 8,
+          "row": 1
+        }
+      }
+    },
+    {
+      "id": "kb",
+      "type": "king",
+      "side": "black",
+      "turn": 106,
+      "from": "f8",
+      "to": "e8",
+      "date": "13/9/2026",
+      "time": "03:11:21 p. m.",
+      "san": "Ke8",
+      "classic_val": "kb -> 8e",
+      "captured": null,
+      "pos": {
+        "initial": {
+          "id": "f8",
+          "col": 6,
+          "row": 8
+        },
+        "final": {
+          "id": "e8",
+          "col": 5,
+          "row": 8
+        }
+      }
+    },
+    {
+      "id": "qw",
+      "type": "queen",
+      "side": "white",
+      "turn": 107,
+      "from": "e1",
+      "to": "d2",
+      "date": "13/9/2026",
+      "time": "03:11:22 p. m.",
+      "san": "Qd2",
+      "classic_val": "qw -> 2d",
+      "captured": null,
+      "pos": {
+        "initial": {
+          "id": "e1",
+          "col": 5,
+          "row": 1
+        },
+        "final": {
+          "id": "d2",
+          "col": 4,
+          "row": 2
+        }
+      }
+    },
+    {
+      "id": "tb2",
+      "type": "tower",
+      "side": "black",
+      "turn": 108,
+      "from": "h8",
+      "to": "g8",
+      "date": "13/9/2026",
+      "time": "03:11:22 p. m.",
+      "san": "Rg8",
+      "classic_val": "tb2 -> 8g",
+      "captured": null,
+      "pos": {
+        "initial": {
+          "id": "h8",
+          "col": 8,
+          "row": 8
+        },
+        "final": {
+          "id": "g8",
+          "col": 7,
+          "row": 8
+        }
+      }
+    },
+    {
+      "id": "kw",
+      "type": "king",
+      "side": "white",
+      "turn": 109,
+      "from": "b1",
+      "to": "c1",
+      "date": "13/9/2026",
+      "time": "03:11:23 p. m.",
+      "san": "Kc1",
+      "classic_val": "kw -> 1c",
+      "captured": null,
+      "pos": {
+        "initial": {
+          "id": "b1",
+          "col": 2,
+          "row": 1
+        },
+        "final": {
+          "id": "c1",
+          "col": 3,
+          "row": 1
+        }
+      }
+    },
+    {
+      "id": "tb2",
+      "type": "tower",
+      "side": "black",
+      "turn": 110,
+      "from": "g8",
+      "to": "f8",
+      "date": "13/9/2026",
+      "time": "03:11:23 p. m.",
+      "san": "Rf8",
+      "classic_val": "tb2 -> 8f",
+      "captured": null,
+      "pos": {
+        "initial": {
+          "id": "g8",
+          "col": 7,
+          "row": 8
+        },
+        "final": {
+          "id": "f8",
+          "col": 6,
+          "row": 8
+        }
+      }
+    },
+    {
+      "id": "kw",
+      "type": "king",
+      "side": "white",
+      "turn": 111,
+      "from": "c1",
+      "to": "d1",
+      "date": "13/9/2026",
+      "time": "03:11:24 p. m.",
+      "san": "Kd1",
+      "classic_val": "kw -> 1d",
+      "captured": null,
+      "pos": {
+        "initial": {
+          "id": "c1",
+          "col": 3,
+          "row": 1
+        },
+        "final": {
+          "id": "d1",
+          "col": 4,
+          "row": 1
+        }
+      }
+    },
+    {
+      "id": "tb2",
+      "type": "tower",
+      "side": "black",
+      "turn": 112,
+      "from": "f8",
+      "to": "g8",
+      "date": "13/9/2026",
+      "time": "03:11:24 p. m.",
+      "san": "Rg8",
+      "classic_val": "tb2 -> 8g",
+      "captured": null,
+      "pos": {
+        "initial": {
+          "id": "f8",
+          "col": 6,
+          "row": 8
+        },
+        "final": {
+          "id": "g8",
+          "col": 7,
+          "row": 8
+        }
+      }
+    },
+    {
+      "id": "kw",
+      "type": "king",
+      "side": "white",
+      "turn": 113,
+      "from": "d1",
+      "to": "c1",
+      "date": "13/9/2026",
+      "time": "03:11:25 p. m.",
+      "san": "Kc1",
+      "classic_val": "kw -> 1c",
+      "captured": null,
+      "pos": {
+        "initial": {
+          "id": "d1",
+          "col": 4,
+          "row": 1
+        },
+        "final": {
+          "id": "c1",
+          "col": 3,
+          "row": 1
+        }
+      }
+    },
+    {
+      "id": "tb1",
+      "type": "tower",
+      "side": "black",
+      "turn": 114,
+      "from": "b8",
+      "to": "a8",
+      "date": "13/9/2026",
+      "time": "03:11:25 p. m.",
+      "san": "Ra8",
+      "classic_val": "tb1 -> 8a",
+      "captured": null,
+      "pos": {
+        "initial": {
+          "id": "b8",
+          "col": 2,
+          "row": 8
+        },
+        "final": {
+          "id": "a8",
+          "col": 1,
+          "row": 8
+        }
+      }
+    },
+    {
+      "id": "kw",
+      "type": "king",
+      "side": "white",
+      "turn": 115,
+      "from": "c1",
+      "to": "d1",
+      "date": "13/9/2026",
+      "time": "03:11:26 p. m.",
+      "san": "Kd1",
+      "classic_val": "kw -> 1d",
+      "captured": null,
+      "pos": {
+        "initial": {
+          "id": "c1",
+          "col": 3,
+          "row": 1
+        },
+        "final": {
+          "id": "d1",
+          "col": 4,
+          "row": 1
+        }
+      }
+    },
+    {
+      "id": "tb2",
+      "type": "tower",
+      "side": "black",
+      "turn": 116,
+      "from": "g8",
+      "to": "h8",
+      "date": "13/9/2026",
+      "time": "03:11:26 p. m.",
+      "san": "Rh8",
+      "classic_val": "tb2 -> 8h",
+      "captured": null,
+      "pos": {
+        "initial": {
+          "id": "g8",
+          "col": 7,
+          "row": 8
+        },
+        "final": {
+          "id": "h8",
+          "col": 8,
+          "row": 8
+        }
+      }
+    },
+    {
+      "id": "kw",
+      "type": "king",
+      "side": "white",
+      "turn": 117,
+      "from": "d1",
+      "to": "e1",
+      "date": "13/9/2026",
+      "time": "03:11:27 p. m.",
+      "san": "Ke1",
+      "classic_val": "kw -> 1e",
+      "captured": null,
+      "pos": {
+        "initial": {
+          "id": "d1",
+          "col": 4,
+          "row": 1
+        },
+        "final": {
+          "id": "e1",
+          "col": 5,
+          "row": 1
+        }
+      }
+    },
+    {
+      "id": "tb1",
+      "type": "tower",
+      "side": "black",
+      "turn": 118,
+      "from": "a8",
+      "to": "b8",
+      "date": "13/9/2026",
+      "time": "03:11:27 p. m.",
+      "san": "Rb8",
+      "classic_val": "tb1 -> 8b",
+      "captured": null,
+      "pos": {
+        "initial": {
+          "id": "a8",
+          "col": 1,
+          "row": 8
+        },
+        "final": {
+          "id": "b8",
+          "col": 2,
+          "row": 8
+        }
+      }
+    },
+    {
+      "id": "tw1",
+      "type": "tower",
+      "side": "white",
+      "turn": 119,
+      "from": "a1",
+      "to": "d1",
+      "date": "13/9/2026",
+      "time": "03:11:28 p. m.",
+      "san": "Rd1",
+      "classic_val": "tw1 -> 1d",
+      "captured": null,
+      "pos": {
+        "initial": {
+          "id": "a1",
+          "col": 1,
+          "row": 1
+        },
+        "final": {
+          "id": "d1",
+          "col": 4,
+          "row": 1
+        }
+      }
+    },
+    {
+      "id": "qb",
+      "type": "queen",
+      "side": "black",
+      "turn": 120,
+      "from": "d8",
+      "to": "e7",
+      "date": "13/9/2026",
+      "time": "03:11:28 p. m.",
+      "san": "Qe7",
+      "classic_val": "qb -> 7e",
+      "captured": null,
+      "pos": {
+        "initial": {
+          "id": "d8",
+          "col": 4,
+          "row": 8
+        },
+        "final": {
+          "id": "e7",
+          "col": 5,
+          "row": 7
+        }
+      }
+    },
+    {
+      "id": "qw",
+      "type": "queen",
+      "side": "white",
+      "turn": 121,
+      "from": "d2",
+      "to": "c1",
+      "date": "13/9/2026",
+      "time": "03:11:29 p. m.",
+      "san": "Qc1",
+      "classic_val": "qw -> 1c",
+      "captured": null,
+      "pos": {
+        "initial": {
+          "id": "d2",
+          "col": 4,
+          "row": 2
+        },
+        "final": {
+          "id": "c1",
+          "col": 3,
+          "row": 1
+        }
+      }
+    },
+    {
+      "id": "tb2",
+      "type": "tower",
+      "side": "black",
+      "turn": 122,
+      "from": "h8",
+      "to": "g8",
+      "date": "13/9/2026",
+      "time": "03:11:29 p. m.",
+      "san": "Rg8",
+      "classic_val": "tb2 -> 8g",
+      "captured": null,
+      "pos": {
+        "initial": {
+          "id": "h8",
+          "col": 8,
+          "row": 8
+        },
+        "final": {
+          "id": "g8",
+          "col": 7,
+          "row": 8
+        }
+      }
+    },
+    {
+      "id": "qw",
+      "type": "queen",
+      "side": "white",
+      "turn": 123,
+      "from": "c1",
+      "to": "b1",
+      "date": "13/9/2026",
+      "time": "03:11:29 p. m.",
+      "san": "Qb1",
+      "classic_val": "qw -> 1b",
+      "captured": null,
+      "pos": {
+        "initial": {
+          "id": "c1",
+          "col": 3,
+          "row": 1
+        },
+        "final": {
+          "id": "b1",
+          "col": 2,
+          "row": 1
+        }
+      }
+    },
+    {
+      "id": "kb",
+      "type": "king",
+      "side": "black",
+      "turn": 124,
+      "from": "e8",
+      "to": "d8",
+      "date": "13/9/2026",
+      "time": "03:11:30 p. m.",
+      "san": "Kd8",
+      "classic_val": "kb -> 8d",
+      "captured": null,
+      "pos": {
+        "initial": {
+          "id": "e8",
+          "col": 5,
+          "row": 8
+        },
+        "final": {
+          "id": "d8",
+          "col": 4,
+          "row": 8
+        }
+      }
+    }
+  ],
+  "created_at": "2026-09-13T19:57:26.503Z",
+  "updated_at": "2026-09-13T20:11:30.433Z"
+}
