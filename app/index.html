@@ -1,71 +1,350 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <title>Chess</title>
-  <link rel="stylesheet" href="css/index.css" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Flexbox Chess | Cyber-HUD Edition</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/index.css">
   <script src="js/jquery-1.12.0.min.js"></script>
 </head>
 <body>
-  <div>
-    <span>
-      <h1>Chess</h1>
-    </span>
-  </div>
-  <div class="container">
-    <div>
-      <div id="chess" class="flex-container"></div>
-      <div id="overlay" onclick="this.style.display = 'none'">
-        <div id="message">Start</div>
+
+  <!-- Barra Superior Flotante Glassmorphic -->
+  <header class="glass-header">
+    <div class="brand-section">
+      <a href="/" class="brand-logo">
+        <div class="brand-logo-icon">♞</div>
+        <h1 class="brand-title">CHESS</h1>
+      </a>
+      <span class="brand-badge">HUD v2.0</span>
+      <div id="api-status-badge" class="hud-status-indicator">
+        <span class="status-dot-pulse"></span>
+        <span id="api-status-text">Conectado</span>
       </div>
     </div>
-    <div>
-      <div id="board" class="flex">
-        <div>
-         <span>Turn:</span> 
-          <span id="quantity">0</span>
-          <hr>
-          <span id="turn">white</span>
+
+    <!-- Barra de Controles de Partida -->
+    <div class="header-controls">
+      <!-- Selector de Partida ID -->
+      <div class="hud-control-group">
+        <span class="hud-label">Partida</span>
+        <input type="text" id="game-id-input" value="game-1" class="hud-input" placeholder="ID" />
+        <button id="btn-load-game" onclick="loadGameFromAPI($('#game-id-input').val())" class="btn-hud btn-hud-primary" title="Cargar esta partida">Cargar</button>
+        <button id="btn-reset-game" onclick="resetGameAPI($('#game-id-input').val())" class="btn-hud btn-hud-danger" title="Reiniciar partida">Reiniciar</button>
+      </div>
+
+      <!-- Modo de Juego y Robot -->
+      <div class="hud-control-group">
+        <span class="hud-label">Modo</span>
+        <select id="play-mode-select" onchange="onGameModeChange()" class="hud-select">
+          <option value="bot" selected>🤖 vs Robot</option>
+          <option value="multiplayer">👥 Online (2 Sesiones)</option>
+        </select>
+
+        <span id="bot-options" style="display: inline-flex; gap: 6px; align-items: center;">
+          <span class="hud-label">Dificultad</span>
+          <select id="bot-difficulty" class="hud-select">
+            <option value="1">Nvl 1: Novato (60% blunder)</option>
+            <option value="2">Nvl 2: Principiante</option>
+            <option value="3">Nvl 3: Aficionado</option>
+            <option value="4">Nvl 4: Casual (Depth 2)</option>
+            <option value="5" selected>Nvl 5: Club Intermedio</option>
+            <option value="6">Nvl 6: Avanzado (Posicional)</option>
+            <option value="7">Nvl 7: Experto (Depth 3)</option>
+            <option value="8">Nvl 8: Maestro Candidato</option>
+            <option value="9">Nvl 9: Maestro FIDE</option>
+            <option value="10">Nvl 10: Gran Maestro</option>
+          </select>
+        </span>
+
+        <span class="hud-label">Bando</span>
+        <select id="player-side-select" onchange="onPlayerSideChange()" class="hud-select">
+          <option value="white" selected>⚪ Blancas</option>
+          <option value="black">⚫ Negras</option>
+          <option value="both">⚪⚫ Ambos (Local)</option>
+        </select>
+
+        <button id="btn-trigger-bot" onclick="triggerBotMove()" class="btn-hud btn-hud-bot" title="Forzar cálculo del bot">🤖 Mover Robot</button>
+      </div>
+
+      <!-- Barra de Autenticación y Perfil -->
+      <div id="user-auth-bar" class="hud-control-group">
+        <!-- Estado Invitado -->
+        <div id="user-guest-controls" style="display: inline-flex; gap: 8px; align-items: center;">
+          <button id="btn-open-login" onclick="openAuthModal('login')" class="btn-hud btn-hud-primary">🔑 Entrar</button>
+          <button id="btn-open-register" onclick="openAuthModal('register')" class="btn-hud btn-hud-secondary">📝 Registro</button>
         </div>
-        <hr>
-        <div>
-          <span>White</span>
-          <span id="white-clock">00:00:00</span>
-          <hr>
-          <span id="white_points">0</span>
-        </div>
-        <hr>
-        <div>
-          <span>Black</span>
-          <span id="black-clock">00:00:00</span>
-          <hr>
-          <span id="black_points">0</span>
+
+        <!-- Estado Autenticado -->
+        <div id="user-logged-controls" style="display: none; gap: 8px; align-items: center;">
+          <div id="user-profile-badge" class="user-badge-pill" onclick="openUserGamesModal()" title="Ver perfil y partidas">
+            <span>👤</span>
+            <span id="current-user-name">Usuario</span>
+            <span id="current-user-rating" class="user-rating-chip">1200</span>
+          </div>
+          <button id="btn-user-games" onclick="openUserGamesModal()" class="btn-hud btn-hud-secondary" title="Ver mis partidas">📋 Mis Partidas</button>
+          <button id="btn-user-logout" onclick="logoutUser()" class="btn-hud btn-hud-danger" title="Cerrar sesión">🚪</button>
         </div>
       </div>
-      <table id="movements">
-        <caption>Movements</caption>
-        <thead>
-          <tr>
-            <th>#</th>
-            <th>White</th>
-            <th>Black</th>
-            <th>Clock</th>
-          </tr>
-        </thead>
-        <tbody>
-        </tbody>
-        <tfoot>
-          <tr>
-            <td>#</td>
-            <td>White</td>
-            <td>Black</td>
-            <td>Clock</td>
-          </tr>
-        </tfoot>
-      </table>
+    </div>
+  </header>
+
+  <!-- Arena Principal: Tablero + Telemetría Deck -->
+  <main class="chess-arena">
+    <!-- Columna Izquierda: Bisel y Tablero -->
+    <div class="board-column">
+      <div class="board-bezel-wrapper">
+        <!-- Coordenadas Superiores (a-h) -->
+        <div class="board-coords-top">
+          <span>a</span><span>b</span><span>c</span><span>d</span><span>e</span><span>f</span><span>g</span><span>h</span>
+        </div>
+
+        <!-- Fila Central: Coordenadas Izq + Tablero + Coordenadas Der -->
+        <div class="board-middle-row">
+          <div class="board-coords-left">
+            <span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span>
+          </div>
+
+          <!-- Tablero Flexbox 8x8 -->
+          <div id="chess"></div>
+
+          <div class="board-coords-right">
+            <span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span>
+          </div>
+        </div>
+
+        <!-- Coordenadas Inferiores (a-h) -->
+        <div class="board-coords-bottom">
+          <span>a</span><span>b</span><span>c</span><span>d</span><span>e</span><span>f</span><span>g</span><span>h</span>
+        </div>
+      </div>
+
+      <!-- Barra de Acciones del Tablero -->
+      <div class="board-action-bar">
+        <div class="board-action-buttons">
+          <button id="btn-flip-board" onclick="flipBoard()" class="btn-hud btn-hud-secondary" title="Invertir perspectiva del tablero">🔄 Voltear Tablero</button>
+          <button id="btn-toggle-sound" onclick="toggleSound()" class="btn-hud btn-hud-secondary" title="Activar/desactivar audio sintetizado">🔊 Sonido: ON</button>
+        </div>
+        <div class="board-action-buttons">
+          <button id="btn-resign" onclick="resignGameAPI(currentGameId)" class="btn-hud btn-hud-danger" title="Rendirse en este turno">🏳️ Rendirse</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Columna Derecha: HUD y Telemetría -->
+    <div class="telemetry-deck">
+      
+      <!-- Tarjeta HUD: Jugador Negras -->
+      <div id="black-player-card" class="player-hud-card">
+        <div class="player-info-side">
+          <div class="player-avatar black-avatar">♚</div>
+          <div class="player-meta">
+            <span class="player-name" id="black-player-name">Negras <span id="black-bot-badge" style="display:none; font-size:10px; color:#a855f7;">(Robot)</span></span>
+            <span class="player-rating">Rating: <strong id="black-player-elo">1200</strong></span>
+            <div class="player-captures-rack" id="black-captures-rack">
+              <!-- Piezas capturadas por negras -->
+            </div>
+          </div>
+        </div>
+        <div class="hud-clock-container">
+          <span class="hud-label">Tiempo</span>
+          <div id="black-clock" class="hud-clock">00:00:00</div>
+          <span id="black_points" style="display: none;">0</span>
+        </div>
+      </div>
+
+      <!-- Centro de Estado de Partida / Turno -->
+      <div class="game-status-hud">
+        <div class="game-status-title">
+          <span id="turn-indicator-dot" class="status-dot-pulse" style="background: #00e5ff; box-shadow: 0 0 8px #00e5ff;"></span>
+          <span id="turn-status-text">Turno:</span>
+          <span id="turn" class="turn-pill-badge">white</span>
+        </div>
+        <div>
+          <span class="hud-label" style="margin-right: 4px;">Jugada #</span>
+          <strong id="quantity" style="font-family: var(--font-mono); color: var(--neon-cyan); font-size: 15px;">0</strong>
+        </div>
+      </div>
+
+      <!-- Tarjeta HUD: Jugador Blancas -->
+      <div id="white-player-card" class="player-hud-card active-turn">
+        <div class="player-info-side">
+          <div class="player-avatar white-avatar">♔</div>
+          <div class="player-meta">
+            <span class="player-name" id="white-player-name">Blancas</span>
+            <span class="player-rating">Rating: <strong id="white-player-elo">1200</strong></span>
+            <div class="player-captures-rack" id="white-captures-rack">
+              <!-- Piezas capturadas por blancas -->
+            </div>
+          </div>
+        </div>
+        <div class="hud-clock-container">
+          <span class="hud-label">Tiempo</span>
+          <div id="white-clock" class="hud-clock">00:00:00</div>
+          <span id="white_points" style="display: none;">0</span>
+        </div>
+      </div>
+
+      <!-- Banner de Advertencia de Modo Historial (Solo Lectura) -->
+      <div id="history-banner" style="display: none;">
+        <div>
+          🔒 <strong>Modo Historial:</strong> Visualizando jugada #<span id="history-step-num">0</span> (Solo Lectura)
+        </div>
+        <button onclick="exitHistoryMode()" class="btn-hud btn-hud-primary" style="padding: 4px 10px; font-size: 11px;">En Vivo ▶|</button>
+      </div>
+
+      <!-- Barra de Scrub / Navegación Histórica -->
+      <div class="history-nav-hud">
+        <span class="hud-label">Navegación</span>
+        <div class="history-nav-buttons">
+          <button id="btn-hist-start" onclick="navigateHistory('start')" class="btn-scrub" title="Inicio (Jugada #0)">|◀</button>
+          <button id="btn-hist-prev" onclick="navigateHistory('prev')" class="btn-scrub" title="Jugada anterior">◀ Anterior</button>
+          <span id="history-indicator" class="scrub-indicator">En vivo</span>
+          <button id="btn-hist-next" onclick="navigateHistory('next')" class="btn-scrub" title="Siguiente jugada">Siguiente ▶</button>
+          <button id="btn-hist-end" onclick="navigateHistory('end')" class="btn-scrub active-live" title="Volver al juego en vivo">▶| En Vivo</button>
+        </div>
+      </div>
+
+      <!-- Tarjeta de Historial de Movimientos -->
+      <div class="movements-card">
+        <div class="movements-header-bar">
+          <span>📜 Registro de Movimientos</span>
+          <span id="movements-total-counter" style="font-family: var(--font-mono); font-size: 11px; color: var(--neon-cyan);">0 Jugadas</span>
+        </div>
+        <div class="movements-scroll-container">
+          <table id="movements">
+            <thead>
+              <tr>
+                <th style="width: 15%;">#</th>
+                <th style="width: 35%;">⚪ Blancas</th>
+                <th style="width: 35%;">⚫ Negras</th>
+                <th style="width: 15%;">Hora</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- Filas de movimientos generadas dinámicamente -->
+            </tbody>
+          </table>
+        </div>
+        <div id="movements-pagination" class="pagination-container">
+          <!-- Paginador generado dinámicamente -->
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Toast Notification Overlay -->
+  <div id="overlay" onclick="this.style.display = 'none'">
+    <div id="message">Notificación</div>
+  </div>
+
+  <!-- Modal de Autenticación (Login / Registro) -->
+  <div id="auth-modal" class="modal-backdrop" style="display: none;">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div class="auth-tabs">
+          <button id="tab-login" class="auth-tab active" onclick="switchAuthTab('login')">Iniciar Sesión</button>
+          <button id="tab-register" class="auth-tab" onclick="switchAuthTab('register')">Registrarse</button>
+        </div>
+        <button class="modal-close-btn" onclick="closeAuthModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div id="auth-alert" style="display: none;" class="auth-alert"></div>
+        
+        <!-- Formulario Iniciar Sesión -->
+        <form id="form-login" onsubmit="event.preventDefault(); submitLogin();">
+          <div class="form-group">
+            <label for="login-identifier">Usuario o Correo:</label>
+            <input type="text" id="login-identifier" class="form-input" placeholder="ej: carlos o carlos@example.com" required />
+          </div>
+          <div class="form-group">
+            <label for="login-password">Contraseña:</label>
+            <input type="password" id="login-password" class="form-input" placeholder="Tu contraseña" required />
+          </div>
+          <button type="submit" id="btn-submit-login" class="form-btn-primary">Entrar al Sistema</button>
+          <p style="font-size: 12px; color: var(--text-dim); text-align: center; margin-top: 12px; margin-bottom: 0;">
+            Cuentas demo disponibles: <strong>carlos</strong> o <strong>ana</strong> (contraseña: <strong>chess</strong>)
+          </p>
+        </form>
+
+        <!-- Formulario Registro -->
+        <form id="form-register" style="display: none;" onsubmit="event.preventDefault(); submitRegister();">
+          <div class="form-group">
+            <label for="reg-name">Nombre Completo:</label>
+            <input type="text" id="reg-name" class="form-input" placeholder="ej: Juan Pérez" required />
+          </div>
+          <div class="form-group">
+            <label for="reg-username">Nombre de Usuario:</label>
+            <input type="text" id="reg-username" class="form-input" placeholder="ej: juanp" required />
+          </div>
+          <div class="form-group">
+            <label for="reg-email">Correo Electrónico:</label>
+            <input type="email" id="reg-email" class="form-input" placeholder="juan@example.com" />
+          </div>
+          <div class="form-group">
+            <label for="reg-password">Contraseña:</label>
+            <input type="password" id="reg-password" class="form-input" placeholder="Mínimo 4 caracteres" required />
+          </div>
+          <button type="submit" id="btn-submit-register" class="form-btn-primary">Crear Cuenta</button>
+        </form>
+      </div>
     </div>
   </div>
+
+  <!-- Modal de Partidas por Usuario -->
+  <div id="user-games-modal" class="modal-backdrop" style="display: none;">
+    <div class="modal-card modal-card-large">
+      <div class="modal-header">
+        <h2 style="margin: 0; font-size: 16px; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 8px;">
+          <span>📋</span> Historial de Partidas por Usuario
+        </h2>
+        <button class="modal-close-btn" onclick="closeUserGamesModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <!-- Selector de usuario -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; flex-wrap: wrap; gap: 8px;">
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <label for="user-games-select" style="font-size: 12px; font-weight: 600; color: var(--text-muted);">Consultar jugador:</label>
+            <select id="user-games-select" onchange="onSelectUserToViewGames()" class="form-input" style="width: auto; padding: 5px 12px;">
+              <!-- Opciones dinámicas de usuarios -->
+            </select>
+          </div>
+          <button onclick="refreshUserGamesList()" class="btn-hud btn-hud-secondary">🔄 Actualizar</button>
+        </div>
+
+        <!-- Tarjeta de estadísticas del usuario -->
+        <div id="user-stats-summary" class="user-stats-card">
+          <!-- Estadísticas dinámicas -->
+        </div>
+
+        <!-- Tabla de partidas del usuario -->
+        <div style="max-height: 360px; overflow-y: auto; border-radius: var(--radius-sm); border: 1px solid var(--surface-glass-border);">
+          <table class="user-games-table">
+            <thead>
+              <tr>
+                <th>Partida ID</th>
+                <th>Fecha</th>
+                <th>Tu Bando</th>
+                <th>Oponente</th>
+                <th>Resultado</th>
+                <th>Movimientos</th>
+                <th style="text-align: center;">Acción</th>
+              </tr>
+            </thead>
+            <tbody id="user-games-tbody">
+              <!-- Filas dinámicas -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script src="js/index.js"></script>
   <script src="js/chess-rules.js"></script>
 </body>
-
 </html>
