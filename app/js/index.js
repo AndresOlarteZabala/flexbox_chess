@@ -24,6 +24,9 @@ let isHistoryMode = false;
 let currentHistoryStep = null;
 let latestLiveGame = null;
 
+// Evita repetir el banner vistoso de fin de partida en cada re-render
+let lastAnnouncedGameEndKey = null;
+
 let currentMovementsPage = 1;
 const movementsPerPage = 10;
 let allMovements = [];
@@ -49,9 +52,22 @@ $(document).ready(function () {
   startSyncLoop();
 });
 
+// Navegación con los botones atrás/adelante del navegador entre URLs de partidas
+window.addEventListener('popstate', () => {
+  const pathMatch = window.location.pathname.match(/^\/game\/([^/]+)\/?$/);
+  const gameId = pathMatch ? decodeURIComponent(pathMatch[1]) : "game-1";
+  $("#game-id-input").val(gameId);
+  loadGameFromAPI(gameId);
+});
+
 function load() {
   const urlParams = new URLSearchParams(window.location.search);
-  const paramGameId = urlParams.get('game');
+
+  // ID de partida embebido en la ruta (/game/<id>) tiene prioridad sobre el query param (?game=<id>)
+  const pathMatch = window.location.pathname.match(/^\/game\/([^/]+)\/?$/);
+  const pathGameId = pathMatch ? decodeURIComponent(pathMatch[1]) : null;
+  const paramGameId = pathGameId || urlParams.get('game');
+
   if (paramGameId) {
     currentGameId = paramGameId;
     $("#game-id-input").val(currentGameId);
@@ -252,11 +268,23 @@ function computeBoardAtStep(step) {
 }
 
 /**
+ * Actualiza la URL del navegador para incluir el ID de la partida (/game/<id>),
+ * sin recargar la página, permitiendo compartir el enlace o recargar sin perderla.
+ */
+function updateGameUrl(gameId) {
+  const targetPath = `/game/${encodeURIComponent(gameId)}`;
+  if (window.location.pathname !== targetPath) {
+    window.history.pushState({ gameId }, '', targetPath);
+  }
+}
+
+/**
  * Consulta el estado de la partida desde el API y renderiza el tablero
  */
 function loadGameFromAPI(gameId) {
   if (!gameId) gameId = "game-1";
   currentGameId = gameId;
+  updateGameUrl(gameId);
 
   fetch(`/api/status/${encodeURIComponent(gameId)}`)
     .then((res) => {
@@ -338,7 +366,10 @@ function resetGameAPI(gameId) {
 }
 
 /**
- * Verifica si corresponde al robot realizar un movimiento automático
+ * Verifica si corresponde al robot mover automáticamente. El robot juega solo
+ * como oponente: se mueve solo cuando es el turno del bando contrario al del
+ * jugador humano. El botón "Mover Robot" sigue disponible para forzar ese
+ * mismo movimiento manualmente, pero nunca mueve el bando del jugador humano.
  */
 function checkAutoBotMove(gameState) {
   if (isHistoryMode || gameMode !== "bot" || isBotMoving) return;
@@ -356,12 +387,24 @@ function checkAutoBotMove(gameState) {
 }
 
 /**
- * Solicita a la API que la IA (Robot) ejecute un movimiento
+ * Solicita a la API que la IA (Robot) ejecute un movimiento.
+ * El robot solo puede jugar como oponente: únicamente mueve el bando contrario
+ * al del jugador humano, nunca el bando del propio jugador.
  */
 function triggerBotMove() {
   if (isHistoryMode) return;
+
+  if (gameMode === "bot" && latestLiveGame) {
+    const botSide = myPlayerSide === "white" ? "black" : (myPlayerSide === "black" ? "white" : null);
+    if (botSide && latestLiveGame.turn !== botSide) {
+      messageShow("Es tu turno. El robot solo puede mover como tu oponente.");
+      return;
+    }
+  }
+
   const difficulty = parseInt($("#bot-difficulty").val(), 10) || 5;
   isBotMoving = true;
+  $("#btn-trigger-bot").prop("disabled", true);
   $("#sync-status").text("🤖 Robot calculando...");
 
   fetch(`/api/games/${encodeURIComponent(currentGameId)}/bot-move`, {
@@ -372,6 +415,7 @@ function triggerBotMove() {
     .then((res) => res.json())
     .then((res) => {
       isBotMoving = false;
+      $("#btn-trigger-bot").prop("disabled", false);
       $("#sync-status").text("🔄 Sincronización activa");
 
       if (res.success && res.data) {
@@ -397,6 +441,7 @@ function triggerBotMove() {
     })
     .catch((err) => {
       isBotMoving = false;
+      $("#btn-trigger-bot").prop("disabled", false);
       $("#sync-status").text("🔄 Sincronización activa");
       console.error("Error en movimiento del robot:", err);
       messageShow("Error al comunicar con Robot IA");
@@ -422,6 +467,18 @@ function onPlayerSideChange() {
 }
 
 /**
+ * Traduce el código de motivo de tablas devuelto por el backend a un texto legible en español
+ */
+function drawReasonLabel(drawReason) {
+  switch (drawReason) {
+    case 'INSUFFICIENT_MATERIAL': return 'Material Insuficiente';
+    case 'FIFTY_MOVE_RULE': return 'Regla de 50 Movimientos';
+    case 'THREEFOLD_REPETITION': return 'Triple Repetición';
+    default: return 'Rey Ahogado';
+  }
+}
+
+/**
  * Renderiza el estado completo retornado por la API en la interfaz gráfica (Modo En Vivo)
  */
 function renderGameState(gameState) {
@@ -432,7 +489,7 @@ function renderGameState(gameState) {
   }
 
   // Limpiar resaltados previos de jugadas y jaque
-  $(".cell").removeClass("last-move-from last-move-to in-check-king");
+  $(".cell").removeClass("last-move-from last-move-to in-check-king winner-king");
 
   const isGameFinished = gameState.status === 'CHECKMATE' || gameState.status === 'STALEMATE' || gameState.status === 'RESIGNED';
   const canDragPieces = !isGameFinished && !isHistoryMode;
@@ -459,8 +516,14 @@ function renderGameState(gameState) {
     }
   }
 
-  // Resaltar Rey en Jaque si aplica
-  if (gameState.in_check) {
+  // Resaltar Rey en Jaque / Jaque Mate
+  if (gameState.status === 'CHECKMATE') {
+    // gameState.turn queda fijo en el bando GANADOR al finalizar la partida,
+    // así que el bando en jaque mate (perdedor) es el contrario.
+    const loserSide = gameState.winner === 'white' ? 'black' : 'white';
+    $(`icon.king.${loserSide}`).parent().addClass("in-check-king");
+    $(`icon.king.${gameState.winner}`).parent().addClass("winner-king");
+  } else if (gameState.in_check) {
     $(`icon.king.${gameState.turn}`).parent().addClass("in-check-king");
   }
 
@@ -476,17 +539,21 @@ function renderGameState(gameState) {
     $("#api-status-text").text(`🏆 Mate - ${winnerLabel}`);
     $("#turn-status-text").text("Ganador:");
     stopClock();
+    announceGameEnd('CHECKMATE', gameState);
   } else if (gameState.status === 'STALEMATE') {
+    const reasonLabel = drawReasonLabel(gameState.draw_reason);
     turnLabel.html("🤝 Tablas").css("color", "#90caf9");
-    $("#api-status-text").text("🤝 Tablas por Rey Ahogado");
+    $("#api-status-text").text(`🤝 Tablas por ${reasonLabel}`);
     $("#turn-status-text").text("Fin:");
     stopClock();
+    announceGameEnd('STALEMATE', gameState);
   } else if (gameState.status === 'RESIGNED') {
     const winnerLabel = gameState.winner === 'white' ? 'Blancas' : 'Negras';
     turnLabel.html(`🏳️ Ganó ${winnerLabel}`).css("color", "#fb7185");
     $("#api-status-text").text(`🏳️ Rendición - Ganó ${winnerLabel}`);
     $("#turn-status-text").text("Fin:");
     stopClock();
+    announceGameEnd('RESIGNED', gameState);
   } else {
     $("#turn-status-text").text("Turno:");
     if (gameState.in_check) {
@@ -742,13 +809,13 @@ function renderMovementsTable(movements, page) {
     });
   }
 
-  renderPaginationControls(totalPages, total, startIndex, endIndex);
+  renderPaginationControls(totalPages, total);
 }
 
 /**
  * Renderiza los botones de paginación
  */
-function renderPaginationControls(totalPages, totalMovements, startIndex, endIndex) {
+function renderPaginationControls(totalPages, totalMovements) {
   const container = $("#movements-pagination");
   container.empty();
 
@@ -757,22 +824,25 @@ function renderPaginationControls(totalPages, totalMovements, startIndex, endInd
     return;
   }
 
-  const showingStart = totalMovements - startIndex;
-  const showingEnd = Math.max(1, totalMovements - endIndex + 1);
-
-  const infoHtml = `<span class="pagination-info">Mostrando #${showingStart} a #${showingEnd} de ${totalMovements} (Pág. ${currentMovementsPage}/${totalPages})</span>`;
+  const infoHtml = `<span class="pagination-info">Página ${currentMovementsPage}/${totalPages}</span>`;
 
   let buttonsHtml = `<div class="pagination-controls">`;
   const prevDisabled = currentMovementsPage <= 1 ? "disabled" : "";
-  buttonsHtml += `<button class="pagination-btn" ${prevDisabled} onclick="goToMovementsPage(${currentMovementsPage - 1})">◀ Más Recientes</button>`;
+  buttonsHtml += `<button class="pagination-btn" ${prevDisabled} onclick="goToMovementsPage(${currentMovementsPage - 1})">Ant.</button>`;
 
-  for (let p = 1; p <= totalPages; p++) {
+  // Ventana deslizante de máximo 5 botones numéricos, centrada en la página actual
+  const maxVisiblePages = 5;
+  let startPage = Math.max(1, currentMovementsPage - Math.floor(maxVisiblePages / 2));
+  let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+  startPage = Math.max(1, endPage - maxVisiblePages + 1);
+
+  for (let p = startPage; p <= endPage; p++) {
     const activeClass = p === currentMovementsPage ? "active" : "";
     buttonsHtml += `<button class="pagination-btn ${activeClass}" onclick="goToMovementsPage(${p})">${p}</button>`;
   }
 
   const nextDisabled = currentMovementsPage >= totalPages ? "disabled" : "";
-  buttonsHtml += `<button class="pagination-btn ${nextDisabled} onclick="goToMovementsPage(${currentMovementsPage + 1})">Más Antiguos ▶</button>`;
+  buttonsHtml += `<button class="pagination-btn" ${nextDisabled} onclick="goToMovementsPage(${currentMovementsPage + 1})">Sig.</button>`;
   buttonsHtml += `</div>`;
 
   container.html(`${infoHtml}${buttonsHtml}`);
@@ -838,6 +908,126 @@ function messageShow(msg) {
 }
 
 // ==========================================================
+// BANNER VISTOSO DE FIN DE PARTIDA (JAQUE MATE / TABLAS / RENDICIÓN)
+// ==========================================================
+
+/**
+ * Dispara el banner de fin de partida una sola vez por evento real,
+ * evitando que se repita en cada re-render del mismo estado.
+ */
+function announceGameEnd(status, gameState) {
+  const key = `${currentGameId}:${status}:${gameState.turn_count}:${gameState.winner || ''}`;
+  if (lastAnnouncedGameEndKey === key) return;
+  lastAnnouncedGameEndKey = key;
+  showEndgameBanner(status, gameState);
+}
+
+function showEndgameBanner(status, gameState) {
+  const overlay = document.getElementById("endgame-overlay");
+  if (!overlay) return;
+
+  const winnerLabel = gameState.winner === 'white' ? 'Blancas' : (gameState.winner === 'black' ? 'Negras' : 'Tablas');
+  overlay.classList.remove('result-win', 'result-draw', 'result-resign');
+
+  let icon = '🏆';
+  let title = '¡JAQUE MATE!';
+  let subtitle = `Ganador: ${winnerLabel}`;
+  let resultClass = 'result-win';
+  let spawnConfetti = true;
+
+  if (status === 'STALEMATE') {
+    icon = '🤝';
+    title = '¡TABLAS!';
+    subtitle = drawReasonLabel(gameState.draw_reason);
+    resultClass = 'result-draw';
+    spawnConfetti = false;
+  } else if (status === 'RESIGNED') {
+    icon = '🏳️';
+    title = '¡RENDICIÓN!';
+    subtitle = `Ganador: ${winnerLabel}`;
+    resultClass = 'result-resign';
+    spawnConfetti = false;
+  }
+
+  document.getElementById("endgame-icon").textContent = icon;
+  document.getElementById("endgame-title").textContent = title;
+  document.getElementById("endgame-subtitle").textContent = subtitle;
+  document.getElementById("endgame-meta").textContent = `Partida ${currentGameId} · ${gameState.turn_count} jugadas`;
+  overlay.classList.add(resultClass);
+
+  spawnEndgameConfetti(spawnConfetti);
+
+  overlay.style.display = "flex";
+}
+
+function closeEndgameBanner() {
+  const overlay = document.getElementById("endgame-overlay");
+  if (overlay) overlay.style.display = "none";
+}
+
+/**
+ * Genera piezas de confeti CSS animado dentro del banner cuando hay un ganador claro (Jaque Mate).
+ */
+function spawnEndgameConfetti(enabled) {
+  const container = document.getElementById("endgame-confetti");
+  if (!container) return;
+  container.innerHTML = "";
+  if (!enabled) return;
+
+  const colors = ['#ffeb3b', '#00e5ff', '#a855f7', '#f43f5e', '#10b981', '#f59e0b'];
+  const pieceCount = 26;
+  for (let i = 0; i < pieceCount; i++) {
+    const piece = document.createElement('span');
+    piece.className = 'confetti-piece';
+    piece.style.left = `${Math.random() * 100}%`;
+    piece.style.background = colors[i % colors.length];
+    piece.style.animationDuration = `${1.6 + Math.random() * 1.4}s`;
+    piece.style.animationDelay = `${Math.random() * 0.6}s`;
+    container.appendChild(piece);
+  }
+}
+
+// ==========================================================
+// CAPTURA DE FOTO DEL TABLERO (SCREENSHOT)
+// ==========================================================
+
+/**
+ * Captura el tablero (incluyendo bisel y coordenadas) como imagen PNG
+ * y dispara la descarga en el navegador. Disponible en cualquier momento de la partida.
+ */
+function captureBoardPhoto() {
+  const target = document.querySelector('.board-bezel-wrapper') || document.getElementById('chess');
+  if (!target) {
+    messageShow("No se encontró el tablero para capturar");
+    return;
+  }
+  if (typeof html2canvas !== 'function') {
+    messageShow("La librería de captura no está disponible");
+    return;
+  }
+
+  messageShow("📸 Capturando tablero...");
+
+  html2canvas(target, {
+    backgroundColor: '#0b111c',
+    scale: Math.min(2, window.devicePixelRatio || 1.5),
+    useCORS: true
+  }).then((canvas) => {
+    const link = document.createElement('a');
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+    link.download = `flexbox-chess_${currentGameId}_${timestamp}.png`;
+    link.href = canvas.toDataURL('image/png');
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    messageShow("✅ Foto del tablero guardada");
+  }).catch((err) => {
+    console.error("Error al capturar el tablero:", err);
+    messageShow("Error al generar la foto del tablero");
+  });
+}
+
+// ==========================================================
 // MÓDULO DE USUARIOS, AUTENTICACIÓN Y PARTIDAS POR USUARIO
 // ==========================================================
 
@@ -859,6 +1049,7 @@ function initAuth() {
           currentUser = res.data;
           localStorage.setItem('chess_auth_user', JSON.stringify(currentUser));
           renderAuthUI();
+          claimCurrentGame();
         } else {
           // Token expirado o inválido
           logoutUser(false);
@@ -868,6 +1059,33 @@ function initAuth() {
         renderAuthUI();
       });
   }
+}
+
+/**
+ * Reclama a nombre del usuario autenticado el bando con el que está jugando
+ * en la partida actual, cubriendo el caso de haber empezado como invitado
+ * y luego iniciado sesión. No hace nada si ese bando ya pertenece a otro
+ * usuario registrado, o si se está jugando en modo "Ambos (Local)".
+ */
+function claimCurrentGame() {
+  if (!authToken || !currentGameId || myPlayerSide === "both") return;
+
+  fetch(`/api/games/${encodeURIComponent(currentGameId)}/claim`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${authToken}`
+    },
+    body: JSON.stringify({ side: myPlayerSide })
+  })
+    .then((res) => res.json())
+    .then((res) => {
+      if (res.success && res.data) {
+        latestLiveGame = res.data;
+        renderGameState(res.data);
+      }
+    })
+    .catch(() => {});
 }
 
 /**
@@ -949,6 +1167,7 @@ function submitLogin() {
         renderAuthUI();
         closeAuthModal();
         messageShow(`¡Bienvenido, ${currentUser.name || currentUser.username}!`);
+        claimCurrentGame();
       } else {
         showAuthAlert(res.error?.message || "Credenciales incorrectas", "error");
       }
@@ -991,6 +1210,7 @@ function submitRegister() {
         renderAuthUI();
         closeAuthModal();
         messageShow(`¡Cuenta creada con éxito! Bienvenido, ${currentUser.name}!`);
+        claimCurrentGame();
       } else {
         showAuthAlert(res.error?.message || "Error al crear cuenta", "error");
       }

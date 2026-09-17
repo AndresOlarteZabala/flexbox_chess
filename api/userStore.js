@@ -10,6 +10,7 @@ const crypto = require('crypto');
 
 const USERS_DIR = path.join(__dirname, '..', 'data', 'users');
 const GAMES_DIR = path.join(__dirname, '..', 'data', 'games');
+const SESSIONS_FILE = path.join(USERS_DIR, 'sessions.json');
 
 // Asegurar que exista el directorio de usuarios
 if (!fs.existsSync(USERS_DIR)) {
@@ -19,6 +20,37 @@ if (!fs.existsSync(USERS_DIR)) {
 // Caché en memoria para usuarios y sesiones activas
 const memoryUsers = new Map();
 const activeSessions = new Map(); // token -> userId
+
+/**
+ * Carga las sesiones activas persistidas en disco, para que el inicio de
+ * sesión sobreviva a un reinicio del servidor.
+ */
+function loadSessions() {
+  try {
+    if (fs.existsSync(SESSIONS_FILE)) {
+      const raw = fs.readFileSync(SESSIONS_FILE, 'utf-8');
+      const entries = JSON.parse(raw);
+      for (const [token, userId] of entries) {
+        activeSessions.set(token, userId);
+      }
+    }
+  } catch (err) {
+    console.error('Error al cargar sesiones activas:', err.message);
+  }
+}
+
+/**
+ * Persiste las sesiones activas en disco
+ */
+function persistSessions() {
+  try {
+    fs.writeFileSync(SESSIONS_FILE, JSON.stringify(Array.from(activeSessions.entries())), 'utf-8');
+  } catch (err) {
+    console.error('Error al guardar sesiones activas:', err.message);
+  }
+}
+
+loadSessions();
 
 /**
  * Genera un hash seguro con salt usando pbkdf2
@@ -174,6 +206,7 @@ function createUser({ name, username, email, password }) {
   // Generar token de sesión inicial
   const token = crypto.randomBytes(32).toString('hex');
   activeSessions.set(token, newUser.id);
+  persistSessions();
 
   return {
     user: sanitizeUser(newUser),
@@ -201,6 +234,7 @@ function authenticateUser({ login, password }) {
 
   const token = crypto.randomBytes(32).toString('hex');
   activeSessions.set(token, user.id);
+  persistSessions();
 
   return {
     user: sanitizeUser(user),
@@ -223,6 +257,7 @@ function getUserByToken(token) {
 function invalidateToken(token) {
   if (token && activeSessions.has(token)) {
     activeSessions.delete(token);
+    persistSessions();
     return true;
   }
   return false;

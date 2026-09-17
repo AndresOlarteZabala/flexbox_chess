@@ -131,3 +131,6 @@ dist
 .yarn/build-state.yml
 .yarn/install-state.gz
 .pnp.*
+
+# Sesiones activas de usuario (contienen tokens de acceso, no deben versionarse)
+data/users/sessions.json

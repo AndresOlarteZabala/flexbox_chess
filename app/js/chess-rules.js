@@ -96,7 +96,8 @@ async function drop(ev) {
       return;
     } else if (updatedGame.status === 'STALEMATE') {
       stopClock();
-      messageShow("🤝 ¡TABLAS! Rey Ahogado");
+      const reasonLabel = typeof drawReasonLabel === 'function' ? drawReasonLabel(updatedGame.draw_reason) : 'Rey Ahogado';
+      messageShow(`🤝 ¡TABLAS! ${reasonLabel}`);
       return;
     } else if (updatedGame.in_check) {
       messageShow(`⚠️ ¡JAQUE a ${updatedGame.turn === 'white' ? 'Blancas' : 'Negras'}!`);

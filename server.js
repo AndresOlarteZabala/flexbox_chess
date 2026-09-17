@@ -37,6 +37,13 @@ app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'app', 'index.html'));
 });
 
+// Ruta con ID de partida embebido en la URL (ej. /game/abc123), permite
+// compartir el enlace directo o recargar la página sin perder la partida.
+// El frontend lee el ID desde la ruta al cargar.
+app.get('/game/:id', (req, res) => {
+  res.sendFile(path.join(__dirname, 'app', 'index.html'));
+});
+
 // ==========================================
 // RUTAS DE LA API
 // ==========================================
@@ -62,6 +69,7 @@ function formatGameStatusResponse(game) {
     id: game.id,
     status: game.status,
     winner: game.winner || null,
+    draw_reason: game.draw_reason || null,
     in_check: game.in_check || false,
     mode: game.mode || 'timed',
     turn: game.turn,
@@ -75,6 +83,8 @@ function formatGameStatusResponse(game) {
     last_move: game.movements && game.movements.length > 0 ? game.movements[game.movements.length - 1] : null,
     white_player: game.white_player || { id: 'guest-w', username: 'blancas', name: 'Jugador Blancas' },
     black_player: game.black_player || { id: 'guest-b', username: 'negras', name: 'Jugador Negras' },
+    opponent_connected: game.opponent_connected || false,
+    has_second_player: !!(game.black_player && !game.black_player.id.startsWith('guest-b')),
     created_at: game.created_at,
     updated_at: game.updated_at
   };
@@ -226,32 +236,6 @@ app.get('/api/my-games', (req, res) => {
 });
 
 /**
- * POST /api/games/:id/join
- * Permite a un jugador unirse o asociarse a una partida con su bando
- */
-app.post('/api/games/:id/join', (req, res) => {
-  const gameId = req.params.id || 'default';
-  const game = getGame(gameId, true);
-  const { side, player } = req.body || {};
-  const targetSide = side || 'white';
-  const playerData = player || (req.user ? { id: req.user.id, username: req.user.username, name: req.user.name } : null);
-
-  if (playerData) {
-    if (targetSide === 'white') {
-      game.white_player = playerData;
-    } else if (targetSide === 'black') {
-      game.black_player = playerData;
-    }
-    saveGame(game);
-  }
-
-  res.json({
-    success: true,
-    data: formatGameStatusResponse(game)
-  });
-});
-
-/**
  * GET /api/status/:id
  * GET /api/games/:id/status
  * GET /api/games/:id
@@ -357,6 +341,104 @@ app.post('/api/games', (req, res) => {
 });
 
 /**
+ * POST /api/games/:id/join
+ * Permite a un jugador unirse formalmente a la partida online.
+ * Registra al jugador (usuario o invitado) y marca opponent_connected = true.
+ */
+app.post('/api/games/:id/join', (req, res) => {
+  const gameId = req.params.id || 'default';
+  const game = getGame(gameId, true);
+
+  if (!game) {
+    return res.status(404).json({ success: false, error: { message: 'Partida no encontrada' } });
+  }
+
+  const { side, guest_name, guest_id } = req.body || {};
+  const targetSide = side || 'black';
+
+  let playerObj;
+  if (req.user) {
+    playerObj = { id: req.user.id, username: req.user.username, name: req.user.name, rating: req.user.rating || 1200 };
+  } else {
+    playerObj = {
+      id: guest_id || `guest-${Date.now()}`,
+      username: `guest_${Math.floor(Math.random() * 1000)}`,
+      name: guest_name || (targetSide === 'black' ? 'Invitado Negras' : 'Invitado Blancas'),
+      rating: 1200,
+      is_guest: true
+    };
+  }
+
+  if (targetSide === 'black') {
+    game.black_player = playerObj;
+  } else {
+    game.white_player = playerObj;
+  }
+
+  game.opponent_connected = true;
+  game.mode = 'multiplayer';
+  game.last_joined_at = new Date().toISOString();
+  saveGame(game);
+
+  res.json({
+    success: true,
+    data: formatGameStatusResponse(game)
+  });
+});
+
+/**
+ * POST /api/games/:id/claim
+ * Reclama retroactivamente un bando de la partida a nombre del usuario autenticado,
+ * sin importar el turno actual. Útil cuando el jugador empezó como invitado y luego
+ * inició sesión: vincula su cuenta al bando con el que ha estado jugando.
+ * Requiere autenticación. Body: { side: 'white' | 'black' }
+ */
+app.post('/api/games/:id/claim', (req, res) => {
+  if (!req.user) {
+    return res.status(401).json({
+      success: false,
+      error: { message: 'Debes iniciar sesión para reclamar una partida.' }
+    });
+  }
+
+  const gameId = req.params.id || 'default';
+  const game = getGame(gameId, true);
+
+  if (!game) {
+    return res.status(404).json({ success: false, error: { message: 'Partida no encontrada' } });
+  }
+
+  const { side } = req.body || {};
+  if (side !== 'white' && side !== 'black') {
+    return res.status(400).json({
+      success: false,
+      error: { message: "Se requiere el bando a reclamar: { side: 'white' | 'black' }" }
+    });
+  }
+
+  const currentPlayer = side === 'white' ? game.white_player : game.black_player;
+  if (currentPlayer && currentPlayer.id && !currentPlayer.id.startsWith('guest-') && !currentPlayer.is_guest && currentPlayer.id !== req.user.id) {
+    return res.status(409).json({
+      success: false,
+      error: { message: `El bando de ${side === 'white' ? 'blancas' : 'negras'} ya pertenece a otro usuario registrado.` }
+    });
+  }
+
+  const userObj = { id: req.user.id, username: req.user.username, name: req.user.name, rating: req.user.rating || 1200 };
+  if (side === 'white') {
+    game.white_player = userObj;
+  } else {
+    game.black_player = userObj;
+  }
+  saveGame(game);
+
+  res.json({
+    success: true,
+    data: formatGameStatusResponse(game)
+  });
+});
+
+/**
  * POST /api/games/:id/moves
  * POST /api/games/:id/move
  * POST /api/status/:id/moves
@@ -377,7 +459,7 @@ const handlePostMove = (req, res) => {
     }
   }
 
-  let { from, to, uci, move } = req.body || {};
+  let { from, to, uci, move, promotion } = req.body || {};
 
   // Soporte para formato UCI (ej: "b1c3" o "e2e4")
   if (!from && !to) {
@@ -396,7 +478,7 @@ const handlePostMove = (req, res) => {
   }
 
   // Aplicar lógica y reglas del juego en el motor de ajedrez
-  const result = applyMove(game, { from, to });
+  const result = applyMove(game, { from, to, promotion });
 
   if (!result.success) {
     return res.status(422).json({

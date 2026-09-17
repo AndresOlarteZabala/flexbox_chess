@@ -4,25 +4,50 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Flexbox Chess | Cyber-HUD Edition</title>
+  <link rel="icon" type="image/png" href="img/favicon-64.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/index.css">
   <script src="js/jquery-1.12.0.min.js"></script>
+  <script src="js/html2canvas.min.js"></script>
 </head>
 <body>
 
   <!-- Barra Superior Flotante Glassmorphic -->
   <header class="glass-header">
-    <div class="brand-section">
-      <a href="/" class="brand-logo">
-        <div class="brand-logo-icon">♞</div>
-        <h1 class="brand-title">CHESS</h1>
-      </a>
-      <span class="brand-badge">HUD v2.0</span>
-      <div id="api-status-badge" class="hud-status-indicator">
-        <span class="status-dot-pulse"></span>
-        <span id="api-status-text">Conectado</span>
+    <!-- Fila Superior: Logo + Auth, siempre a la misma altura -->
+    <div class="header-top-row">
+      <div class="brand-section">
+        <a href="/" class="brand-logo">
+          <img src="img/logo-dark-128.png" alt="Flexbox Chess" class="brand-logo-icon" />
+          <h1 class="brand-title">CHESS</h1>
+        </a>
+        <span class="brand-badge">HUD v2.0</span>
+        <div id="api-status-badge" class="hud-status-indicator">
+          <span class="status-dot-pulse"></span>
+          <span id="api-status-text">Conectado</span>
+        </div>
+      </div>
+
+      <!-- Barra de Autenticación y Perfil (esquina superior derecha) -->
+      <div id="user-auth-bar" class="auth-corner">
+        <!-- Estado Invitado -->
+        <div id="user-guest-controls" style="display: inline-flex; gap: 8px; align-items: center;">
+          <button id="btn-open-login" onclick="openAuthModal('login')" class="btn-hud btn-hud-secondary">Iniciar Sesión</button>
+          <button id="btn-open-register" onclick="openAuthModal('register')" class="btn-hud btn-hud-primary">Registrarse</button>
+        </div>
+
+        <!-- Estado Autenticado -->
+        <div id="user-logged-controls" style="display: none; gap: 8px; align-items: center;">
+          <div id="user-profile-badge" class="user-badge-pill" onclick="openUserGamesModal()" title="Ver perfil y partidas">
+            <span>👤</span>
+            <span id="current-user-name">Usuario</span>
+            <span id="current-user-rating" class="user-rating-chip">1200</span>
+          </div>
+          <button id="btn-user-games" onclick="openUserGamesModal()" class="btn-hud btn-hud-secondary" title="Ver mis partidas">📋 Mis Partidas</button>
+          <button id="btn-user-logout" onclick="logoutUser()" class="btn-hud btn-hud-danger" title="Cerrar sesión">🚪</button>
+        </div>
       </div>
     </div>
 
@@ -69,125 +94,13 @@
 
         <button id="btn-trigger-bot" onclick="triggerBotMove()" class="btn-hud btn-hud-bot" title="Forzar cálculo del bot">🤖 Mover Robot</button>
       </div>
-
-      <!-- Barra de Autenticación y Perfil -->
-      <div id="user-auth-bar" class="hud-control-group">
-        <!-- Estado Invitado -->
-        <div id="user-guest-controls" style="display: inline-flex; gap: 8px; align-items: center;">
-          <button id="btn-open-login" onclick="openAuthModal('login')" class="btn-hud btn-hud-primary">🔑 Entrar</button>
-          <button id="btn-open-register" onclick="openAuthModal('register')" class="btn-hud btn-hud-secondary">📝 Registro</button>
-        </div>
-
-        <!-- Estado Autenticado -->
-        <div id="user-logged-controls" style="display: none; gap: 8px; align-items: center;">
-          <div id="user-profile-badge" class="user-badge-pill" onclick="openUserGamesModal()" title="Ver perfil y partidas">
-            <span>👤</span>
-            <span id="current-user-name">Usuario</span>
-            <span id="current-user-rating" class="user-rating-chip">1200</span>
-          </div>
-          <button id="btn-user-games" onclick="openUserGamesModal()" class="btn-hud btn-hud-secondary" title="Ver mis partidas">📋 Mis Partidas</button>
-          <button id="btn-user-logout" onclick="logoutUser()" class="btn-hud btn-hud-danger" title="Cerrar sesión">🚪</button>
-        </div>
-      </div>
     </div>
   </header>
 
-  <!-- Arena Principal: Tablero + Telemetría Deck -->
+  <!-- Arena Principal: 3 Columnas (Movimientos | Tablero | Jugadores) -->
   <main class="chess-arena">
-    <!-- Columna Izquierda: Bisel y Tablero -->
-    <div class="board-column">
-      <div class="board-bezel-wrapper">
-        <!-- Coordenadas Superiores (a-h) -->
-        <div class="board-coords-top">
-          <span>a</span><span>b</span><span>c</span><span>d</span><span>e</span><span>f</span><span>g</span><span>h</span>
-        </div>
-
-        <!-- Fila Central: Coordenadas Izq + Tablero + Coordenadas Der -->
-        <div class="board-middle-row">
-          <div class="board-coords-left">
-            <span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span>
-          </div>
-
-          <!-- Tablero Flexbox 8x8 -->
-          <div id="chess"></div>
-
-          <div class="board-coords-right">
-            <span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span>
-          </div>
-        </div>
-
-        <!-- Coordenadas Inferiores (a-h) -->
-        <div class="board-coords-bottom">
-          <span>a</span><span>b</span><span>c</span><span>d</span><span>e</span><span>f</span><span>g</span><span>h</span>
-        </div>
-      </div>
-
-      <!-- Barra de Acciones del Tablero -->
-      <div class="board-action-bar">
-        <div class="board-action-buttons">
-          <button id="btn-flip-board" onclick="flipBoard()" class="btn-hud btn-hud-secondary" title="Invertir perspectiva del tablero">🔄 Voltear Tablero</button>
-          <button id="btn-toggle-sound" onclick="toggleSound()" class="btn-hud btn-hud-secondary" title="Activar/desactivar audio sintetizado">🔊 Sonido: ON</button>
-        </div>
-        <div class="board-action-buttons">
-          <button id="btn-resign" onclick="resignGameAPI(currentGameId)" class="btn-hud btn-hud-danger" title="Rendirse en este turno">🏳️ Rendirse</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Columna Derecha: HUD y Telemetría -->
-    <div class="telemetry-deck">
-      
-      <!-- Tarjeta HUD: Jugador Negras -->
-      <div id="black-player-card" class="player-hud-card">
-        <div class="player-info-side">
-          <div class="player-avatar black-avatar">♚</div>
-          <div class="player-meta">
-            <span class="player-name" id="black-player-name">Negras <span id="black-bot-badge" style="display:none; font-size:10px; color:#a855f7;">(Robot)</span></span>
-            <span class="player-rating">Rating: <strong id="black-player-elo">1200</strong></span>
-            <div class="player-captures-rack" id="black-captures-rack">
-              <!-- Piezas capturadas por negras -->
-            </div>
-          </div>
-        </div>
-        <div class="hud-clock-container">
-          <span class="hud-label">Tiempo</span>
-          <div id="black-clock" class="hud-clock">00:00:00</div>
-          <span id="black_points" style="display: none;">0</span>
-        </div>
-      </div>
-
-      <!-- Centro de Estado de Partida / Turno -->
-      <div class="game-status-hud">
-        <div class="game-status-title">
-          <span id="turn-indicator-dot" class="status-dot-pulse" style="background: #00e5ff; box-shadow: 0 0 8px #00e5ff;"></span>
-          <span id="turn-status-text">Turno:</span>
-          <span id="turn" class="turn-pill-badge">white</span>
-        </div>
-        <div>
-          <span class="hud-label" style="margin-right: 4px;">Jugada #</span>
-          <strong id="quantity" style="font-family: var(--font-mono); color: var(--neon-cyan); font-size: 15px;">0</strong>
-        </div>
-      </div>
-
-      <!-- Tarjeta HUD: Jugador Blancas -->
-      <div id="white-player-card" class="player-hud-card active-turn">
-        <div class="player-info-side">
-          <div class="player-avatar white-avatar">♔</div>
-          <div class="player-meta">
-            <span class="player-name" id="white-player-name">Blancas</span>
-            <span class="player-rating">Rating: <strong id="white-player-elo">1200</strong></span>
-            <div class="player-captures-rack" id="white-captures-rack">
-              <!-- Piezas capturadas por blancas -->
-            </div>
-          </div>
-        </div>
-        <div class="hud-clock-container">
-          <span class="hud-label">Tiempo</span>
-          <div id="white-clock" class="hud-clock">00:00:00</div>
-          <span id="white_points" style="display: none;">0</span>
-        </div>
-      </div>
-
+    <!-- Columna Izquierda: Registro de Movimientos y Navegación Histórica -->
+    <div class="movements-column">
       <!-- Banner de Advertencia de Modo Historial (Solo Lectura) -->
       <div id="history-banner" style="display: none;">
         <div>
@@ -233,6 +146,102 @@
           <!-- Paginador generado dinámicamente -->
         </div>
       </div>
+    </div>
+
+    <!-- Columna Central: Bisel y Tablero -->
+    <div class="board-column">
+      <div class="board-bezel-wrapper">
+        <!-- Coordenadas Superiores (a-h) -->
+        <div class="board-coords-top">
+          <span>a</span><span>b</span><span>c</span><span>d</span><span>e</span><span>f</span><span>g</span><span>h</span>
+        </div>
+
+        <!-- Fila Central: Coordenadas Izq + Tablero + Coordenadas Der -->
+        <div class="board-middle-row">
+          <div class="board-coords-left">
+            <span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span>
+          </div>
+
+          <!-- Tablero Flexbox 8x8 -->
+          <div id="chess"></div>
+
+          <div class="board-coords-right">
+            <span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span>
+          </div>
+        </div>
+
+        <!-- Coordenadas Inferiores (a-h) -->
+        <div class="board-coords-bottom">
+          <span>a</span><span>b</span><span>c</span><span>d</span><span>e</span><span>f</span><span>g</span><span>h</span>
+        </div>
+      </div>
+
+      <!-- Barra de Acciones del Tablero -->
+      <div class="board-action-bar">
+        <div class="board-action-buttons">
+          <button id="btn-flip-board" onclick="flipBoard()" class="btn-hud btn-hud-secondary" title="Invertir perspectiva del tablero">🔄 Voltear Tablero</button>
+          <button id="btn-toggle-sound" onclick="toggleSound()" class="btn-hud btn-hud-secondary" title="Activar/desactivar audio sintetizado">🔊 Sonido: ON</button>
+          <button id="btn-photo-board" onclick="captureBoardPhoto()" class="btn-hud btn-hud-photo" title="Tomar foto del tablero en cualquier momento">📸 Tomar Foto</button>
+        </div>
+        <div class="board-action-buttons">
+          <button id="btn-resign" onclick="resignGameAPI(currentGameId)" class="btn-hud btn-hud-danger" title="Rendirse en este turno">🏳️ Rendirse</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Columna Derecha: Jugadores, cada uno junto a su lado del tablero -->
+    <div class="telemetry-deck">
+
+      <!-- Tarjeta HUD: Jugador Negras (alineada con la fila 8, arriba del tablero) -->
+      <div id="black-player-card" class="player-hud-card">
+        <div class="player-info-side">
+          <div class="player-avatar black-avatar">♚</div>
+          <div class="player-meta">
+            <span class="player-name" id="black-player-name">Negras <span id="black-bot-badge" style="display:none; font-size:10px; color:#a855f7;">(Robot)</span></span>
+            <span class="player-rating">Rating: <strong id="black-player-elo">1200</strong></span>
+            <div class="player-captures-rack" id="black-captures-rack">
+              <!-- Piezas capturadas por negras -->
+            </div>
+          </div>
+        </div>
+        <div class="hud-clock-container">
+          <span class="hud-label">Tiempo</span>
+          <div id="black-clock" class="hud-clock">00:00:00</div>
+          <span id="black_points" style="display: none;">0</span>
+        </div>
+      </div>
+
+      <!-- Centro de Estado de Partida / Turno -->
+      <div class="game-status-hud">
+        <div class="game-status-title">
+          <span id="turn-indicator-dot" class="status-dot-pulse" style="background: #00e5ff; box-shadow: 0 0 8px #00e5ff;"></span>
+          <span id="turn-status-text">Turno:</span>
+          <span id="turn" class="turn-pill-badge">white</span>
+        </div>
+        <div>
+          <span class="hud-label" style="margin-right: 4px;">Jugada #</span>
+          <strong id="quantity" style="font-family: var(--font-mono); color: var(--neon-cyan); font-size: 15px;">0</strong>
+        </div>
+      </div>
+
+      <!-- Tarjeta HUD: Jugador Blancas (alineada con la fila 1, abajo del tablero) -->
+      <div id="white-player-card" class="player-hud-card active-turn">
+        <div class="player-info-side">
+          <div class="player-avatar white-avatar">♔</div>
+          <div class="player-meta">
+            <span class="player-name" id="white-player-name">Blancas</span>
+            <span class="player-rating">Rating: <strong id="white-player-elo">1200</strong></span>
+            <div class="player-captures-rack" id="white-captures-rack">
+              <!-- Piezas capturadas por blancas -->
+            </div>
+          </div>
+        </div>
+        <div class="hud-clock-container">
+          <span class="hud-label">Tiempo</span>
+          <div id="white-clock" class="hud-clock">00:00:00</div>
+          <span id="white_points" style="display: none;">0</span>
+        </div>
+      </div>
 
     </div>
   </main>
@@ -240,6 +249,21 @@
   <!-- Toast Notification Overlay -->
   <div id="overlay" onclick="this.style.display = 'none'">
     <div id="message">Notificación</div>
+  </div>
+
+  <!-- Banner Vistoso de Fin de Partida (Jaque Mate / Tablas / Rendición) -->
+  <div id="endgame-overlay" onclick="if (event.target === this) closeEndgameBanner();">
+    <div class="endgame-card">
+      <div class="endgame-confetti" id="endgame-confetti"></div>
+      <div class="endgame-icon" id="endgame-icon">🏆</div>
+      <h2 class="endgame-title" id="endgame-title">¡JAQUE MATE!</h2>
+      <div class="endgame-subtitle" id="endgame-subtitle">Ganador: Blancas</div>
+      <div class="endgame-meta" id="endgame-meta"></div>
+      <div class="endgame-actions">
+        <button class="btn-hud btn-hud-photo" onclick="captureBoardPhoto()">📸 Foto del Tablero</button>
+        <button class="btn-hud btn-hud-primary" onclick="closeEndgameBanner()">Cerrar</button>
+      </div>
+    </div>
   </div>
 
   <!-- Modal de Autenticación (Login / Registro) -->

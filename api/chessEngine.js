@@ -133,6 +133,58 @@ function isTrajectoryClear(board, fromCoord, toCoord) {
 }
 
 /**
+ * Valida un movimiento de enroque (corto o largo) según el reglamento FIDE:
+ * - El rey y la torre implicada no se han movido previamente.
+ * - No hay piezas entre el rey y la torre.
+ * - El rey no está en jaque, no pasa por casillas atacadas y no termina en jaque.
+ */
+function validateCastlingMove(board, king, fromCoord, toCoord) {
+  const side = king.side;
+  const homeRow = side === 'white' ? 1 : 8;
+
+  if (king.state === 'moved' || fromCoord.row !== homeRow || fromCoord.col !== 5) {
+    return { valid: false, error: 'El rey ya se ha movido; no se puede enrocar' };
+  }
+  if (toCoord.row !== homeRow) {
+    return { valid: false, error: 'Movimiento de enroque inválido' };
+  }
+
+  const isKingside = toCoord.col === 7;
+  const isQueenside = toCoord.col === 3;
+  if (!isKingside && !isQueenside) {
+    return { valid: false, error: 'El rey solo puede moverse una casilla en cualquier dirección' };
+  }
+
+  const rookCol = isKingside ? 8 : 1;
+  const rookSquare = coordToSquare(rookCol, homeRow);
+  const rook = board[rookSquare];
+  if (!rook || rook.name !== 'tower' || rook.side !== side || rook.state === 'moved') {
+    return { valid: false, error: 'La torre implicada ya se ha movido o no está disponible para enrocar' };
+  }
+
+  // Casillas entre el rey y la torre deben estar vacías
+  const between = isKingside ? [6, 7] : [2, 3, 4];
+  for (const c of between) {
+    const sq = coordToSquare(c, homeRow);
+    if (board[sq]) {
+      return { valid: false, error: 'Hay piezas entre el rey y la torre; no se puede enrocar' };
+    }
+  }
+
+  // El rey no puede estar en jaque, ni pasar, ni terminar en una casilla atacada
+  const opponentSide = side === 'white' ? 'black' : 'white';
+  const kingPath = isKingside ? [5, 6, 7] : [5, 4, 3];
+  for (const c of kingPath) {
+    const sq = coordToSquare(c, homeRow);
+    if (isSquareAttacked(board, sq, opponentSide)) {
+      return { valid: false, error: 'No se puede enrocar: el rey está en jaque o pasaría por una casilla atacada' };
+    }
+  }
+
+  return { valid: true, castling: { side: isKingside ? 'kingside' : 'queenside', rookFrom: rookSquare, rookTo: coordToSquare(isKingside ? 6 : 4, homeRow) } };
+}
+
+/**
  * Valida un movimiento según el tipo de pieza
  */
 function validatePieceMove(board, piece, fromCoord, toCoord, targetPiece) {
@@ -150,6 +202,9 @@ function validatePieceMove(board, piece, fromCoord, toCoord, targetPiece) {
     case 'king':
       if (absDCol <= 1 && absDRow <= 1) {
         return { valid: true };
+      }
+      if (dRow === 0 && absDCol === 2) {
+        return validateCastlingMove(board, piece, fromCoord, toCoord);
       }
       return { valid: false, error: 'El rey solo puede moverse una casilla en cualquier dirección' };
 
@@ -291,6 +346,13 @@ function isSquareAttacked(board, targetSq, bySide) {
         if (dCol === 1 && dRow === direction) {
           return true;
         }
+      } else if (piece.name === 'king') {
+        // El rey nunca "ataca" a 2 casillas (el enroque no cuenta como amenaza)
+        const dCol = Math.abs(targetCoord.col - fromCoord.col);
+        const dRow = Math.abs(targetCoord.row - fromCoord.row);
+        if (dCol <= 1 && dRow <= 1 && (dCol !== 0 || dRow !== 0)) {
+          return true;
+        }
       } else {
         const dummyTargetPiece = { side: bySide === 'white' ? 'black' : 'white', name: 'dummy' };
         const val = validatePieceMove(board, piece, fromCoord, targetCoord, dummyTargetPiece);
@@ -369,19 +431,77 @@ function getAllLegalMoves(board, side) {
 }
 
 /**
+ * Determina si hay material insuficiente en el tablero para que CUALQUIERA
+ * de los dos bandos pueda dar jaque mate, según el reglamento FIDE:
+ * - Rey solo vs Rey solo
+ * - Rey vs Rey + un alfil
+ * - Rey vs Rey + un caballo
+ * - Rey + alfil vs Rey + alfil, con ambos alfiles en casillas del mismo color
+ * Cualquier peón, torre, dama, o dos o más piezas menores (salvo el caso de
+ * alfiles del mismo color) se considera material suficiente.
+ */
+function isInsufficientMaterial(board) {
+  const pieces = Object.entries(board)
+    .filter(([, p]) => p !== null)
+    .map(([sq, p]) => ({ sq, ...p }));
+
+  const nonKingPieces = pieces.filter((p) => p.name !== 'king');
+
+  // Rey vs Rey
+  if (nonKingPieces.length === 0) return true;
+
+  // Cualquier peón, torre o dama presente implica material suficiente
+  const hasHeavyOrPawn = nonKingPieces.some((p) => p.name === 'pawn' || p.name === 'tower' || p.name === 'queen');
+  if (hasHeavyOrPawn) return false;
+
+  // Solo quedan alfiles y/o caballos en el tablero
+  if (nonKingPieces.length === 1) return true; // Rey+alfil o Rey+caballo vs Rey solo
+
+  if (nonKingPieces.length === 2 && nonKingPieces.every((p) => p.name === 'bishop')) {
+    const [b1, b2] = nonKingPieces;
+    if (b1.side === b2.side) return false; // Dos alfiles del mismo bando: material suficiente
+    const b1Coord = squareToCoord(b1.sq);
+    const b2Coord = squareToCoord(b2.sq);
+    const b1IsLight = (b1Coord.col + b1Coord.row) % 2 === 0;
+    const b2IsLight = (b2Coord.col + b2Coord.row) % 2 === 0;
+    return b1IsLight === b2IsLight; // Tablas solo si ambos alfiles son del mismo color de casilla
+  }
+
+  return false;
+}
+
+/**
+ * Genera una clave que identifica de forma única la posición actual
+ * (ubicación de piezas + turno) para detectar triple repetición.
+ */
+function getPositionKey(board, turn) {
+  const squares = Object.keys(board).sort();
+  let key = '';
+  for (const sq of squares) {
+    const p = board[sq];
+    key += p ? `${sq}:${p.side[0]}${p.name[0]}` : '';
+  }
+  return `${key}|${turn}`;
+}
+
+/**
  * Inicializa un nuevo estado completo de partida
  */
 function createGameState(gameId, options = {}) {
   const now = new Date();
   return {
     id: gameId || `game-${Date.now()}`,
-    status: 'IN_PROGRESS', // IN_PROGRESS, CHECKMATE, STALEMATE, RESIGNED, TIMEOUT
+    status: 'IN_PROGRESS', // IN_PROGRESS, CHECKMATE, STALEMATE, DRAW, RESIGNED, TIMEOUT
     winner: null, // 'white', 'black', 'draw', null
     in_check: false,
     mode: options.mode || 'timed', // 'timed' o 'async'
     turn: 'white',
     turn_count: 0,
     board: createInitialBoard(),
+    // Semi-jugadas consecutivas sin captura ni movimiento de peón (regla de 50 movimientos = 100 semi-jugadas)
+    halfmove_clock: 0,
+    // Historial de claves de posición (tablero + turno) para detectar triple repetición
+    position_history: [],
     captured_pieces: {
       white: [],
       black: []
@@ -406,7 +526,7 @@ function createGameState(gameId, options = {}) {
 /**
  * Ejecuta un movimiento en la partida validando reglas, jaque, jaque mate y persistiendo
  */
-function applyMove(gameState, { from, to }) {
+function applyMove(gameState, { from, to, promotion }) {
   if (!gameState) {
     return { success: false, error: { message: 'Partida no encontrada' } };
   }
@@ -465,7 +585,7 @@ function applyMove(gameState, { from, to }) {
 
   const now = new Date();
   const dateStr = now.toLocaleDateString('es-CO');
-  const timeStr = now.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  const timeStr = now.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
 
   // Procesar captura si hubo
   let capturedInfo = null;
@@ -482,16 +602,71 @@ function applyMove(gameState, { from, to }) {
     gameState.points[gameState.turn] += capturedInfo.points;
   }
 
+  // Coronación de peones: al alcanzar la última fila, el peón se promueve
+  // a la pieza indicada (por defecto reina), según el reglamento oficial
+  const promotionRow = piece.side === 'white' ? 8 : 1;
+  let isPromotion = false;
+  let promotedTo = null;
+  if (piece.name === 'pawn' && toCoord.row === promotionRow) {
+    isPromotion = true;
+    const validPromotions = { queen: 9, tower: 5, bishop: 3, horse: 3 };
+    const requested = (promotion || 'queen').toLowerCase();
+    promotedTo = validPromotions.hasOwnProperty(requested) ? requested : 'queen';
+  }
+
   // Actualizar pieza en el tablero
-  const updatedPiece = {
-    ...piece,
-    col: toCoord.col,
-    row: toCoord.row,
-    state: 'moved'
-  };
+  const updatedPiece = isPromotion
+    ? {
+        ...piece,
+        name: promotedTo,
+        symbol: PIECE_SYMBOLS[piece.side][promotedTo],
+        points: PIECE_POINTS[promotedTo],
+        col: toCoord.col,
+        row: toCoord.row,
+        state: 'moved'
+      }
+    : {
+        ...piece,
+        col: toCoord.col,
+        row: toCoord.row,
+        state: 'moved'
+      };
 
   gameState.board[toSquare] = updatedPiece;
   gameState.board[fromSquare] = null;
+
+  // Enroque: mover también la torre implicada a su casilla de destino
+  let castlingInfo = null;
+  if (piece.name === 'king' && Math.abs(toCoord.col - fromCoord.col) === 2) {
+    const homeRow = fromCoord.row;
+    const isKingside = toCoord.col === 7;
+    const rookFromCol = isKingside ? 8 : 1;
+    const rookToCol = isKingside ? 6 : 4;
+    const rookFromSquare = coordToSquare(rookFromCol, homeRow);
+    const rookToSquare = coordToSquare(rookToCol, homeRow);
+    const rookPiece = gameState.board[rookFromSquare];
+
+    if (rookPiece) {
+      const rookToCoord = squareToCoord(rookToSquare);
+      gameState.board[rookToSquare] = {
+        ...rookPiece,
+        col: rookToCoord.col,
+        row: rookToCoord.row,
+        state: 'moved'
+      };
+      gameState.board[rookFromSquare] = null;
+    }
+
+    castlingInfo = { side: isKingside ? 'kingside' : 'queenside', rookFrom: rookFromSquare, rookTo: rookToSquare };
+  }
+
+  // Regla de los 50 movimientos: el contador de semi-jugadas se reinicia
+  // con cualquier captura o movimiento de peón, y suma en caso contrario
+  if (targetPiece || piece.name === 'pawn') {
+    gameState.halfmove_clock = 0;
+  } else {
+    gameState.halfmove_clock = (gameState.halfmove_clock || 0) + 1;
+  }
 
   // Evaluar Jaque y Jaque Mate para el bando contrario
   const movingSide = gameState.turn;
@@ -525,8 +700,46 @@ function applyMove(gameState, { from, to }) {
     gameState.in_check = false;
   }
 
+  // Evaluar causas automáticas de tablas (solo si la partida sigue en curso):
+  // insuficiencia de material, regla de 50 movimientos y triple repetición
+  let drawReason = null;
+  if (gameState.status === 'IN_PROGRESS') {
+    if (isInsufficientMaterial(gameState.board)) {
+      drawReason = 'INSUFFICIENT_MATERIAL';
+    } else if ((gameState.halfmove_clock || 0) >= 100) {
+      drawReason = 'FIFTY_MOVE_RULE';
+    } else {
+      if (!gameState.position_history) gameState.position_history = [];
+      const posKey = getPositionKey(gameState.board, nextSide);
+      gameState.position_history.push(posKey);
+      const repetitions = gameState.position_history.filter((k) => k === posKey).length;
+      if (repetitions >= 3) {
+        drawReason = 'THREEFOLD_REPETITION';
+      }
+    }
+
+    if (drawReason) {
+      gameState.status = 'STALEMATE';
+      gameState.winner = 'draw';
+      gameState.in_check = false;
+      gameState.draw_reason = drawReason;
+    }
+  }
+
   // Notación SAN
-  const san = formatMoveSAN(piece, fromSquare, toSquare, !!targetPiece, isCheck, isCheckmate);
+  let san;
+  if (castlingInfo) {
+    san = castlingInfo.side === 'kingside' ? 'O-O' : 'O-O-O';
+    if (isCheckmate) san += '#';
+    else if (isCheck) san += '+';
+  } else {
+    san = formatMoveSAN(piece, fromSquare, toSquare, !!targetPiece, isCheck, isCheckmate);
+    if (isPromotion) {
+      const promoLetter = { queen: 'Q', tower: 'R', bishop: 'B', horse: 'N' }[promotedTo];
+      const suffix = (isCheckmate ? '#' : (isCheck ? '+' : ''));
+      san = san.replace(/[+#]$/, '') + `=${promoLetter}` + suffix;
+    }
+  }
   const classicVal = `${piece.id} -> ${toCoord.row}${COLS[toCoord.col - 1]}`;
 
   // Registrar movimiento
@@ -545,6 +758,9 @@ function applyMove(gameState, { from, to }) {
     is_check: isCheck,
     is_checkmate: isCheckmate,
     is_stalemate: isStalemate,
+    castling: castlingInfo,
+    promotion: isPromotion ? promotedTo : null,
+    draw_reason: drawReason,
     pos: {
       initial: { id: fromSquare, col: fromCoord.col, row: fromCoord.row },
       final: { id: toSquare, col: toCoord.col, row: toCoord.row }
@@ -567,6 +783,7 @@ function applyMove(gameState, { from, to }) {
       move: moveRecord,
       status: gameState.status,
       winner: gameState.winner || null,
+      draw_reason: gameState.draw_reason || null,
       in_check: gameState.in_check || false,
       turn: gameState.turn,
       turn_count: gameState.turn_count,

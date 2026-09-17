@@ -8,13 +8,13 @@ Plataforma interactiva de ajedrez en la web construida con **CSS Flexbox**, **Ja
 
 - **🎮 Tablero Interactivo con HTML5 Drag & Drop:** Movimiento fluido de piezas, cálculo de trayectorias y detección de capturas con puntajes de material acumulados.
 - **🌐 Servidor Backend REST con Autoridad de Reglas (`server.js`):** Valida cada movimiento en el servidor, garantiza la legalidad de las jugadas e impide movimientos que dejen o mantengan al rey en jaque.
-- **💾 Persistencia de Partidas en Tiempo Real:** Las partidas se identifican por ID único y se almacenan automáticamente en caché de memoria y en disco en [`data/games/<id>.json`](file:///d:/repos/new/flexbox_chess/data/games/).
+- **💾 Persistencia de Partidas en Tiempo Real:** Las partidas se identifican por ID único y se almacenan automáticamente en caché de memoria y en disco en [`data/games/<id>.json`](./data/games/).
 - **👥 Modo Multi-Sesión / Multijugador Online:** Dos jugadores en navegadores, ventanas o pestañas diferentes pueden disputar la misma partida en vivo mediante el parámetro de URL `?game=<id>` con sincronización automática en bucle cada 1200ms.
 - **🔐 Gestión de Usuarios y Autenticación Criptográfica:** Sistema de cuentas con contraseñas protegidas mediante **PBKDF2 nativo** (10,000 iteraciones, salt de 16 bytes y SHA-512), tokens de sesión Bearer persistentes en el cliente (`localStorage`) y cálculo de ranking Elo dinámico (+15/-10).
 - **📋 Visor de Partidas por Usuario:** Modal interactivo para consultar partidas de cualquier jugador, estadísticas de rendimiento (Victorias, Derrotas, Tablas, Winrate) y botón para cargar inmediatamente cualquier partida previa en el tablero principal.
 - **🤖 Robot IA con 10 Niveles de Dificultad Graduables:** Motor Minimax con Poda Alfa-Beta, ordenamiento de capturas (*Move Ordering MVV-LVA*), búsqueda de tranquilidad (*Quiescence Search*) y control central (`e4, d4, e5, d5`), cubriendo desde el Nivel 1 (Novato con 60% de error didáctico) hasta el Nivel 10 (Gran Maestro).
 - **🏆 Detección Integral de Jaque Mate y Fin de Partida:** Detección precisa de jaque (`in_check`), jaque mate (`CHECKMATE`), tablas (`STALEMATE`), detención automática de relojes, anuncio formal del ganador y bloqueo total de interacción con las piezas al concluir la partida.
-- **📜 Paginación Descendente de Movimientos (10 por página):** La tabla de movimientos organiza las jugadas en bloques de 10 en orden descendente (las más recientes en la página 1), evitando desbordamientos visuales.
+- **💎 Nueva Interfaz Gráfica Cyber-Minimalist HUD (v2.0):** Experiencia visual futurista y elegante con diseño *Dark Glassmorphism*, tipografías Google `'Outfit'` y `'JetBrains Mono'`, piezas vectoriales SVG de alta definición (blancas perladas y negras en obsidiana con silueta cian), bisel con rieles perimetrales (1-8 y A-H), tarjetas HUD de telemetría para ambos jugadores con relojes LED de pulso activo, botón para invertir tablero (`flipBoard`), resaltado brillante de casillas y sintetizador procedural de audio nativo (Web Audio API).
 - **🔒 Barra de Navegación Histórica en Modo Solo Lectura:** Controles paso a paso (`|◀`, `◀`, `▶`, `▶|`) y filas interactivas en la tabla para inspeccionar cualquier posición previa del tablero con garantía absoluta de inmutabilidad del juego activo.
 
 ---
@@ -22,28 +22,38 @@ Plataforma interactiva de ajedrez en la web construida con **CSS Flexbox**, **Ja
 ## 🚀 Inicio Rápido
 
 ### Requisitos Previos
+
 - **Node.js** (v16.x o superior recomendado).
 - Navegador web moderno (Chrome, Edge, Firefox, Safari).
 
 ### Instalación y Ejecución
+
 1. Clona el repositorio o accede a la carpeta raíz:
+
    ```bash
    cd flexbox_chess
    ```
+
 2. Instala las dependencias del servidor:
+
    ```bash
    npm install
    ```
+
 3. Inicia el servidor backend y la aplicación web:
+
    ```bash
    npm start
    # o alternativamente:
    node server.js
    ```
+
 4. Abre tu navegador web en:
+
    ```text
    http://127.0.0.1:5000
    ```
+
    *(Usuarios demo pre-cargados: `carlos` / `chess` y `ana` / `chess`)*
 
 ---
@@ -94,7 +104,7 @@ flexbox_chess/
 ## 📡 Referencia de la API REST
 
 | Método | Endpoint | Descripción |
-|---|---|---|
+| --- | --- | --- |
 | `POST` | `/api/auth/register` | Registra un nuevo usuario con contraseña cifrada (PBKDF2). |
 | `POST` | `/api/auth/login` | Inicia sesión y genera token Bearer de sesión. |
 | `GET` | `/api/auth/me` | Retorna el perfil del usuario autenticado con el token. |
@@ -117,15 +127,15 @@ flexbox_chess/
 
 ## 📚 Documentación Técnica Detallada
 
-Toda la documentación técnica del proyecto se encuentra centralizada en la carpeta [`docs/`](file:///d:/repos/new/flexbox_chess/docs/):
+Toda la documentación técnica del proyecto se encuentra centralizada en la carpeta [`docs/`](./docs/):
 
-1. **[Índice General de Documentación](file:///d:/repos/new/flexbox_chess/docs/README.md):** Mapa de navegación y catálogo de la documentación.
-2. **[Manual de Usuario y Desarrollador](file:///d:/repos/new/flexbox_chess/docs/manual_flexbox_chess.md):** Manual completo del funcionamiento del tablero, arrastrar y soltar, mapeo de piezas y características integradas.
-3. **[Especificación de Requerimientos del Sistema (SRS)](file:///d:/repos/new/flexbox_chess/docs/requerimientos_sistema.md):** Documento formal según el estándar IEEE 830 con requerimientos funcionales y no funcionales.
-4. **[Especificación Técnica de la API REST y WebSockets](file:///d:/repos/new/flexbox_chess/docs/especificacion_api_rest_websocket.md):** Contratos de datos, esquemas JSON, algoritmos de reloj y endpoints.
-5. **[Guía de Integración Frontend <-> API](file:///d:/repos/new/flexbox_chess/docs/guia_integracion_frontend.md):** Manual paso a paso para la conexión de componentes de interfaz con el servidor.
-6. **[Inteligencia Artificial y Arquitectura Multi-Sesión](file:///d:/repos/new/flexbox_chess/docs/ia_y_multisesion.md):** Análisis de motores de referencia (Stockfish, Minimax) y calibración de los 10 niveles de IA.
-7. **[Bitácora de Cambios y Diagramas de Arquitectura](file:///d:/repos/new/flexbox_chess/docs/bitacora_cambios_y_arquitectura.md):** Registro cronológico exhaustivo de todos los requerimientos implementados uno a uno con diagramas Mermaid de flujo y capas.
+1. **[Índice General de Documentación](./docs/README.md):** Mapa de navegación y catálogo de la documentación.
+2. **[Manual de Usuario y Desarrollador](./docs/manual_flexbox_chess.md):** Manual completo del funcionamiento del tablero, arrastrar y soltar, mapeo de piezas y características integradas.
+3. **[Especificación de Requerimientos del Sistema (SRS)](./docs/requerimientos_sistema.md):** Documento formal según el estándar IEEE 830 con requerimientos funcionales y no funcionales.
+4. **[Especificación Técnica de la API REST y WebSockets](./docs/especificacion_api_rest_websocket.md):** Contratos de datos, esquemas JSON, algoritmos de reloj y endpoints.
+5. **[Guía de Integración Frontend <-> API](./docs/guia_integracion_frontend.md):** Manual paso a paso para la conexión de componentes de interfaz con el servidor.
+6. **[Inteligencia Artificial y Arquitectura Multi-Sesión](./docs/ia_y_multisesion.md):** Análisis de motores de referencia (Stockfish, Minimax) y calibración de los 10 niveles de IA.
+7. **[Bitácora de Cambios y Diagramas de Arquitectura](./docs/bitacora_cambios_y_arquitectura.md):** Registro cronológico exhaustivo de todos los requerimientos implementados uno a uno con diagramas Mermaid de flujo y capas.
 
 ---
 

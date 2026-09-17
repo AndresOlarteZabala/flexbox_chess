@@ -3,7 +3,7 @@
  * Implementa evaluación posicional (Piece-Square Tables), Minimax y Poda Alfa-Beta.
  */
 
-const { getLegalMoves, squareToCoord, coordToSquare } = require('./chessEngine');
+const { getLegalMoves, squareToCoord, coordToSquare, PIECE_SYMBOLS, PIECE_POINTS } = require('./chessEngine');
 
 // Valores de material en centipeones
 const PIECE_VALUES = {
@@ -110,13 +110,32 @@ function simulateMove(board, move) {
   const toCoord = squareToCoord(move.to);
 
   if (piece && toCoord) {
+    // Coronación: el peón que alcanza la última fila se simula como reina (mejor jugada por defecto)
+    const promotionRow = piece.side === 'white' ? 8 : 1;
+    const isPromotion = piece.name === 'pawn' && toCoord.row === promotionRow;
+
     nextBoard[move.to] = {
       ...piece,
+      ...(isPromotion ? { name: 'queen', symbol: PIECE_SYMBOLS[piece.side].queen, points: PIECE_POINTS.queen } : {}),
       col: toCoord.col,
       row: toCoord.row,
       state: 'moved'
     };
     nextBoard[move.from] = null;
+
+    // Enroque: mover también la torre implicada en la simulación
+    if (piece.name === 'king' && Math.abs(toCoord.col - squareToCoord(move.from).col) === 2) {
+      const homeRow = toCoord.row;
+      const isKingside = toCoord.col === 7;
+      const rookFromSquare = coordToSquare(isKingside ? 8 : 1, homeRow);
+      const rookToSquare = coordToSquare(isKingside ? 6 : 4, homeRow);
+      const rookPiece = nextBoard[rookFromSquare];
+      if (rookPiece) {
+        const rookToCoord = squareToCoord(rookToSquare);
+        nextBoard[rookToSquare] = { ...rookPiece, col: rookToCoord.col, row: rookToCoord.row, state: 'moved' };
+        nextBoard[rookFromSquare] = null;
+      }
+    }
   }
   return nextBoard;
 }
