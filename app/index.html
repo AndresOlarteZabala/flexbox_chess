@@ -3,14 +3,21 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Flexbox Chess | Cyber-HUD Edition</title>
-  <link rel="icon" type="image/png" href="img/favicon-64.png">
+  <title>Club Estrategia | Cyber-HUD Edition</title>
+  <link rel="icon" type="image/svg+xml" href="img/favicon.svg">
+  <link rel="icon" type="image/png" sizes="512x512" href="img/favicon-512.png">
+  <link rel="icon" type="image/x-icon" href="img/favicon.ico">
+  <link rel="shortcut icon" href="img/favicon.ico">
+  <link rel="apple-touch-icon" href="img/pwa-192.png">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0f172a">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/index.css">
   <script src="js/jquery-1.12.0.min.js"></script>
   <script src="js/html2canvas.min.js"></script>
+  <script src="/socket.io/socket.io.js"></script>
 </head>
 <body>
 
@@ -20,8 +27,8 @@
     <div class="header-top-row">
       <div class="brand-section">
         <a href="/" class="brand-logo">
-          <img src="img/logo-dark-128.png" alt="Flexbox Chess" class="brand-logo-icon" />
-          <h1 class="brand-title">CHESS</h1>
+          <img src="img/logo-white.svg" alt="Club Estrategia" class="brand-logo-icon" />
+          <h1 class="brand-title">CLUB ESTRATEGIA</h1>
         </a>
         <span class="brand-badge">HUD v2.0</span>
         <div id="api-status-badge" class="hud-status-indicator">
@@ -40,6 +47,10 @@
 
         <!-- Estado Autenticado -->
         <div id="user-logged-controls" style="display: none; gap: 8px; align-items: center;">
+          <div id="invite-badge" onclick="openInvitesModal()" class="user-badge-pill" style="display: none; background: var(--accent-crimson, #f43f5e);" title="Invitaciones pendientes">
+            <span>✉️</span>
+            <span id="invite-badge-count">0</span>
+          </div>
           <div id="user-profile-badge" class="user-badge-pill" onclick="openUserGamesModal()" title="Ver perfil y partidas">
             <span>👤</span>
             <span id="current-user-name">Usuario</span>
@@ -56,8 +67,9 @@
       <!-- Selector de Partida ID -->
       <div class="hud-control-group">
         <span class="hud-label">Partida</span>
-        <input type="text" id="game-id-input" value="game-1" class="hud-input" placeholder="ID" />
+        <input type="text" id="game-id-input" value="" class="hud-input" placeholder="ID" />
         <button id="btn-load-game" onclick="loadGameFromAPI($('#game-id-input').val())" class="btn-hud btn-hud-primary" title="Cargar esta partida">Cargar</button>
+        <button id="btn-new-game" onclick="openCreateGameModal()" class="btn-hud btn-hud-primary" title="Crear una nueva partida">+ Nueva Partida</button>
         <button id="btn-reset-game" onclick="resetGameAPI($('#game-id-input').val())" class="btn-hud btn-hud-danger" title="Reiniciar partida">Reiniciar</button>
       </div>
 
@@ -150,6 +162,14 @@
 
     <!-- Columna Central: Bisel y Tablero -->
     <div class="board-column">
+      <!-- Banner de Bienvenida (sin partida activa) -->
+      <div id="welcome-banner" style="display: none;">
+        <div>
+          ♟️ <strong>Bienvenido a Flexbox Chess.</strong> Inicia sesión y crea una partida para empezar a jugar.
+        </div>
+        <button onclick="openAuthModal('login')" class="btn-hud btn-hud-primary" style="padding: 4px 10px; font-size: 11px;">Iniciar Sesión</button>
+      </div>
+
       <div class="board-bezel-wrapper">
         <!-- Coordenadas Superiores (a-h) -->
         <div class="board-coords-top">
@@ -363,6 +383,97 @@
               <!-- Filas dinámicas -->
             </tbody>
           </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de Crear Nueva Partida -->
+  <div id="create-game-modal" class="modal-backdrop" style="display: none;">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2 style="margin: 0; font-size: 16px; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 8px;">
+          <span>♟️</span> Nueva Partida
+        </h2>
+        <button class="modal-close-btn" onclick="closeCreateGameModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div id="create-game-alert" style="display: none;" class="auth-alert"></div>
+
+        <div class="form-group">
+          <label>Tipo de Partida:</label>
+          <div style="display: flex; gap: 16px; margin-top: 4px;">
+            <label style="display: flex; align-items: center; gap: 6px; font-weight: 400; cursor: pointer;">
+              <input type="radio" name="create-game-type" value="bot" checked onchange="onCreateGameTypeChange()" /> 🤖 vs Robot
+            </label>
+            <label style="display: flex; align-items: center; gap: 6px; font-weight: 400; cursor: pointer;">
+              <input type="radio" name="create-game-type" value="online" onchange="onCreateGameTypeChange()" /> 👥 Online
+            </label>
+          </div>
+        </div>
+
+        <span id="create-bot-options">
+          <div class="form-group">
+            <label for="create-bot-difficulty">Dificultad del Robot:</label>
+            <select id="create-bot-difficulty" class="form-input">
+              <option value="1">Nvl 1: Novato (60% blunder)</option>
+              <option value="2">Nvl 2: Principiante</option>
+              <option value="3">Nvl 3: Aficionado</option>
+              <option value="4">Nvl 4: Casual (Depth 2)</option>
+              <option value="5" selected>Nvl 5: Club Intermedio</option>
+              <option value="6">Nvl 6: Avanzado (Posicional)</option>
+              <option value="7">Nvl 7: Experto (Depth 3)</option>
+              <option value="8">Nvl 8: Maestro Candidato</option>
+              <option value="9">Nvl 9: Maestro FIDE</option>
+              <option value="10">Nvl 10: Gran Maestro</option>
+            </select>
+          </div>
+        </span>
+
+        <span id="create-online-options" style="display: none;">
+          <div class="form-group">
+            <label for="create-invite-username">Invitar a Usuario (opcional):</label>
+            <input type="text" id="create-invite-username" class="form-input" placeholder="ej: ana" />
+          </div>
+        </span>
+
+        <div class="form-group">
+          <label for="create-player-side">Jugar con:</label>
+          <select id="create-player-side" class="form-input">
+            <option value="white" selected>⚪ Blancas</option>
+            <option value="black">⚫ Negras</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="create-time-control">Control de Tiempo:</label>
+          <select id="create-time-control" class="form-input">
+            <option value="">Sin reloj</option>
+            <option value="60,0,bullet-1+0">Bullet 1+0</option>
+            <option value="180,2,blitz-3+2">Blitz 3+2</option>
+            <option value="300,0,blitz-5+0">Blitz 5+0</option>
+            <option value="600,0,rapid-10+0">Rápida 10+0</option>
+            <option value="900,10,rapid-15+10">Rápida 15+10</option>
+          </select>
+        </div>
+
+        <button type="button" id="btn-submit-create-game" class="form-btn-primary" onclick="submitCreateGame()">Crear Partida</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de Invitaciones Pendientes -->
+  <div id="invites-modal" class="modal-backdrop" style="display: none;">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2 style="margin: 0; font-size: 16px; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 8px;">
+          <span>✉️</span> Invitaciones Pendientes
+        </h2>
+        <button class="modal-close-btn" onclick="closeInvitesModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div id="invites-list">
+          <!-- Filas dinámicas -->
         </div>
       </div>
     </div>

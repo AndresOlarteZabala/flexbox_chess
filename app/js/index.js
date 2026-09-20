@@ -3,7 +3,8 @@ let turnLabel = $("#turn");
 let quantityLabel = $("#quantity");
 let black_points = 0;
 let white_points = 0;
-let currentGameId = "game-1";
+let currentGameId = null;
+let clockedGameId = null; // ID de la partida a la que pertenece el conteo actual del reloj
 let gameMode = "bot"; // 'bot' o 'multiplayer'
 let myPlayerSide = "white"; // 'white', 'black' o 'both'
 let syncTimer = null;
@@ -12,6 +13,8 @@ let isBotMoving = false;
 // Variables de Autenticación de Usuario
 let authToken = localStorage.getItem('chess_auth_token') || null;
 let currentUser = null;
+let appSocket = null;
+let pendingInvites = [];
 try {
   const savedUser = localStorage.getItem('chess_auth_user');
   if (savedUser) currentUser = JSON.parse(savedUser);
@@ -55,9 +58,11 @@ $(document).ready(function () {
 // Navegación con los botones atrás/adelante del navegador entre URLs de partidas
 window.addEventListener('popstate', () => {
   const pathMatch = window.location.pathname.match(/^\/game\/([^/]+)\/?$/);
-  const gameId = pathMatch ? decodeURIComponent(pathMatch[1]) : "game-1";
-  $("#game-id-input").val(gameId);
-  loadGameFromAPI(gameId);
+  const gameId = pathMatch ? decodeURIComponent(pathMatch[1]) : null;
+  if (gameId) {
+    $("#game-id-input").val(gameId);
+    loadGameFromAPI(gameId);
+  }
 });
 
 function load() {
@@ -84,7 +89,13 @@ function load() {
     onGameModeChange();
   }
 
-  loadGameFromAPI(currentGameId);
+  // Sin ID explícito en la URL: no se auto-carga ninguna partida real (crear/
+  // unirse requiere sesión), pero se muestra el tablero inicial como vitrina.
+  if (currentGameId) {
+    loadGameFromAPI(currentGameId);
+  } else {
+    showWelcomeBoard();
+  }
 }
 
 // Audio Synthesizer con Web Audio API
@@ -240,6 +251,32 @@ function buildInitialPieces() {
 }
 
 /**
+ * Muestra el tablero en su posición inicial como vitrina, sin crear ninguna
+ * partida real en el servidor. Se usa cuando no hay ID de partida en la URL.
+ */
+function showWelcomeBoard() {
+  $("#welcome-banner").css("display", "flex");
+  buildGrid();
+
+  const board = buildInitialPieces();
+  for (const [square, piece] of Object.entries(board)) {
+    if (piece) {
+      const cell = $(`#${square}`);
+      const iconHtml = `<icon id="${piece.id}" title="${piece.name} (${piece.side})" side="${piece.side}" name="${piece.name}" symbol="${piece.symbol || ''}" class="${piece.name} ${piece.side}" row="${piece.row}" col="${piece.col}" points="${piece.points}" state="initial" draggable="false" />`;
+      cell.html(iconHtml);
+    }
+  }
+
+  turnLabel.html('♟️ Sin partida activa').css("color", "#67e8f9");
+  $("#api-status-text").text("Esperando partida");
+  $("#turn-status-text").text("Estado:");
+  $("#white-player-name").text("Blancas (Sin asignar)");
+  $("#white-player-elo").text("--");
+  $("#black-player-name").text("Negras (Sin asignar)");
+  $("#black-player-elo").text("--");
+}
+
+/**
  * Reconstruye el tablero hasta la jugada 'step'
  */
 function computeBoardAtStep(step) {
@@ -282,12 +319,19 @@ function updateGameUrl(gameId) {
  * Consulta el estado de la partida desde el API y renderiza el tablero
  */
 function loadGameFromAPI(gameId) {
-  if (!gameId) gameId = "game-1";
+  if (!gameId) return;
+
+  if (clockedGameId !== gameId) {
+    resetClocks();
+    clockedGameId = gameId;
+  }
+
   currentGameId = gameId;
   updateGameUrl(gameId);
 
   fetch(`/api/status/${encodeURIComponent(gameId)}`)
     .then((res) => {
+      if (res.status === 404) throw new Error("Esa partida no existe.");
       if (!res.ok) throw new Error("No se pudo obtener el estado de la partida");
       return res.json();
     })
@@ -348,15 +392,21 @@ function resetGameAPI(gameId) {
   if (!gameId) gameId = currentGameId;
   exitHistoryMode();
 
-  fetch(`/api/games/${encodeURIComponent(gameId)}/reset`, { method: "POST" })
+  fetch(`/api/games/${encodeURIComponent(gameId)}/reset`, {
+    method: "POST",
+    headers: authToken ? { "Authorization": `Bearer ${authToken}` } : {}
+  })
     .then((res) => res.json())
     .then((res) => {
       if (res.success && res.data) {
         latestLiveGame = res.data;
         allMovements = [];
+        resetClocks();
         renderGameState(res.data);
         messageShow("Partida Reiniciada");
         checkAutoBotMove(res.data);
+      } else {
+        messageShow(res.error?.message || "No se pudo reiniciar la partida");
       }
     })
     .catch((err) => {
@@ -409,7 +459,10 @@ function triggerBotMove() {
 
   fetch(`/api/games/${encodeURIComponent(currentGameId)}/bot-move`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      ...(authToken ? { "Authorization": `Bearer ${authToken}` } : {})
+    },
     body: JSON.stringify({ difficulty })
   })
     .then((res) => res.json())
@@ -482,6 +535,8 @@ function drawReasonLabel(drawReason) {
  * Renderiza el estado completo retornado por la API en la interfaz gráfica (Modo En Vivo)
  */
 function renderGameState(gameState) {
+  $("#welcome-banner").hide();
+
   if ($(".cell").length === 0) {
     buildGrid();
   } else {
@@ -492,7 +547,7 @@ function renderGameState(gameState) {
   $(".cell").removeClass("last-move-from last-move-to in-check-king winner-king");
 
   const isGameFinished = gameState.status === 'CHECKMATE' || gameState.status === 'STALEMATE' || gameState.status === 'RESIGNED';
-  const canDragPieces = !isGameFinished && !isHistoryMode;
+  const canDragPieces = !isGameFinished && !isHistoryMode && gameState.status !== 'WAITING_FOR_PLAYER';
 
   // Colocar piezas activas desde el tablero del backend
   if (gameState.board) {
@@ -554,6 +609,10 @@ function renderGameState(gameState) {
     $("#turn-status-text").text("Fin:");
     stopClock();
     announceGameEnd('RESIGNED', gameState);
+  } else if (gameState.status === 'WAITING_FOR_PLAYER') {
+    turnLabel.html('⏳ Esperando rival...').css("color", "#fbbf24");
+    $("#api-status-text").text('⏳ Esperando al segundo jugador');
+    $("#turn-status-text").text("Estado:");
   } else {
     $("#turn-status-text").text("Turno:");
     if (gameState.in_check) {
@@ -570,11 +629,11 @@ function renderGameState(gameState) {
     $("#white-player-name").text(gameState.white_player.name);
     $("#white-player-elo").text(gameState.white_player.rating || 1200);
   } else {
-    $("#white-player-name").text("Blancas (Invitado)");
-    $("#white-player-elo").text("1200");
+    $("#white-player-name").text("Blancas (Esperando)");
+    $("#white-player-elo").text("--");
   }
 
-  if (gameMode === "bot") {
+  if (gameState.game_type === "bot") {
     const diff = $("#bot-difficulty").val() || "5";
     const diffText = $(`#bot-difficulty option[value='${diff}']`).text().split(':')[0] || `Nivel ${diff}`;
     $("#black-player-name").html(`Robot IA <span style="font-size:10px; color:#a855f7; font-weight:600;">(${diffText})</span>`);
@@ -1050,6 +1109,8 @@ function initAuth() {
           localStorage.setItem('chess_auth_user', JSON.stringify(currentUser));
           renderAuthUI();
           claimCurrentGame();
+          connectAppSocket();
+          refreshPendingInvites();
         } else {
           // Token expirado o inválido
           logoutUser(false);
@@ -1097,6 +1158,7 @@ function renderAuthUI() {
     $("#user-logged-controls").css("display", "inline-flex");
     $("#current-user-name").text(currentUser.name || currentUser.username);
     $("#current-user-rating").text(currentUser.rating || 1200);
+    renderInviteBadge();
   } else {
     $("#user-guest-controls").css("display", "inline-flex");
     $("#user-logged-controls").hide();
@@ -1168,6 +1230,8 @@ function submitLogin() {
         closeAuthModal();
         messageShow(`¡Bienvenido, ${currentUser.name || currentUser.username}!`);
         claimCurrentGame();
+        connectAppSocket();
+        refreshPendingInvites();
       } else {
         showAuthAlert(res.error?.message || "Credenciales incorrectas", "error");
       }
@@ -1211,6 +1275,8 @@ function submitRegister() {
         closeAuthModal();
         messageShow(`¡Cuenta creada con éxito! Bienvenido, ${currentUser.name}!`);
         claimCurrentGame();
+        connectAppSocket();
+        refreshPendingInvites();
       } else {
         showAuthAlert(res.error?.message || "Error al crear cuenta", "error");
       }
@@ -1249,7 +1315,12 @@ function logoutUser(notify = true) {
   currentUser = null;
   localStorage.removeItem('chess_auth_token');
   localStorage.removeItem('chess_auth_user');
+  pendingInvites = [];
   renderAuthUI();
+  if (appSocket) {
+    appSocket.disconnect();
+    appSocket = null;
+  }
   if (notify) messageShow("Sesión cerrada");
 }
 
@@ -1422,4 +1493,240 @@ function loadGameFromUserHistory(gameId) {
   $("#game-id-input").val(gameId);
   loadGameFromAPI(gameId);
   messageShow(`Partida cargada: ${gameId}`);
+}
+
+// ==========================================
+// CONEXIÓN WEBSOCKET Y NOTIFICACIONES DE INVITACIONES
+// ==========================================
+
+/**
+ * Abre la conexión WebSocket autenticada para recibir notificaciones en tiempo real
+ */
+function connectAppSocket() {
+  if (!authToken || typeof io === 'undefined') return;
+  if (appSocket) appSocket.disconnect();
+
+  appSocket = io({ auth: { token: authToken } });
+
+  appSocket.on('invite:received', (invite) => {
+    pendingInvites.push(invite);
+    renderInviteBadge();
+    messageShow(`✉️ ${invite.from_user.name || invite.from_user.username} te invitó a una partida`);
+  });
+
+  appSocket.on('invite:accepted', (invite) => {
+    messageShow(`✅ ${invite.to_username} aceptó tu invitación`);
+  });
+
+  appSocket.on('invite:declined', (invite) => {
+    messageShow(`❌ ${invite.to_username} rechazó tu invitación`);
+  });
+}
+
+/**
+ * Actualiza el badge de invitaciones pendientes en la barra superior
+ */
+function renderInviteBadge() {
+  const count = pendingInvites.length;
+  $("#invite-badge-count").text(count);
+  $("#invite-badge").toggle(count > 0);
+}
+
+/**
+ * Consulta al servidor las invitaciones pendientes del usuario autenticado
+ */
+function refreshPendingInvites() {
+  if (!authToken) return;
+  fetch('/api/invites', {
+    headers: { 'Authorization': `Bearer ${authToken}` }
+  })
+    .then((res) => res.json())
+    .then((res) => {
+      if (res.success && res.data) {
+        pendingInvites = res.data;
+        renderInviteBadge();
+      }
+    })
+    .catch(() => {});
+}
+
+/**
+ * Abre el modal de invitaciones pendientes
+ */
+function openInvitesModal() {
+  refreshPendingInvites();
+  renderInvitesList();
+  $("#invites-modal").fadeIn(150);
+}
+
+/**
+ * Cierra el modal de invitaciones pendientes
+ */
+function closeInvitesModal() {
+  $("#invites-modal").fadeOut(150);
+}
+
+/**
+ * Renderiza la lista de invitaciones pendientes dentro del modal
+ */
+function renderInvitesList() {
+  const container = $("#invites-list");
+  container.empty();
+
+  if (pendingInvites.length === 0) {
+    container.append('<p style="color: var(--text-muted); text-align: center;">No tienes invitaciones pendientes.</p>');
+    return;
+  }
+
+  pendingInvites.forEach((invite) => {
+    const row = $(`
+      <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--surface-glass-border);">
+        <span>♟️ <strong>${invite.from_user.name || invite.from_user.username}</strong> te invitó a jugar</span>
+        <span style="display: flex; gap: 6px;">
+          <button class="btn-hud btn-hud-primary" data-accept="${invite.id}">Aceptar</button>
+          <button class="btn-hud btn-hud-danger" data-decline="${invite.id}">Rechazar</button>
+        </span>
+      </div>
+    `);
+    row.find('[data-accept]').on('click', () => respondToInvite(invite.id, 'accept'));
+    row.find('[data-decline]').on('click', () => respondToInvite(invite.id, 'decline'));
+    container.append(row);
+  });
+}
+
+/**
+ * Acepta o rechaza una invitación pendiente
+ */
+function respondToInvite(inviteId, action) {
+  fetch(`/api/invites/${encodeURIComponent(inviteId)}/${action}`, {
+    method: 'POST',
+    headers: { 'Authorization': `Bearer ${authToken}` }
+  })
+    .then((res) => res.json())
+    .then((res) => {
+      pendingInvites = pendingInvites.filter((inv) => inv.id !== inviteId);
+      renderInviteBadge();
+      renderInvitesList();
+      if (res.success && action === 'accept' && res.data && res.data.id) {
+        closeInvitesModal();
+        $("#game-id-input").val(res.data.id);
+        loadGameFromAPI(res.data.id);
+        messageShow('¡Invitación aceptada! Partida cargada.');
+      } else if (res.success) {
+        messageShow('Invitación rechazada.');
+      } else {
+        messageShow(res.error?.message || 'No se pudo responder la invitación');
+      }
+    })
+    .catch(() => {
+      messageShow('Error de conexión al responder la invitación');
+    });
+}
+
+// ==========================================
+// CREACIÓN DE PARTIDAS (MODAL)
+// ==========================================
+
+/**
+ * Abre el modal de creación de nueva partida
+ */
+function openCreateGameModal() {
+  if (!currentUser) {
+    messageShow('Debes iniciar sesión para crear una partida');
+    openAuthModal('login');
+    return;
+  }
+  $("#create-game-alert").hide().text("").removeClass("error success");
+  onCreateGameTypeChange();
+  $("#create-game-modal").fadeIn(150);
+}
+
+/**
+ * Cierra el modal de creación de nueva partida
+ */
+function closeCreateGameModal() {
+  $("#create-game-modal").fadeOut(150);
+}
+
+/**
+ * Alterna la visibilidad de las opciones de bot/online según el tipo elegido
+ */
+function onCreateGameTypeChange() {
+  const type = $("input[name='create-game-type']:checked").val();
+  if (type === 'online') {
+    $("#create-bot-options").hide();
+    $("#create-online-options").show();
+  } else {
+    $("#create-bot-options").show();
+    $("#create-online-options").hide();
+  }
+}
+
+/**
+ * Envía la solicitud de creación de partida al servidor
+ */
+function submitCreateGame() {
+  if (!authToken) {
+    messageShow('Debes iniciar sesión para crear una partida');
+    return;
+  }
+
+  const gameType = $("input[name='create-game-type']:checked").val();
+  const playerSide = $("#create-player-side").val();
+  const inviteUsername = $("#create-invite-username").val().trim();
+  const timeControlRaw = $("#create-time-control").val();
+
+  let timeControl = null;
+  if (timeControlRaw) {
+    const [initialSeconds, incrementSeconds, preset] = timeControlRaw.split(',');
+    timeControl = {
+      initial_seconds: parseInt(initialSeconds, 10),
+      increment_seconds: parseInt(incrementSeconds, 10),
+      preset
+    };
+  }
+
+  const payload = {
+    game_type: gameType,
+    player_side: playerSide,
+    time_control: timeControl
+  };
+  if (gameType === 'online' && inviteUsername) {
+    payload.invite_username = inviteUsername;
+  }
+  if (gameType === 'bot') {
+    payload.bot_difficulty = parseInt($("#create-bot-difficulty").val(), 10);
+  }
+
+  $("#btn-submit-create-game").prop("disabled", true).text("Creando...");
+
+  fetch('/api/games', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${authToken}`
+    },
+    body: JSON.stringify(payload)
+  })
+    .then((res) => res.json())
+    .then((res) => {
+      $("#btn-submit-create-game").prop("disabled", false).text("Crear Partida");
+      if (res.success && res.data) {
+        closeCreateGameModal();
+        gameMode = gameType === 'online' ? 'multiplayer' : 'bot';
+        $("#play-mode-select").val(gameMode);
+        onGameModeChange();
+        myPlayerSide = playerSide;
+        $("#player-side-select").val(myPlayerSide);
+        $("#game-id-input").val(res.data.id);
+        loadGameFromAPI(res.data.id);
+        messageShow(gameType === 'online' ? 'Partida online creada. Esperando rival...' : '¡Partida contra el robot creada!');
+      } else {
+        $("#create-game-alert").removeClass("success").addClass("error").text(res.error?.message || "Error al crear la partida").fadeIn(150);
+      }
+    })
+    .catch(() => {
+      $("#btn-submit-create-game").prop("disabled", false).text("Crear Partida");
+      $("#create-game-alert").removeClass("success").addClass("error").text("Error de conexión con el servidor").fadeIn(150);
+    });
 }

@@ -128,6 +128,18 @@ function stopClock() {
   if (intervalId) clearInterval(intervalId);
 }
 
+/**
+ * Reinicia ambos relojes a cero. Debe llamarse al cargar o crear una
+ * partida distinta a la que tenía el reloj corriendo, para que cada
+ * partida nueva empiece su conteo desde 00:00:00.
+ */
+function resetClocks() {
+  stopClock();
+  whiteTime = 0;
+  blackTime = 0;
+  updateClockDisplay();
+}
+
 function updateClock(data) {
   if (data.side === "white") whiteTime++;
   if (data.side === "black") blackTime++;
