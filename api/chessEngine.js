@@ -489,12 +489,20 @@ function getPositionKey(board, turn) {
  */
 function createGameState(gameId, options = {}) {
   const now = new Date();
+  const gameType = options.game_type === 'online' ? 'online' : 'bot';
+  const whitePlayer = options.white_player || null;
+  const blackPlayer = options.black_player || (gameType === 'bot' ? { id: 'bot', username: 'robot', name: 'Robot IA', is_bot: true } : null);
+  const bothSlotsFilled = !!(whitePlayer && blackPlayer);
+
   return {
-    id: gameId || `game-${Date.now()}`,
-    status: 'IN_PROGRESS', // IN_PROGRESS, CHECKMATE, STALEMATE, DRAW, RESIGNED, TIMEOUT
+    id: gameId,
+    // IN_PROGRESS, WAITING_FOR_PLAYER, CHECKMATE, STALEMATE, DRAW, RESIGNED, TIMEOUT
+    status: gameType === 'online' && !bothSlotsFilled ? 'WAITING_FOR_PLAYER' : 'IN_PROGRESS',
     winner: null, // 'white', 'black', 'draw', null
     in_check: false,
-    mode: options.mode || 'timed', // 'timed' o 'async'
+    game_type: gameType, // 'bot' | 'online'
+    mode: options.time_control ? 'timed' : 'async', // 'timed' o 'async'
+    time_control: options.time_control || null, // { initial_seconds, increment_seconds, preset } o null
     turn: 'white',
     turn_count: 0,
     board: createInitialBoard(),
@@ -511,13 +519,17 @@ function createGameState(gameId, options = {}) {
       black: 0
     },
     clocks: {
-      white: 0,
-      black: 0,
-      last_turn_started_at: now.toISOString()
+      white: options.time_control ? options.time_control.initial_seconds * 1000 : 0,
+      black: options.time_control ? options.time_control.initial_seconds * 1000 : 0,
+      // Solo arranca cuando la partida realmente inicia (ambos jugadores reales presentes)
+      last_turn_started_at: bothSlotsFilled ? now.toISOString() : null,
+      running: bothSlotsFilled && !!options.time_control
     },
     movements: [],
-    white_player: options.white_player || { id: 'guest-w', username: 'blancas', name: 'Jugador Blancas' },
-    black_player: options.black_player || (options.mode === 'bot' ? { id: 'bot', username: 'robot', name: 'Robot IA' } : { id: 'guest-b', username: 'negras', name: 'Jugador Negras' }),
+    white_player: whitePlayer,
+    black_player: blackPlayer,
+    created_by: options.created_by || null,
+    invited_username: options.invited_username || null,
     created_at: now.toISOString(),
     updated_at: now.toISOString()
   };

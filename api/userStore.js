@@ -2,55 +2,37 @@
  * Módulo de almacenamiento y autenticación de usuarios para Flexbox Chess.
  * Gestiona el registro, hashing seguro con salt (crypto nativo pbkdf2),
  * sesiones activas y estadísticas de partidas por usuario.
+ * Persiste en SQLite (data/chess.db).
  */
 
-const fs = require('fs');
-const path = require('path');
 const crypto = require('crypto');
+const db = require('./db');
 
-const USERS_DIR = path.join(__dirname, '..', 'data', 'users');
-const GAMES_DIR = path.join(__dirname, '..', 'data', 'games');
-const SESSIONS_FILE = path.join(USERS_DIR, 'sessions.json');
-
-// Asegurar que exista el directorio de usuarios
-if (!fs.existsSync(USERS_DIR)) {
-  fs.mkdirSync(USERS_DIR, { recursive: true });
-}
-
-// Caché en memoria para usuarios y sesiones activas
+// Caché en memoria para usuarios
 const memoryUsers = new Map();
-const activeSessions = new Map(); // token -> userId
 
-/**
- * Carga las sesiones activas persistidas en disco, para que el inicio de
- * sesión sobreviva a un reinicio del servidor.
- */
-function loadSessions() {
-  try {
-    if (fs.existsSync(SESSIONS_FILE)) {
-      const raw = fs.readFileSync(SESSIONS_FILE, 'utf-8');
-      const entries = JSON.parse(raw);
-      for (const [token, userId] of entries) {
-        activeSessions.set(token, userId);
-      }
-    }
-  } catch (err) {
-    console.error('Error al cargar sesiones activas:', err.message);
-  }
-}
+const upsertUserStmt = db.prepare(`
+  INSERT INTO users (id, username, email, created_at, updated_at, data)
+  VALUES (?, ?, ?, ?, ?, ?)
+  ON CONFLICT(id) DO UPDATE SET
+    username = excluded.username,
+    email = excluded.email,
+    updated_at = excluded.updated_at,
+    data = excluded.data
+`);
+const selectUserByIdStmt = db.prepare('SELECT data FROM users WHERE id = ?');
+const selectUserByUsernameStmt = db.prepare('SELECT data FROM users WHERE username = ?');
+const selectUserByEmailStmt = db.prepare('SELECT data FROM users WHERE email = ?');
+const selectAllUsersStmt = db.prepare('SELECT data FROM users');
+const countUsersStmt = db.prepare('SELECT COUNT(*) AS n FROM users');
 
-/**
- * Persiste las sesiones activas en disco
- */
-function persistSessions() {
-  try {
-    fs.writeFileSync(SESSIONS_FILE, JSON.stringify(Array.from(activeSessions.entries())), 'utf-8');
-  } catch (err) {
-    console.error('Error al guardar sesiones activas:', err.message);
-  }
-}
+const insertSessionStmt = db.prepare('INSERT INTO sessions (token, user_id) VALUES (?, ?)');
+const selectSessionStmt = db.prepare('SELECT user_id FROM sessions WHERE token = ?');
+const deleteSessionStmt = db.prepare('DELETE FROM sessions WHERE token = ?');
 
-loadSessions();
+const selectUserGamesStmt = db.prepare(
+  'SELECT data FROM games WHERE white_player_id = ? OR black_player_id = ? ORDER BY updated_at DESC'
+);
 
 /**
  * Genera un hash seguro con salt usando pbkdf2
@@ -81,7 +63,7 @@ function sanitizeUser(user) {
 }
 
 /**
- * Guarda un usuario en memoria y en disco
+ * Guarda un usuario en memoria y en SQLite
  */
 function saveUser(user) {
   if (!user || !user.id) return;
@@ -89,10 +71,9 @@ function saveUser(user) {
   memoryUsers.set(user.id, user);
 
   try {
-    const filePath = path.join(USERS_DIR, `${user.id}.json`);
-    fs.writeFileSync(filePath, JSON.stringify(user, null, 2), 'utf-8');
+    upsertUserStmt.run(user.id, user.username, user.email || null, user.created_at, user.updated_at, JSON.stringify(user));
   } catch (err) {
-    console.error(`Error al guardar usuario ${user.id} en disco:`, err);
+    console.error(`Error al guardar usuario ${user.id} en SQLite:`, err);
   }
 }
 
@@ -107,15 +88,14 @@ function getUserById(userId, includePrivate = false) {
     return includePrivate ? user : sanitizeUser(user);
   }
 
-  const filePath = path.join(USERS_DIR, `${userId}.json`);
-  if (fs.existsSync(filePath)) {
+  const row = selectUserByIdStmt.get(userId);
+  if (row) {
     try {
-      const data = fs.readFileSync(filePath, 'utf-8');
-      const user = JSON.parse(data);
+      const user = JSON.parse(row.data);
       memoryUsers.set(user.id, user);
       return includePrivate ? user : sanitizeUser(user);
     } catch (err) {
-      console.error(`Error al leer usuario ${userId}:`, err);
+      console.error(`Error al parsear usuario ${userId}:`, err);
     }
   }
 
@@ -136,22 +116,16 @@ function findUserByLogin(login, includePrivate = false) {
     }
   }
 
-  // 2. Buscar en disco
-  try {
-    const files = fs.readdirSync(USERS_DIR);
-    for (const file of files) {
-      if (file.endsWith('.json')) {
-        const filePath = path.join(USERS_DIR, file);
-        const data = fs.readFileSync(filePath, 'utf-8');
-        const user = JSON.parse(data);
-        memoryUsers.set(user.id, user);
-        if (user.username.toLowerCase() === normalized || (user.email && user.email.toLowerCase() === normalized)) {
-          return includePrivate ? user : sanitizeUser(user);
-        }
-      }
+  // 2. Buscar en SQLite (por username o email)
+  const row = selectUserByUsernameStmt.get(normalized) || selectUserByEmailStmt.get(normalized);
+  if (row) {
+    try {
+      const user = JSON.parse(row.data);
+      memoryUsers.set(user.id, user);
+      return includePrivate ? user : sanitizeUser(user);
+    } catch (err) {
+      console.error('Error al parsear usuario encontrado por login:', err);
     }
-  } catch (err) {
-    console.error('Error buscando usuario en disco:', err);
   }
 
   return null;
@@ -205,8 +179,7 @@ function createUser({ name, username, email, password }) {
 
   // Generar token de sesión inicial
   const token = crypto.randomBytes(32).toString('hex');
-  activeSessions.set(token, newUser.id);
-  persistSessions();
+  insertSessionStmt.run(token, newUser.id);
 
   return {
     user: sanitizeUser(newUser),
@@ -233,8 +206,7 @@ function authenticateUser({ login, password }) {
   }
 
   const token = crypto.randomBytes(32).toString('hex');
-  activeSessions.set(token, user.id);
-  persistSessions();
+  insertSessionStmt.run(token, user.id);
 
   return {
     user: sanitizeUser(user),
@@ -246,41 +218,31 @@ function authenticateUser({ login, password }) {
  * Obtiene el usuario autenticado a partir de un token de sesión
  */
 function getUserByToken(token) {
-  if (!token || !activeSessions.has(token)) return null;
-  const userId = activeSessions.get(token);
-  return getUserById(userId, false);
+  if (!token) return null;
+  const row = selectSessionStmt.get(token);
+  if (!row) return null;
+  return getUserById(row.user_id, false);
 }
 
 /**
  * Cierra la sesión activa invalidando el token
  */
 function invalidateToken(token) {
-  if (token && activeSessions.has(token)) {
-    activeSessions.delete(token);
-    persistSessions();
-    return true;
-  }
-  return false;
+  if (!token) return false;
+  const result = deleteSessionStmt.run(token);
+  return result.changes > 0;
 }
 
 /**
  * Lista todos los perfiles de usuarios registrados
  */
 function listUsers() {
-  const users = [];
   try {
-    const files = fs.readdirSync(USERS_DIR);
-    for (const file of files) {
-      if (file.endsWith('.json')) {
-        const id = file.replace('.json', '');
-        const user = getUserById(id, false);
-        if (user) users.push(user);
-      }
-    }
+    return selectAllUsersStmt.all().map((row) => sanitizeUser(JSON.parse(row.data)));
   } catch (err) {
     console.error('Error al listar usuarios:', err);
+    return [];
   }
-  return users;
 }
 
 /**
@@ -315,15 +277,11 @@ function getUserGames(userId) {
   const userGames = [];
 
   try {
-    if (!fs.existsSync(GAMES_DIR)) return [];
-    const files = fs.readdirSync(GAMES_DIR);
+    const rows = selectUserGamesStmt.all(userId, userId);
 
-    for (const file of files) {
-      if (!file.endsWith('.json')) continue;
-      const filePath = path.join(GAMES_DIR, file);
+    for (const row of rows) {
       try {
-        const raw = fs.readFileSync(filePath, 'utf-8');
-        const game = JSON.parse(raw);
+        const game = JSON.parse(row.data);
 
         // Identificar si el usuario participó en la partida
         const isWhite = game.white_player && (game.white_player.id === userId || game.white_player.username === userId);
@@ -363,21 +321,20 @@ function getUserGames(userId) {
           });
         }
       } catch (err) {
-        console.error(`Error leyendo partida ${file}:`, err);
+        console.error(`Error leyendo partida ${row && row.id}:`, err);
       }
     }
   } catch (err) {
     console.error('Error al obtener partidas de usuario:', err);
   }
 
-  // Ordenar por fecha de actualización descendente (las más recientes primero)
-  return userGames.sort((a, b) => new Date(b.updated_at || b.created_at || 0) - new Date(a.updated_at || a.created_at || 0));
+  return userGames;
 }
 
-// Inicializar un usuario demo por defecto si el directorio está vacío
+// Inicializar usuarios demo por defecto si la base de datos está vacía
 try {
-  const existingFiles = fs.readdirSync(USERS_DIR).filter(f => f.endsWith('.json'));
-  if (existingFiles.length === 0) {
+  const { n } = countUsersStmt.get();
+  if (n === 0) {
     createUser({
       name: 'Carlos Ajedrecista',
       username: 'carlos',
@@ -401,6 +358,7 @@ module.exports = {
   authenticateUser,
   getUserById,
   getUserByToken,
+  findUserByLogin,
   invalidateToken,
   listUsers,
   updateUserStats,

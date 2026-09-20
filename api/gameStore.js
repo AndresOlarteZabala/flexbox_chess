@@ -1,24 +1,55 @@
 /**
  * Almacén de persistencia para partidas de ajedrez.
- * Mantiene un caché en memoria y sincroniza las partidas en disco en data/games/<id>.json.
+ * Mantiene un caché en memoria y persiste en SQLite (data/chess.db):
+ * el objeto completo de la partida se guarda como JSON en la columna `data`,
+ * con columnas promovidas (status, turn, jugadores, etc.) para consultas indexadas.
  */
 
-const fs = require('fs');
-const path = require('path');
+const crypto = require('crypto');
+const db = require('./db');
 const { createGameState } = require('./chessEngine');
-
-const GAMES_DIR = path.join(__dirname, '..', 'data', 'games');
-
-// Asegurar que exista el directorio de partidas
-if (!fs.existsSync(GAMES_DIR)) {
-  fs.mkdirSync(GAMES_DIR, { recursive: true });
-}
 
 // Caché en memoria
 const memoryGames = new Map();
 
+const upsertStmt = db.prepare(`
+  INSERT INTO games (id, status, turn, turn_count, white_player_id, black_player_id, movements_count, created_at, updated_at, data)
+  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  ON CONFLICT(id) DO UPDATE SET
+    status = excluded.status,
+    turn = excluded.turn,
+    turn_count = excluded.turn_count,
+    white_player_id = excluded.white_player_id,
+    black_player_id = excluded.black_player_id,
+    movements_count = excluded.movements_count,
+    updated_at = excluded.updated_at,
+    data = excluded.data
+`);
+
+const selectByIdStmt = db.prepare('SELECT data FROM games WHERE id = ?');
+const selectSummariesStmt = db.prepare(
+  'SELECT id, status, turn, turn_count, movements_count, created_at, updated_at FROM games ORDER BY updated_at DESC'
+);
+
 /**
- * Guarda una partida en memoria y en disco
+ * Genera un identificador de partida único e impredecible
+ */
+function generateGameId() {
+  return `game-${crypto.randomUUID()}`;
+}
+
+/**
+ * Crea una nueva partida con ID generado por el servidor y la persiste
+ */
+function createGame(options = {}) {
+  const gameId = generateGameId();
+  const newGame = createGameState(gameId, options);
+  saveGame(newGame);
+  return newGame;
+}
+
+/**
+ * Guarda una partida en memoria y en SQLite
  */
 function saveGame(game) {
   if (!game || !game.id) return;
@@ -45,42 +76,45 @@ function saveGame(game) {
   memoryGames.set(game.id, game);
 
   try {
-    const filePath = path.join(GAMES_DIR, `${game.id}.json`);
-    fs.writeFileSync(filePath, JSON.stringify(game, null, 2), 'utf-8');
+    upsertStmt.run(
+      game.id,
+      game.status,
+      game.turn,
+      game.turn_count,
+      game.white_player ? game.white_player.id : null,
+      game.black_player ? game.black_player.id : null,
+      game.movements ? game.movements.length : 0,
+      game.created_at,
+      game.updated_at,
+      JSON.stringify(game)
+    );
   } catch (err) {
-    console.error(`Error al persistir la partida ${game.id} en disco:`, err);
+    console.error(`Error al persistir la partida ${game.id} en SQLite:`, err);
   }
 }
 
 /**
- * Obtiene o inicializa una partida por ID
+ * Obtiene una partida existente por ID. No crea partidas nuevas:
+ * retorna null si el ID no existe ni en memoria ni en la base de datos.
  */
-function getGame(gameId, createIfNotFound = true) {
-  if (!gameId) gameId = 'default';
+function getGame(gameId) {
+  if (!gameId) return null;
 
   // 1. Buscar en memoria
   if (memoryGames.has(gameId)) {
     return memoryGames.get(gameId);
   }
 
-  // 2. Buscar en disco
-  const filePath = path.join(GAMES_DIR, `${gameId}.json`);
-  if (fs.existsSync(filePath)) {
+  // 2. Buscar en SQLite
+  const row = selectByIdStmt.get(gameId);
+  if (row) {
     try {
-      const data = fs.readFileSync(filePath, 'utf-8');
-      const game = JSON.parse(data);
+      const game = JSON.parse(row.data);
       memoryGames.set(gameId, game);
       return game;
     } catch (err) {
-      console.error(`Error al leer archivo de partida ${gameId}:`, err);
+      console.error(`Error al parsear partida ${gameId}:`, err);
     }
-  }
-
-  // 3. Crear nueva si no existe
-  if (createIfNotFound) {
-    const newGame = createGameState(gameId);
-    saveGame(newGame);
-    return newGame;
   }
 
   return null;
@@ -90,42 +124,33 @@ function getGame(gameId, createIfNotFound = true) {
  * Lista todas las partidas registradas
  */
 function listGames() {
-  const gamesList = [];
   try {
-    const files = fs.readdirSync(GAMES_DIR);
-    for (const file of files) {
-      if (file.endsWith('.json')) {
-        const id = file.replace('.json', '');
-        const game = getGame(id, false);
-        if (game) {
-          gamesList.push({
-            id: game.id,
-            status: game.status,
-            turn: game.turn,
-            turn_count: game.turn_count,
-            movements_count: game.movements ? game.movements.length : 0,
-            created_at: game.created_at,
-            updated_at: game.updated_at
-          });
-        }
-      }
-    }
+    return selectSummariesStmt.all();
   } catch (err) {
     console.error('Error al listar partidas:', err);
+    return [];
   }
-  return gamesList;
 }
 
 /**
- * Reinicia una partida a su estado inicial
+ * Reinicia una partida a su estado inicial, conservando tipo, jugadores y control de tiempo
  */
 function resetGame(gameId) {
-  const newGame = createGameState(gameId);
+  const existing = getGame(gameId);
+  const newGame = createGameState(gameId, {
+    game_type: existing ? existing.game_type : 'bot',
+    white_player: existing ? existing.white_player : null,
+    black_player: existing ? existing.black_player : null,
+    time_control: existing ? existing.time_control : null,
+    created_by: existing ? existing.created_by : null
+  });
   saveGame(newGame);
   return newGame;
 }
 
 module.exports = {
+  generateGameId,
+  createGame,
   saveGame,
   getGame,
   listGames,
