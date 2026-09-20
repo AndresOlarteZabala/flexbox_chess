@@ -7,75 +7,82 @@ Este documento registra cronológicamente cada uno de los requerimientos solicit
 ## 1. Registro Cronológico de Requerimientos y Cambios
 
 ### Requerimiento 1: Documentación Integral del Sistema y Especificación Técnica (SRS)
-* **Objetivo:** Analizar el proyecto base en JavaScript/HTML, documentar su funcionamiento actual y diseñar la arquitectura para la API de backend, persistencia y soporte multi-sesión.
-* **Archivos Creados:**
+
+- **Objetivo:** Analizar el proyecto base en JavaScript/HTML, documentar su funcionamiento actual y diseñar la arquitectura para la API de backend, persistencia y soporte multi-sesión.
+- **Archivos Creados:**
   - [`docs/manual_flexbox_chess.md`](./docs/manual_flexbox_chess.md): Manual técnico y de usuario del tablero original con HTML5 Drag and Drop y CSS Flexbox.
   - [`docs/requerimientos_sistema.md`](./docs/requerimientos_sistema.md): Especificación de Requerimientos del Sistema (SRS) según estándares IEEE 830.
   - [`docs/especificacion_api_rest_websocket.md`](./docs/especificacion_api_rest_websocket.md): Contrato formal de endpoints REST, esquemas JSON y WebSockets.
   - [`docs/guia_integracion_frontend.md`](./docs/guia_integracion_frontend.md): Guía de enlace entre el DOM del cliente y la API de servidor.
   - [`docs/ia_y_multisesion.md`](./docs/ia_y_multisesion.md): Arquitectura conceptual de inteligencia artificial y juego multi-sesión.
   - [`docs/README.md`](./docs/README.md): Índice unificado de documentación.
-* **Resultado:** Base teórica y arquitectónica completa para guiar el desarrollo.
+- **Resultado:** Base teórica y arquitectónica completa para guiar el desarrollo.
 
 ---
 
 ### Requerimiento 2: Backend API REST y Motor de Persistencia de Partidas
-* **Objetivo:** Dotar al juego de un servidor centralizado con autoridad sobre las reglas de ajedrez y persistencia de estados en disco.
-* **Archivos Creados / Modificados:**
+
+- **Objetivo:** Dotar al juego de un servidor centralizado con autoridad sobre las reglas de ajedrez y persistencia de estados en disco.
+- **Archivos Creados / Modificados:**
   - [`server.js`](./server.js): Servidor Express en Node.js con endpoints `/api/games`, `/api/status/:id`, `/api/games/:id/moves`, `/api/games/:id/reset` y `/api/games/:id/resign`.
   - [`api/chessEngine.js`](./api/chessEngine.js): Motor de reglas en servidor (validación de casillas, trayectorias de piezas, turnos, generación de notación SAN, conteo de puntos y capturas).
   - [`api/gameStore.js`](./api/gameStore.js): Persistencia con caché en memoria y sincronización atómica en archivos JSON en [`data/games/<id>.json`](./data/games/).
-* **Resultado:** Partidas independientes identificadas por ID que persisten incluso tras reiniciar el servidor.
+- **Resultado:** Partidas independientes identificadas por ID que persisten incluso tras reiniciar el servidor.
 
 ---
 
 ### Requerimiento 3: Integración Frontend y Bucle de Sincronización Multi-Sesión
-* **Objetivo:** Conectar la interfaz web existente con el servidor backend para jugar entre 2 pestañas/navegadores sincronizados en tiempo real.
-* **Archivos Modificados:**
+
+- **Objetivo:** Conectar la interfaz web existente con el servidor backend para jugar entre 2 pestañas/navegadores sincronizados en tiempo real.
+- **Archivos Modificados:**
   - [`app/index.html`](./app/index.html): Añadida barra superior con selector de Partida ID, insignias de estado de la API, selector de bando (`⚪ Blancas`, `⚫ Negras`, `⚪⚫ Ambos`) y modo de juego.
   - [`app/js/index.js`](./app/js/index.js): Implementado bucle `startSyncLoop()` que sondea el estado cada 1200ms comparando el turno y contador de jugadas, evitando renders innecesarios.
   - [`app/js/chess-rules.js`](./app/js/chess-rules.js): Modificada la función `drop(ev)` para emitir `POST /api/games/:id/moves` antes de consolidar el movimiento en la vista del cliente.
-* **Resultado:** Partidas sincronizadas automáticamente entre dos usuarios o ventanas sin colisiones de turno.
+- **Resultado:** Partidas sincronizadas automáticamente entre dos usuarios o ventanas sin colisiones de turno.
 
 ---
 
 ### Requerimiento 4: Motor de Inteligencia Artificial (Robot vs Jugador)
-* **Objetivo:** Permitir al usuario jugar contra un robot en tiempo real desde el navegador.
-* **Archivos Creados / Modificados:**
-  - [`api/chessAI.js`](./api/chessAI.js): Algoritmo Minimax con Poda Alfa-Beta y evaluación posicional mediante *Piece-Square Tables*.
+
+- **Objetivo:** Permitir al usuario jugar contra un robot en tiempo real desde el navegador.
+- **Archivos Creados / Modificados:**
+  - [`api/chessAI.js`](./api/chessAI.js): Algoritmo Minimax con Poda Alfa-Beta y evaluación posicional mediante _Piece-Square Tables_.
   - [`server.js`](./server.js): Endpoint `POST /api/games/:id/bot-move` para solicitar cálculo del robot.
   - [`app/js/index.js`](./app/js/index.js): Función `triggerBotMove()` que detecta automáticamente cuando es el turno del robot y ejecuta su jugada con un delay natural de 600ms.
-* **Resultado:** Juego fluido contra la computadora con cálculo de movimientos legales en el servidor.
+- **Resultado:** Juego fluido contra la computadora con cálculo de movimientos legales en el servidor.
 
 ---
 
 ### Requerimiento 5: Paginación Descendente de Movimientos (10 por página)
-* **Objetivo:** Evitar el desbordamiento infinito vertical de la tabla de movimientos dividiendo el historial en páginas de 10 jugadas en orden descendente (las más recientes arriba).
-* **Archivos Modificados:**
+
+- **Objetivo:** Evitar el desbordamiento infinito vertical de la tabla de movimientos dividiendo el historial en páginas de 10 jugadas en orden descendente (las más recientes arriba).
+- **Archivos Modificados:**
   - [`app/js/index.js`](./app/js/index.js): Implementación de `renderMovementsTable()` y `renderMovementsPagination()` con lógica matemática descendente:
     - Página 1 muestra las jugadas más recientes (ej. `#37` a `#28`).
     - Las páginas posteriores muestran las jugadas anteriores (ej. `#27` a `#18`).
   - [`app/index.html`](./app/index.html): Añadido contenedor `#movements-pagination`.
   - [`app/css/index.css`](./app/css/index.css): Estilos CSS modernos para botones activos, deshabilitados y transiciones.
-* **Resultado:** Tabla de movimientos compacta, estética y fácil de navegar con cualquier cantidad de jugadas.
+- **Resultado:** Tabla de movimientos compacta, estética y fácil de navegar con cualquier cantidad de jugadas.
 
 ---
 
 ### Requerimiento 6: Navegación de Jugadas Anteriores en Modo Solo Lectura
-* **Objetivo:** Permitir al usuario retroceder o avanzar jugada por jugada para analizar la partida sin poder modificar el historial.
-* **Archivos Modificados:**
+
+- **Objetivo:** Permitir al usuario retroceder o avanzar jugada por jugada para analizar la partida sin poder modificar el historial.
+- **Archivos Modificados:**
   - [`server.js`](./server.js): Endpoint `GET /api/games/:id/history/:step` que reconstruye el tablero en cualquier turno `step`.
   - [`api/chessEngine.js`](./api/chessEngine.js): Función `getBoardAtStep(movements, step)`.
   - [`app/index.html`](./app/index.html): Controles de navegación `|◀` (Inicio), `◀ Anterior`, indicador central, `Siguiente ▶`, `▶|` (En vivo) y banner naranja de advertencia.
   - [`app/js/index.js`](./app/js/index.js): Funciones `navigateHistory()`, `enterHistoryMode()`, `exitHistoryMode()`, filas de la tabla de movimientos clicables para saltar directamente a una jugada y piezas con `draggable="false"`.
   - [`app/js/chess-rules.js`](./app/js/chess-rules.js): Bloqueo estricto en `drop(ev)` si `isHistoryMode === true`.
-* **Resultado:** Inspección paso a paso completa con garantía absoluta de inmutabilidad del historial.
+- **Resultado:** Inspección paso a paso completa con garantía absoluta de inmutabilidad del historial.
 
 ---
 
 ### Requerimiento 7: Detección de Jaque Mate, Fin de Juego y Proclamación de Ganador
-* **Objetivo:** Solucionar el problema reportado por el usuario: *"cuando el rey queda en jaque mate no esta terminando el juego y marcando ganador"*.
-* **Archivos Modificados:**
+
+- **Objetivo:** Solucionar el problema reportado por el usuario: _"cuando el rey queda en jaque mate no esta terminando el juego y marcando ganador"_.
+- **Archivos Modificados:**
   - [`api/chessEngine.js`](./api/chessEngine.js):
     - `findKing(board, side)`: Localiza las coordenadas del rey.
     - `isSquareAttacked(board, targetSq, bySide)`: Determina si una casilla está amenazada por el rival.
@@ -88,17 +95,18 @@ Este documento registra cronológicamente cada uno de los requerimientos solicit
     - Al detectar `CHECKMATE`, el badge muestra `🏆 Jaque Mate - Ganador: Blancas/Negras`.
     - El turno muestra `🏆 Ganó: Blancas / Negras`.
     - Detiene los relojes (`stopClock()`) y desactiva el arrastre (`draggable = false`) de todas las piezas.
-* **Resultado:** Jaque Mate 100% detectado con fin formal de la partida, anuncio del ganador y bloqueo de tablero.
+- **Resultado:** Jaque Mate 100% detectado con fin formal de la partida, anuncio del ganador y bloqueo de tablero.
 
 ---
 
 ### Requerimiento 8: Calibración y Expansión del Robot a 10 Niveles de Dificultad
-* **Objetivo:** Ampliar las opciones de dificultad del robot a una escala granular de 1 a 10 solicitada por el usuario (*"puedes poner niveles del 1 al 10 ?"*).
-* **Archivos Modificados:**
+
+- **Objetivo:** Ampliar las opciones de dificultad del robot a una escala granular de 1 a 10 solicitada por el usuario (_"puedes poner niveles del 1 al 10 ?"_).
+- **Archivos Modificados:**
   - [`api/chessAI.js`](./api/chessAI.js):
     - Incorporación de la matriz de configuración `LEVEL_CONFIGS` para los niveles 1 al 10.
     - Tasa de despiste progresiva (`blunderChance` desde 60% en nivel 1 hasta 0% en nivel 6+).
-    - `orderMoves()` y `scoreMoveForOrdering()`: Ordenamiento de capturas MVV-LVA (*Most Valuable Victim - Least Valuable Attacker*) para maximizar cortes Alfa-Beta.
+    - `orderMoves()` y `scoreMoveForOrdering()`: Ordenamiento de capturas MVV-LVA (_Most Valuable Victim - Least Valuable Attacker_) para maximizar cortes Alfa-Beta.
     - `quiescence()`: Búsqueda de tranquilidad para resolver secuencias tácticas de captura.
     - Bonificación de control de casillas centrales (`e4, d4, e5, d5`) en niveles 9 y 10.
   - [`server.js`](./server.js):
@@ -108,13 +116,14 @@ Este documento registra cronológicamente cada uno de los requerimientos solicit
     - Desplegable `#bot-difficulty` con los 10 niveles identificados con su nombre y estilo.
   - [`app/js/index.js`](./app/js/index.js):
     - Notificación en pantalla indicando el nombre del nivel del robot que realizó la jugada.
-* **Resultado:** Experiencia de IA altamente personalizable, desde principiante absoluto hasta nivel maestro.
+- **Resultado:** Experiencia de IA altamente personalizable, desde principiante absoluto hasta nivel maestro.
 
 ---
 
 ### Requerimiento 9: Gestión de Usuarios, Autenticación Criptográfica y Consulta de Partidas por Usuario
-* **Objetivo:** Cumplir con la solicitud del usuario: *"agrega usuarios con infoprmacion basica autenticacion y que permita ver partidas por usuario"*.
-* **Archivos Creados / Modificados:**
+
+- **Objetivo:** Cumplir con la solicitud del usuario: _"agrega usuarios con infoprmacion basica autenticacion y que permita ver partidas por usuario"_.
+- **Archivos Creados / Modificados:**
   - [`api/userStore.js`](./api/userStore.js) [NUEVO]:
     - Almacén de usuarios con persistencia en disco en [`data/users/<id>.json`](./data/users/).
     - Seguridad de nivel bancario: derivación de claves y hash criptográfico nativo con **Node.js PBKDF2** (`crypto.pbkdf2Sync`, 10,000 iteraciones, salt aleatorio de 16 bytes, `sha512`).
@@ -144,13 +153,14 @@ Este documento registra cronológicamente cada uno de los requerimientos solicit
     - Verificación y restauración de sesión al cargar la página mediante `GET /api/auth/me`.
     - Envío automático de `Authorization: Bearer <token>` en todas las llamadas a la API (creación de partida, movimientos, etc.).
     - Carga interactiva de cualquier partida del historial del usuario directamente en el tablero activo (`loadGameFromUserHistory`).
-* **Resultado:** Ecosistema completo de autenticación de usuarios, cálculo de estadísticas Elo, asociación de partidas y visor histórico interactivo.
+- **Resultado:** Ecosistema completo de autenticación de usuarios, cálculo de estadísticas Elo, asociación de partidas y visor histórico interactivo.
 
 ---
 
 ### Requerimiento 10: Rediseño Integral de la Interfaz Gráfica (Cyber-Minimalist HUD)
-* **Objetivo:** Cumplir con la solicitud del usuario: *"esta es la interfaz grafica actual quiero que la mejores para que sea intuitiva, dinamica y elegante si es posible minimalista y algo futurista"*.
-* **Archivos Modificados:**
+
+- **Objetivo:** Cumplir con la solicitud del usuario: _"esta es la interfaz grafica actual quiero que la mejores para que sea intuitiva, dinamica y elegante si es posible minimalista y algo futurista"_.
+- **Archivos Modificados:**
   - [`app/css/index.css`](./app/css/index.css):
     - Eliminada por completo la tipografía tosca tipo meme (`Impact !important`) y los bordes rígidos.
     - Implementado un sistema de diseño basado en **Dark Glassmorphism** (obsidiana `#080c14`, azul marino espacial `#0f172a`, acentos de neón cian `#00e5ff`, esmeralda `#10b981`, violeta `#a855f7` y carmesí `#f43f5e`).
@@ -167,7 +177,34 @@ Este documento registra cronológicamente cada uno de los requerimientos solicit
     - **Sintetizador de Audio Nativo Web Audio API:** Generación procedural en tiempo real de efectos de sonido (golpe suave de madera en movimientos normales, chasquido metálico en capturas, doble campana en jaque y arpegio armónico en victoria), 100% nativo y sin dependencias externas.
     - Función `flipBoard()`: Inversión instantánea y fluida de perspectiva (Blancas/Negras) en el tablero y sus coordenadas.
     - Marcado dinámico en tiempo real de casillas de origen/destino y pulso en jaque.
-* **Resultado:** Experiencia visual de última generación, fluida, intuitiva, limpia, elegante y con atmósfera futurista de gran maestro.
+- **Resultado:** Experiencia visual de última generación, fluida, intuitiva, limpia, elegante y con atmósfera futurista de gran maestro.
+
+---
+
+### Requerimiento 11: Reglas Oficiales de Fin de Partida, Multijugador Persistente y Enlaces Directos por ID
+
+- **Objetivo:** Cerrar las brechas del motor de reglas respecto al reglamento oficial FIDE (enroque, coronación de peones y las tres causas automáticas de tablas) y reforzar el modo multijugador para que las sesiones y los enlaces de partida sobrevivan a recargas y reinicios del servidor.
+- **Archivos Modificados:**
+  - [`api/chessEngine.js`](./api/chessEngine.js):
+    - `validateCastlingMove(board, king, fromCoord, toCoord)`: Valida enroque corto y largo verificando que el rey y la torre implicada no se hayan movido, que las casillas intermedias estén vacías y que el rey no esté en jaque, no pase ni termine en una casilla atacada.
+    - `validatePieceMove()`: Reconoce el movimiento del rey de 2 casillas como intento de enroque y lo delega a `validateCastlingMove`.
+    - `isSquareAttacked()`: Corrige el cálculo de amenaza del rey rival para que solo considere casillas adyacentes (evita que el enroque se interprete como jugada de ataque a distancia).
+    - `applyMove(game, { from, to, promotion })`: Ahora acepta un cuarto parámetro `promotion` (`queen` | `tower` | `bishop` | `horse`, por defecto `queen`). Al mover la torre implicada del enroque (`castling: { side, rookFrom, rookTo }`) y al coronar un peón en la última fila, sustituye la pieza y añade el sufijo SAN `=Q/R/B/N`. La notación SAN del enroque se registra como `O-O` (corto) u `O-O-O` (largo).
+    - `isInsufficientMaterial(board)`: Detecta las combinaciones de material insuficiente según FIDE (Rey vs Rey, Rey+alfil o Rey+caballo vs Rey solo, y Rey+alfil vs Rey+alfil con alfiles del mismo color de casilla) para declarar tablas automáticas.
+    - `getPositionKey(board, turn)` y campo `position_history`: Registran una firma de cada posición (piezas + turno) tras cada jugada para detectar **triple repetición**.
+    - Campo `halfmove_clock`: Contador de semi-jugadas sin captura ni movimiento de peón; se reinicia en cada captura o avance de peón y activa tablas automáticas por la **regla de los 50 movimientos** al llegar a 100 semi-jugadas.
+    - `applyMove()` establece `status = 'STALEMATE'`, `winner = 'draw'` y `draw_reason` (`INSUFFICIENT_MATERIAL` | `FIFTY_MOVE_RULE` | `THREEFOLD_REPETITION`) cuando se cumple cualquiera de estas tres condiciones, evaluándolas únicamente mientras la partida sigue `IN_PROGRESS`.
+  - [`api/chessAI.js`](./api/chessAI.js):
+    - `simulateMove()`: Replica en las simulaciones de Minimax tanto la coronación automática a reina como el desplazamiento de la torre en el enroque, para que la IA evalúe correctamente posiciones alcanzadas por estas jugadas.
+  - [`api/userStore.js`](./api/userStore.js):
+    - `SESSIONS_FILE` (`data/users/sessions.json`), `loadSessions()` y `persistSessions()`: Las sesiones activas (`activeSessions`) ahora se serializan en disco en cada login, registro o consulta por token, de modo que un usuario autenticado **no pierde su sesión** si el servidor se reinicia.
+  - [`server.js`](./server.js):
+    - `GET /game/:id`: Nueva ruta que sirve la interfaz (`app/index.html`) con el ID de partida embebido en la URL, permitiendo compartir un enlace directo o recargar la página sin perder la partida en curso.
+    - `POST /api/games/:id/join`: Permite que un jugador (autenticado o invitado) se una formalmente a una partida existente eligiendo bando (`side: 'white' | 'black'`), marcando `opponent_connected = true` y `mode = 'multiplayer'`.
+    - `POST /api/games/:id/claim`: Permite que un usuario autenticado reclame retroactivamente el bando con el que ha estado jugando como invitado, vinculando su cuenta de forma permanente. Rechaza con `409` si el bando ya pertenece a otro usuario registrado distinto.
+    - `formatGameStatusResponse()`: Expone los nuevos campos `draw_reason`, `opponent_connected` y `has_second_player` en toda respuesta de estado de partida.
+- **Resultado:** Motor de ajedrez conforme al reglamento FIDE completo (enroque, coronación y las tres tablas automáticas), sesiones de usuario resilientes a reinicios del servidor y partidas multijugador enlazables y reclamables entre invitado y cuenta registrada.
+- **Limitación conocida:** El enroque y la coronación se validan y ejecutan íntegramente en el servidor (`chessEngine.js`), pero el frontend (`app/js/index.js`, `chess-rules.js`) aún no ofrece un selector de pieza para coronar (siempre solicita `promotion: 'queen'` implícitamente) ni una animación dedicada para el desplazamiento simultáneo de la torre en el enroque; ambos casos se reflejan correctamente porque el tablero se re-renderiza por completo desde `game.board` tras cada jugada, pero sin retroalimentación visual especializada.
 
 ---
 
@@ -193,6 +230,7 @@ graph TB
         AUTH_EP["/api/auth (login, register, me, logout)"]
         USERS_EP["/api/users (list, detail, games)"]
         STATUS_EP["GET /api/status/:id"]
+        JOIN_EP["POST /api/games/:id/join · /claim"]
         MOVE_EP["POST /api/games/:id/moves"]
         BOT_EP["POST /api/games/:id/bot-move"]
         HIST_EP["GET /api/games/:id/history/:step"]
@@ -203,7 +241,10 @@ graph TB
         ENGINE["Motor de Ajedrez (chessEngine.js)"]
         USER_STORE["Almacén de Usuarios y Auth (userStore.js)"]
         PBKDF2["Cifrado PBKDF2 + Salt Criptográfico"]
+        SESSIONS["Sesiones Persistentes (sessions.json)"]
         CHECK["Detector de Jaque y Mate (isKingInCheck)"]
+        CASTLE["Validador de Enroque (validateCastlingMove)"]
+        DRAWS["Detector de Tablas Automáticas (Material / 50 Mov. / Repetición)"]
         LEGAL["Generador de Jugadas Legales (getAllLegalMoves)"]
         AI["Motor de Inteligencia Artificial (chessAI.js)"]
         MINIMAX["Minimax con Poda Alfa-Beta"]
@@ -226,6 +267,7 @@ graph TB
     AUTH_UI --> AUTH_EP
     GAMES_MODAL --> USERS_EP
     DND --> MOVE_EP
+    UI --> JOIN_EP
     SYNC --> STATUS_EP
     UI --> BOT_EP
     HIST --> HIST_EP
@@ -234,6 +276,7 @@ graph TB
     ROUTER --> AUTH_EP
     ROUTER --> USERS_EP
     ROUTER --> STATUS_EP
+    ROUTER --> JOIN_EP
     ROUTER --> MOVE_EP
     ROUTER --> BOT_EP
     ROUTER --> HIST_EP
@@ -241,7 +284,9 @@ graph TB
 
     AUTH_EP --> USER_STORE
     USERS_EP --> USER_STORE
+    JOIN_EP --> USER_STORE
     USER_STORE --> PBKDF2
+    USER_STORE --> SESSIONS
     USER_STORE --> USERS_DISK
     USER_STORE --> DISK
 
@@ -250,6 +295,8 @@ graph TB
     HIST_EP --> ENGINE
 
     ENGINE --> CHECK
+    ENGINE --> CASTLE
+    ENGINE --> DRAWS
     ENGINE --> LEGAL
     AI --> MINIMAX
 
@@ -275,9 +322,9 @@ sequenceDiagram
     Jugador->>UI: Arrastra pieza (ej: Qh4)
     UI->>UI: Valida que NO esté en Modo Historial ni Partida Finalizada
     UI->>Server: POST /api/games/:id/moves { from: "d8", to: "h4" }
-    
+
     Server->>Engine: applyMove(game, { from, to })
-    
+
     Engine->>Engine: 1. Valida trayectoria de la pieza
     Engine->>Engine: 2. Simula movimiento: isMoveLeavingKingInCheck()
     alt Movimiento ilegal o deja al propio rey en jaque
@@ -288,7 +335,7 @@ sequenceDiagram
         Engine->>Engine: 3. Actualiza posición y capturas en tablero
         Engine->>Engine: 4. Evalúa al oponente: isKingInCheck()
         Engine->>Engine: 5. Calcula movimientos legales: getAllLegalMoves()
-        
+
         alt Rival sin movimientos legales Y rey en jaque
             Engine->>Engine: status = "CHECKMATE", winner = movingSide, san += "#"
         else Rival sin movimientos legales Y rey NO en jaque
@@ -300,7 +347,7 @@ sequenceDiagram
         Engine->>Store: saveGame(game)
         Store->>Store: Guarda en memoria y data/games/:id.json
         Server-->>UI: 200 OK { game, applied_move }
-        
+
         UI->>UI: renderGameState(game)
         alt Partida en CHECKMATE
             UI->>UI: stopClock()
@@ -376,7 +423,7 @@ flowchart LR
     HIST_MODE --> DRAG_OFF
     HIST_MODE --> ABORT_MOVE
 
-    BANNER -->|Usuario pulsa 'Volver al juego en vivo ▶|'| LIVE
+    BANNER -->|"Usuario pulsa 'Volver al juego en vivo ▶'"| LIVE
 ```
 
 ---
@@ -434,26 +481,27 @@ sequenceDiagram
 
 ## 3. Matriz Comparativa de Archivos Modificados
 
-| Archivo | Ruta | Propósito Principal en el Proyecto |
-|---|---|---|
-| **`server.js`** | [`server.js`](./server.js) | Servidor API Express, middleware de autenticación por Bearer token, rutas `/api/auth/*` y `/api/users/*`. |
-| **`userStore.js`** | [`api/userStore.js`](./api/userStore.js) | Almacén de usuarios, derivación PBKDF2 + salt criptográfico, sesiones, estadísticas Elo e historial filtrado. |
-| **`chessEngine.js`** | [`api/chessEngine.js`](./api/chessEngine.js) | Reglas oficiales del ajedrez, cálculo de jaque, jaque mate, tablas, reconstrucción histórica y asociación de jugadores. |
-| **`chessAI.js`** | [`api/chessAI.js`](./api/chessAI.js) | Algoritmo Minimax, Poda Alfa-Beta, Quiescence, Move Ordering y los 10 niveles de dificultad. |
-| **`gameStore.js`** | [`api/gameStore.js`](./api/gameStore.js) | Persistencia dual (Memoria + Archivos JSON en `data/games/`) y actualización automática de estadísticas al terminar. |
-| **`data/users/`** | [`data/users/`](./data/users/) | Directorio de persistencia JSON de perfiles de usuario, credenciales hasheadas y estadísticas acumuladas. |
-| **`index.html`** | [`app/index.html`](./app/index.html) | Estructura DOM, barra de sesión en header, modal de login/registro, modal de partidas por usuario y paginador. |
-| **`index.js`** | [`app/js/index.js`](./app/js/index.js) | Gestión de sesión/tokens en localStorage, interfaz de usuario autenticado, carga de partidas de usuario y paginación. |
-| **`chess-rules.js`** | [`app/js/chess-rules.js`](./app/js/chess-rules.js) | Controladores de eventos de arrastre con token de autenticación en cabeceras HTTP y validación de turnos. |
-| **`index.css`** | [`app/css/index.css`](./app/css/index.css) | Estilos visuales del tablero, modales accesibles, tarjetas de estadísticas, tablas de partidas e insignias. |
+| Archivo                        | Ruta                                               | Propósito Principal en el Proyecto                                                                                      |
+| ------------------------------ | -------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| **`server.js`**                | [`server.js`](./server.js)                         | Servidor API Express, middleware de autenticación por Bearer token, rutas `/api/auth/*` y `/api/users/*`.               |
+| **`userStore.js`**             | [`api/userStore.js`](./api/userStore.js)           | Almacén de usuarios, derivación PBKDF2 + salt criptográfico, sesiones, estadísticas Elo e historial filtrado.           |
+| **`chessEngine.js`**           | [`api/chessEngine.js`](./api/chessEngine.js)       | Reglas oficiales del ajedrez, cálculo de jaque, jaque mate, tablas, reconstrucción histórica y asociación de jugadores. |
+| **`chessAI.js`**               | [`api/chessAI.js`](./api/chessAI.js)               | Algoritmo Minimax, Poda Alfa-Beta, Quiescence, Move Ordering y los 10 niveles de dificultad.                            |
+| **`gameStore.js`**             | [`api/gameStore.js`](./api/gameStore.js)           | Persistencia dual (Memoria + Archivos JSON en `data/games/`) y actualización automática de estadísticas al terminar.    |
+| **`data/users/`**              | [`data/users/`](./data/users/)                     | Directorio de persistencia JSON de perfiles de usuario, credenciales hasheadas y estadísticas acumuladas.               |
+| **`index.html`**               | [`app/index.html`](./app/index.html)               | Estructura DOM, barra de sesión en header, modal de login/registro, modal de partidas por usuario y paginador.          |
+| **`index.js`**                 | [`app/js/index.js`](./app/js/index.js)             | Gestión de sesión/tokens en localStorage, interfaz de usuario autenticado, carga de partidas de usuario y paginación.   |
+| **`chess-rules.js`**           | [`app/js/chess-rules.js`](./app/js/chess-rules.js) | Controladores de eventos de arrastre con token de autenticación en cabeceras HTTP y validación de turnos.               |
+| **`index.css`**                | [`app/css/index.css`](./app/css/index.css)         | Estilos visuales del tablero, modales accesibles, tarjetas de estadísticas, tablas de partidas e insignias.             |
+| **`data/users/sessions.json`** | [`data/users/`](./data/users/)                     | Persistencia en disco de tokens de sesión activos (`token -> userId`), generado automáticamente por `userStore.js`.     |
 
 ---
 
 ## 4. Resumen de Pruebas y Validación Realizadas
 
 1. **Pruebas de Jaque Mate Automatizadas:**
-   - *Mate del Pastor:* 4 jugadas -> `status: 'CHECKMATE'`, `winner: 'white'`.
-   - *Mate del Loco:* 2 jugadas -> `status: 'CHECKMATE'`, `winner: 'black'`.
+   - _Mate del Pastor:_ 4 jugadas -> `status: 'CHECKMATE'`, `winner: 'white'`.
+   - _Mate del Loco:_ 2 jugadas -> `status: 'CHECKMATE'`, `winner: 'black'`.
    - Intentos de continuar moviendo tras el jaque mate rechazados con error `400`.
 2. **Pruebas de Inteligencia Artificial (10 Niveles):**
    - Validación de los 10 niveles desde `api/chessAI.js` y `GET /api/bot/levels`.

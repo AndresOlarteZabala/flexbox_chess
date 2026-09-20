@@ -13,7 +13,8 @@ Plataforma interactiva de ajedrez en la web construida con **CSS Flexbox**, **Ja
 - **🔐 Gestión de Usuarios y Autenticación Criptográfica:** Sistema de cuentas con contraseñas protegidas mediante **PBKDF2 nativo** (10,000 iteraciones, salt de 16 bytes y SHA-512), tokens de sesión Bearer persistentes en el cliente (`localStorage`) y cálculo de ranking Elo dinámico (+15/-10).
 - **📋 Visor de Partidas por Usuario:** Modal interactivo para consultar partidas de cualquier jugador, estadísticas de rendimiento (Victorias, Derrotas, Tablas, Winrate) y botón para cargar inmediatamente cualquier partida previa en el tablero principal.
 - **🤖 Robot IA con 10 Niveles de Dificultad Graduables:** Motor Minimax con Poda Alfa-Beta, ordenamiento de capturas (*Move Ordering MVV-LVA*), búsqueda de tranquilidad (*Quiescence Search*) y control central (`e4, d4, e5, d5`), cubriendo desde el Nivel 1 (Novato con 60% de error didáctico) hasta el Nivel 10 (Gran Maestro).
-- **🏆 Detección Integral de Jaque Mate y Fin de Partida:** Detección precisa de jaque (`in_check`), jaque mate (`CHECKMATE`), tablas (`STALEMATE`), detención automática de relojes, anuncio formal del ganador y bloqueo total de interacción con las piezas al concluir la partida.
+- **🏆 Reglas Oficiales FIDE Completas:** Enroque corto y largo con validación de casillas atacadas, coronación de peones a reina/torre/alfil/caballo, y las tres causas automáticas de tablas (insuficiencia de material, regla de 50 movimientos y triple repetición), además de detección de jaque (`in_check`), jaque mate (`CHECKMATE`), detención automática de relojes, anuncio formal del ganador y bloqueo total de interacción con las piezas al concluir la partida.
+- **🔗 Multijugador Persistente y Enlaces Directos:** Rutas `/game/:id` para compartir o recargar una partida sin perderla, unión formal a partidas (`/api/games/:id/join`) y reclamo retroactivo de bando para invitados que inician sesión (`/api/games/:id/claim`). Las sesiones de usuario se persisten en disco (`data/users/sessions.json`) y sobreviven a reinicios del servidor.
 - **💎 Nueva Interfaz Gráfica Cyber-Minimalist HUD (v2.0):** Experiencia visual futurista y elegante con diseño *Dark Glassmorphism*, tipografías Google `'Outfit'` y `'JetBrains Mono'`, piezas vectoriales SVG de alta definición (blancas perladas y negras en obsidiana con silueta cian), bisel con rieles perimetrales (1-8 y A-H), tarjetas HUD de telemetría para ambos jugadores con relojes LED de pulso activo, botón para invertir tablero (`flipBoard`), resaltado brillante de casillas y sintetizador procedural de audio nativo (Web Audio API).
 - **🔒 Barra de Navegación Histórica en Modo Solo Lectura:** Controles paso a paso (`|◀`, `◀`, `▶`, `▶|`) y filas interactivas en la tabla para inspeccionar cualquier posición previa del tablero con garantía absoluta de inmutabilidad del juego activo.
 
@@ -116,8 +117,9 @@ flexbox_chess/
 | `GET` | `/api/games/:id/history/:step` | Reconstruye la posición exacta del tablero en el paso histórico `step` (Solo Lectura). |
 | `GET` | `/api/games` | Lista todas las partidas guardadas en el sistema. |
 | `POST` | `/api/games` | Crea una nueva partida vinculándola al usuario en sesión como jugador blanco. |
-| `POST` | `/api/games/:id/join` | Permite unirse a una partida existente como jugador negro. |
-| `POST` | `/api/games/:id/moves` | Aplica una jugada validando reglas oficiales (`{ from: "e2", to: "e4" }`). |
+| `POST` | `/api/games/:id/join` | Permite unirse a una partida existente eligiendo bando (`{ side: 'white' \| 'black' }`). |
+| `POST` | `/api/games/:id/claim` | Reclama retroactivamente un bando a nombre del usuario autenticado (útil tras jugar como invitado). |
+| `POST` | `/api/games/:id/moves` | Aplica una jugada validando reglas oficiales FIDE: trayectoria, jaque, enroque y coronación (`{ from: "e2", to: "e4", promotion?: "queen" }`). |
 | `POST` | `/api/games/:id/bot-move` | Solicita al robot que calcule y juegue según el nivel (`{ difficulty: 1..10 }`). |
 | `GET` | `/api/bot/levels` | Retorna el catálogo de los 10 niveles de dificultad con descripciones y parámetros. |
 | `POST` | `/api/games/:id/reset` | Reinicia la partida a la posición inicial. |
