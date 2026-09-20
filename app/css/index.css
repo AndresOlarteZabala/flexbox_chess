@@ -132,9 +132,10 @@ body {
 }
 
 .brand-title {
-  font-size: 20px;
+  font-size: 17px;
   font-weight: 800;
   letter-spacing: 0.5px;
+  white-space: nowrap;
   background: linear-gradient(135deg, #ffffff 0%, #cbd5e1 50%, var(--neon-cyan) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -873,6 +874,22 @@ icon.king.black {
   justify-content: space-between;
   align-items: center;
   box-shadow: 0 4px 12px rgba(245, 158, 11, 0.15);
+}
+
+#welcome-banner {
+  background: linear-gradient(135deg, rgba(0, 229, 255, 0.15), rgba(16, 185, 129, 0.15));
+  border: 1px solid rgba(0, 229, 255, 0.35);
+  color: #cffafe;
+  padding: 10px 14px;
+  border-radius: var(--radius-md);
+  font-size: 13px;
+  font-weight: 600;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  box-shadow: 0 4px 12px rgba(0, 229, 255, 0.12);
+  margin-bottom: 12px;
 }
 
 /* Movements Table Card */
