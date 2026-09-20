@@ -1,12 +1,20 @@
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
-const { getGame, saveGame, listGames, resetGame } = require('./api/gameStore');
-const { applyMove, createGameState, getBoardAtStep } = require('./api/chessEngine');
+const http = require('http');
+const { Server } = require('socket.io');
+const gameStore = require('./api/gameStore');
+const { getGame, saveGame, listGames, resetGame, createGame } = gameStore;
+const { applyMove, getBoardAtStep } = require('./api/chessEngine');
 const { getBotMove, LEVEL_CONFIGS } = require('./api/chessAI');
 const userStore = require('./api/userStore');
+const inviteStore = require('./api/inviteStore');
+const socketGateway = require('./api/socketGateway');
 
 const app = express();
+const httpServer = http.createServer(app);
+const io = new Server(httpServer, { cors: { origin: '*' } });
+socketGateway.initSocketGateway(io);
 
 // Middlewares
 app.use(cors());
@@ -71,20 +79,24 @@ function formatGameStatusResponse(game) {
     winner: game.winner || null,
     draw_reason: game.draw_reason || null,
     in_check: game.in_check || false,
-    mode: game.mode || 'timed',
+    game_type: game.game_type || 'bot',
+    mode: game.mode || 'async',
+    time_control: game.time_control || null,
     turn: game.turn,
     turn_count: game.turn_count,
     board: game.board,
     active_pieces: activePieces,
     captured_pieces: game.captured_pieces || { white: [], black: [] },
     points: game.points || { white: 0, black: 0 },
-    clocks: game.clocks || { white: 0, black: 0 },
+    clocks: game.clocks || { white: 0, black: 0, last_turn_started_at: null, running: false },
     movements: game.movements || [],
     last_move: game.movements && game.movements.length > 0 ? game.movements[game.movements.length - 1] : null,
-    white_player: game.white_player || { id: 'guest-w', username: 'blancas', name: 'Jugador Blancas' },
-    black_player: game.black_player || { id: 'guest-b', username: 'negras', name: 'Jugador Negras' },
-    opponent_connected: game.opponent_connected || false,
-    has_second_player: !!(game.black_player && !game.black_player.id.startsWith('guest-b')),
+    white_player: game.white_player || null,
+    black_player: game.black_player || null,
+    invited_username: game.invited_username || null,
+    created_by: game.created_by || null,
+    opponent_connected: !!(game.white_player && game.black_player),
+    has_second_player: !!(game.white_player && game.black_player),
     created_at: game.created_at,
     updated_at: game.updated_at
   };
@@ -240,11 +252,10 @@ app.get('/api/my-games', (req, res) => {
  * GET /api/games/:id/status
  * GET /api/games/:id
  * Obtiene el estado actual de la partida según su ID.
- * Si la partida no existe, se crea e inicializa automáticamente con dicho ID.
  */
 const handleGetGameStatus = (req, res) => {
-  const gameId = req.params.id || 'default';
-  const game = getGame(gameId, true);
+  const gameId = req.params.id;
+  const game = getGame(gameId);
 
   if (!game) {
     return res.status(404).json({
@@ -268,8 +279,12 @@ app.get('/api/games/:id', handleGetGameStatus);
  * Obtiene la reconstrucción del tablero tras 'step' movimientos (0 = inicial)
  */
 app.get('/api/games/:id/history/:step', (req, res) => {
-  const gameId = req.params.id || 'default';
-  const game = getGame(gameId, true);
+  const gameId = req.params.id;
+  const game = getGame(gameId);
+  if (!game) {
+    return res.status(404).json({ success: false, error: { message: `Partida con ID '${gameId}' no encontrada.` } });
+  }
+
   const step = parseInt(req.params.step, 10);
 
   if (isNaN(step) || step < 0) {
@@ -309,30 +324,48 @@ app.get('/api/games', (req, res) => {
 
 /**
  * POST /api/games
- * Crea una nueva partida con ID generado o proporcionado.
+ * Crea una nueva partida. Requiere sesión iniciada.
+ * Body: { game_type: 'bot' | 'online', player_side?, time_control?, invite_username? }
+ * time_control: { initial_seconds, increment_seconds, preset? } | null (sin reloj)
  */
 app.post('/api/games', (req, res) => {
-  const { id, mode, white_player, black_player, player_side } = req.body || {};
-  const gameId = id || `game-${Date.now()}`;
-
-  let wPlayer = white_player;
-  let bPlayer = black_player;
-
-  if (req.user) {
-    const userObj = { id: req.user.id, username: req.user.username, name: req.user.name };
-    if (player_side === 'black') {
-      if (!bPlayer) bPlayer = userObj;
-    } else {
-      if (!wPlayer) wPlayer = userObj;
-    }
+  if (!req.user) {
+    return res.status(401).json({
+      success: false,
+      error: { message: 'Debes iniciar sesión para crear una partida.' }
+    });
   }
 
-  const newGame = createGameState(gameId, {
-    mode,
-    white_player: wPlayer,
-    black_player: bPlayer
-  });
-  saveGame(newGame);
+  const { game_type, player_side, time_control, invite_username } = req.body || {};
+  const gameType = game_type === 'online' ? 'online' : 'bot';
+  const side = player_side === 'black' ? 'black' : 'white';
+  const userObj = { id: req.user.id, username: req.user.username, name: req.user.name, rating: req.user.rating || 1200 };
+
+  let normalizedTimeControl = null;
+  if (time_control && Number.isFinite(time_control.initial_seconds) && time_control.initial_seconds > 0) {
+    normalizedTimeControl = {
+      initial_seconds: time_control.initial_seconds,
+      increment_seconds: Number.isFinite(time_control.increment_seconds) ? time_control.increment_seconds : 0,
+      preset: time_control.preset || null
+    };
+  }
+
+  const options = {
+    game_type: gameType,
+    time_control: normalizedTimeControl,
+    created_by: req.user.id
+  };
+  options[`${side}_player`] = userObj;
+
+  const newGame = createGame(options);
+
+  let invite = null;
+  if (gameType === 'online' && invite_username) {
+    invite = inviteStore.createInvite({ gameId: newGame.id, fromUser: userObj, toUsername: invite_username });
+    newGame.invited_username = invite.to_username;
+    saveGame(newGame);
+    socketGateway.notifyUser(invite.to_username, 'invite:received', invite);
+  }
 
   res.status(201).json({
     success: true,
@@ -341,44 +374,62 @@ app.post('/api/games', (req, res) => {
 });
 
 /**
+ * Une a un usuario autenticado a un slot de la partida y, si con esto quedan
+ * ambos bandos ocupados por jugadores reales, arranca la partida (y el reloj si aplica).
+ * Retorna { error } con { status, message } si la operación no es válida.
+ */
+function joinGameAsUser(game, userObj, targetSide) {
+  const currentPlayer = targetSide === 'white' ? game.white_player : game.black_player;
+  if (currentPlayer) {
+    return { error: { status: 409, message: `El bando de ${targetSide === 'white' ? 'blancas' : 'negras'} ya está ocupado.` } };
+  }
+
+  if (targetSide === 'white') {
+    game.white_player = userObj;
+  } else {
+    game.black_player = userObj;
+  }
+
+  const bothSlotsFilled = !!(game.white_player && game.black_player);
+  if (bothSlotsFilled && game.status === 'WAITING_FOR_PLAYER') {
+    game.status = 'IN_PROGRESS';
+    if (game.time_control) {
+      game.clocks.last_turn_started_at = new Date().toISOString();
+      game.clocks.running = true;
+    }
+  }
+
+  saveGame(game);
+  return { error: null };
+}
+
+/**
  * POST /api/games/:id/join
- * Permite a un jugador unirse formalmente a la partida online.
- * Registra al jugador (usuario o invitado) y marca opponent_connected = true.
+ * Permite a un usuario autenticado unirse formalmente a una partida online
+ * compartida por link, eligiendo el bando disponible.
  */
 app.post('/api/games/:id/join', (req, res) => {
-  const gameId = req.params.id || 'default';
-  const game = getGame(gameId, true);
+  if (!req.user) {
+    return res.status(401).json({
+      success: false,
+      error: { message: 'Debes iniciar sesión para unirte a una partida.' }
+    });
+  }
 
+  const gameId = req.params.id;
+  const game = getGame(gameId);
   if (!game) {
     return res.status(404).json({ success: false, error: { message: 'Partida no encontrada' } });
   }
 
-  const { side, guest_name, guest_id } = req.body || {};
-  const targetSide = side || 'black';
+  const { side } = req.body || {};
+  const targetSide = side === 'white' ? 'white' : 'black';
+  const userObj = { id: req.user.id, username: req.user.username, name: req.user.name, rating: req.user.rating || 1200 };
 
-  let playerObj;
-  if (req.user) {
-    playerObj = { id: req.user.id, username: req.user.username, name: req.user.name, rating: req.user.rating || 1200 };
-  } else {
-    playerObj = {
-      id: guest_id || `guest-${Date.now()}`,
-      username: `guest_${Math.floor(Math.random() * 1000)}`,
-      name: guest_name || (targetSide === 'black' ? 'Invitado Negras' : 'Invitado Blancas'),
-      rating: 1200,
-      is_guest: true
-    };
+  const { error } = joinGameAsUser(game, userObj, targetSide);
+  if (error) {
+    return res.status(error.status).json({ success: false, error: { message: error.message } });
   }
-
-  if (targetSide === 'black') {
-    game.black_player = playerObj;
-  } else {
-    game.white_player = playerObj;
-  }
-
-  game.opponent_connected = true;
-  game.mode = 'multiplayer';
-  game.last_joined_at = new Date().toISOString();
-  saveGame(game);
 
   res.json({
     success: true,
@@ -401,8 +452,8 @@ app.post('/api/games/:id/claim', (req, res) => {
     });
   }
 
-  const gameId = req.params.id || 'default';
-  const game = getGame(gameId, true);
+  const gameId = req.params.id;
+  const game = getGame(gameId);
 
   if (!game) {
     return res.status(404).json({ success: false, error: { message: 'Partida no encontrada' } });
@@ -417,7 +468,7 @@ app.post('/api/games/:id/claim', (req, res) => {
   }
 
   const currentPlayer = side === 'white' ? game.white_player : game.black_player;
-  if (currentPlayer && currentPlayer.id && !currentPlayer.id.startsWith('guest-') && !currentPlayer.is_guest && currentPlayer.id !== req.user.id) {
+  if (currentPlayer && currentPlayer.id !== req.user.id) {
     return res.status(409).json({
       success: false,
       error: { message: `El bando de ${side === 'white' ? 'blancas' : 'negras'} ya pertenece a otro usuario registrado.` }
@@ -438,6 +489,106 @@ app.post('/api/games/:id/claim', (req, res) => {
   });
 });
 
+// ==========================================
+// RUTAS DE INVITACIONES A PARTIDAS ONLINE
+// ==========================================
+
+/**
+ * GET /api/invites
+ * Lista las invitaciones pendientes dirigidas al usuario autenticado.
+ */
+app.get('/api/invites', (req, res) => {
+  if (!req.user) {
+    return res.status(401).json({ success: false, error: { message: 'Debes iniciar sesión para consultar tus invitaciones.' } });
+  }
+  const invites = inviteStore.getInvitesForUser(req.user.username);
+  res.json({ success: true, data: invites });
+});
+
+/**
+ * POST /api/invites/:id/accept
+ * Acepta una invitación pendiente y une al usuario autenticado a la partida.
+ */
+app.post('/api/invites/:id/accept', (req, res) => {
+  if (!req.user) {
+    return res.status(401).json({ success: false, error: { message: 'Debes iniciar sesión para responder invitaciones.' } });
+  }
+
+  const invite = inviteStore.getInviteById(req.params.id);
+  if (!invite) {
+    return res.status(404).json({ success: false, error: { message: 'Invitación no encontrada.' } });
+  }
+  if (invite.to_username !== req.user.username) {
+    return res.status(403).json({ success: false, error: { message: 'Esta invitación no está dirigida a tu usuario.' } });
+  }
+  if (invite.status !== 'PENDING') {
+    return res.status(409).json({ success: false, error: { message: 'La invitación ya no está pendiente.' } });
+  }
+
+  const game = getGame(invite.game_id);
+  if (!game) {
+    return res.status(404).json({ success: false, error: { message: 'La partida asociada a esta invitación ya no existe.' } });
+  }
+
+  const targetSide = game.white_player ? 'black' : 'white';
+  const userObj = { id: req.user.id, username: req.user.username, name: req.user.name, rating: req.user.rating || 1200 };
+  const { error } = joinGameAsUser(game, userObj, targetSide);
+  if (error) {
+    return res.status(error.status).json({ success: false, error: { message: error.message } });
+  }
+
+  inviteStore.updateInviteStatus(invite.id, 'ACCEPTED');
+  socketGateway.notifyUser(invite.from_user.username, 'invite:accepted', { ...invite, status: 'ACCEPTED' });
+
+  res.json({ success: true, data: formatGameStatusResponse(game) });
+});
+
+/**
+ * POST /api/invites/:id/decline
+ * Rechaza una invitación pendiente.
+ */
+app.post('/api/invites/:id/decline', (req, res) => {
+  if (!req.user) {
+    return res.status(401).json({ success: false, error: { message: 'Debes iniciar sesión para responder invitaciones.' } });
+  }
+
+  const invite = inviteStore.getInviteById(req.params.id);
+  if (!invite) {
+    return res.status(404).json({ success: false, error: { message: 'Invitación no encontrada.' } });
+  }
+  if (invite.to_username !== req.user.username) {
+    return res.status(403).json({ success: false, error: { message: 'Esta invitación no está dirigida a tu usuario.' } });
+  }
+  if (invite.status !== 'PENDING') {
+    return res.status(409).json({ success: false, error: { message: 'La invitación ya no está pendiente.' } });
+  }
+
+  inviteStore.updateInviteStatus(invite.id, 'DECLINED');
+  socketGateway.notifyUser(invite.from_user.username, 'invite:declined', { ...invite, status: 'DECLINED' });
+
+  res.json({ success: true, data: invite });
+});
+
+/**
+ * POST /api/invites/:id/cancel
+ * Cancela una invitación pendiente creada por el usuario autenticado.
+ */
+app.post('/api/invites/:id/cancel', (req, res) => {
+  if (!req.user) {
+    return res.status(401).json({ success: false, error: { message: 'Debes iniciar sesión para cancelar invitaciones.' } });
+  }
+
+  try {
+    const invite = inviteStore.cancelInvite(req.params.id, req.user.id);
+    if (!invite) {
+      return res.status(404).json({ success: false, error: { message: 'Invitación no encontrada.' } });
+    }
+    res.json({ success: true, data: invite });
+  } catch (err) {
+    res.status(400).json({ success: false, error: { message: err.message } });
+  }
+});
+
 /**
  * POST /api/games/:id/moves
  * POST /api/games/:id/move
@@ -446,17 +597,19 @@ app.post('/api/games/:id/claim', (req, res) => {
  * Payload esperado: { from: "b1", to: "c3" } o { uci: "b1c3" } o { from: "e2", to: "e4" }
  */
 const handlePostMove = (req, res) => {
-  const gameId = req.params.id || 'default';
-  const game = getGame(gameId, true);
+  if (!req.user) {
+    return res.status(401).json({ success: false, error: { message: 'Debes iniciar sesión para mover.' } });
+  }
 
-  // Vincular usuario autenticado al bando correspondiente si aún era invitado
-  if (req.user) {
-    const userObj = { id: req.user.id, username: req.user.username, name: req.user.name };
-    if (game.turn === 'white' && (!game.white_player || game.white_player.id.startsWith('guest-'))) {
-      game.white_player = userObj;
-    } else if (game.turn === 'black' && (!game.black_player || game.black_player.id.startsWith('guest-'))) {
-      game.black_player = userObj;
-    }
+  const gameId = req.params.id;
+  const game = getGame(gameId);
+  if (!game) {
+    return res.status(404).json({ success: false, error: { message: `Partida con ID '${gameId}' no encontrada.` } });
+  }
+
+  const playerOnTurn = game.turn === 'white' ? game.white_player : game.black_player;
+  if (!playerOnTurn || playerOnTurn.id !== req.user.id) {
+    return res.status(403).json({ success: false, error: { message: 'No es tu turno o no perteneces a esta partida.' } });
   }
 
   let { from, to, uci, move, promotion } = req.body || {};
@@ -527,8 +680,20 @@ app.get('/api/bot-levels', (req, res) => {
  * Body opcional: { difficulty: 1 .. 10 } (Niveles del 1 al 10)
  */
 const handleBotMove = (req, res) => {
-  const gameId = req.params.id || 'default';
-  const game = getGame(gameId, true);
+  if (!req.user) {
+    return res.status(401).json({ success: false, error: { message: 'Debes iniciar sesión para jugar contra el robot.' } });
+  }
+
+  const gameId = req.params.id;
+  const game = getGame(gameId);
+  if (!game) {
+    return res.status(404).json({ success: false, error: { message: `Partida con ID '${gameId}' no encontrada.` } });
+  }
+
+  const isParticipant = (game.white_player && game.white_player.id === req.user.id) || (game.black_player && game.black_player.id === req.user.id);
+  if (!isParticipant) {
+    return res.status(403).json({ success: false, error: { message: 'No perteneces a esta partida.' } });
+  }
 
   if (game.status !== 'IN_PROGRESS') {
     return res.status(400).json({
@@ -577,7 +742,21 @@ app.post('/api/status/:id/bot-move', handleBotMove);
  * Reinicia la partida a la posición inicial.
  */
 app.post('/api/games/:id/reset', (req, res) => {
-  const gameId = req.params.id || 'default';
+  if (!req.user) {
+    return res.status(401).json({ success: false, error: { message: 'Debes iniciar sesión para reiniciar una partida.' } });
+  }
+
+  const gameId = req.params.id;
+  const game = getGame(gameId);
+  if (!game) {
+    return res.status(404).json({ success: false, error: { message: 'Partida no encontrada' } });
+  }
+
+  const isParticipant = (game.white_player && game.white_player.id === req.user.id) || (game.black_player && game.black_player.id === req.user.id);
+  if (!isParticipant) {
+    return res.status(403).json({ success: false, error: { message: 'No perteneces a esta partida.' } });
+  }
+
   const restarted = resetGame(gameId);
   res.json({
     success: true,
@@ -590,10 +769,19 @@ app.post('/api/games/:id/reset', (req, res) => {
  * Declara rendición para el bando que abandona.
  */
 app.post('/api/games/:id/resign', (req, res) => {
-  const gameId = req.params.id || 'default';
-  const game = getGame(gameId, false);
+  if (!req.user) {
+    return res.status(401).json({ success: false, error: { message: 'Debes iniciar sesión para rendirte.' } });
+  }
+
+  const gameId = req.params.id;
+  const game = getGame(gameId);
   if (!game) {
     return res.status(404).json({ success: false, error: { message: 'Partida no encontrada' } });
+  }
+
+  const isParticipant = (game.white_player && game.white_player.id === req.user.id) || (game.black_player && game.black_player.id === req.user.id);
+  if (!isParticipant) {
+    return res.status(403).json({ success: false, error: { message: 'No perteneces a esta partida.' } });
   }
 
   const { side } = req.body || {};
@@ -615,10 +803,11 @@ const host = process.env.HOST || '127.0.0.1';
 const port = process.env.PORT || 5000;
 
 if (require.main === module) {
-  app.listen(port, host, () => {
+  httpServer.listen(port, host, () => {
     console.log(`Flexbox Chess API Server running at http://${host}:${port}`);
     console.log(`- API Status endpoint: http://${host}:${port}/api/status/:id`);
     console.log(`- API Moves endpoint:  http://${host}:${port}/api/games/:id/moves`);
+    console.log(`- WebSocket (Socket.IO) listo para notificaciones en tiempo real`);
   });
 }
 
