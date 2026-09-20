@@ -134,3 +134,8 @@ dist
 
 # Sesiones activas de usuario (contienen tokens de acceso, no deben versionarse)
 data/users/sessions.json
+
+# Base de datos SQLite local (contiene usuarios, contraseñas hasheadas, partidas y sesiones)
+data/chess.db
+data/chess.db-shm
+data/chess.db-wal
