@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git mv *)",
+      "Bash(npm ls *)",
+      "Bash(node -e \"require\\('./server.js'\\); console.log\\('OK: server.js requires cleanly'\\)\")",
+      "Bash(tasklist)",
+      "Bash(taskkill //F //IM node.exe)",
+      "Bash(curl -s -w \"\\\\nHTTP:%{http_code}\\\\n\" http://127.0.0.1:5000/api/status/nonexistent-id)",
+      "Bash(curl -s -w \"\\\\nHTTP:%{http_code}\\\\n\" -X POST http://127.0.0.1:5000/api/games -H \"Content-Type: application/json\" -d '{\"game_type\":\"bot\"}')",
+      "Bash(npm uninstall *)"
+    ]
+  }
+}
