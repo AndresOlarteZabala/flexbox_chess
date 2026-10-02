@@ -139,3 +139,5 @@ data/users/sessions.json
 data/chess.db
 data/chess.db-shm
 data/chess.db-wal
+# Paquete de despliegue generado por deployment/upload.ps1
+deployment/*.tar.gz
