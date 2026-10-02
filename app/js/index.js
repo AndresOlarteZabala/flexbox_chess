@@ -27,6 +27,9 @@ let isHistoryMode = false;
 let currentHistoryStep = null;
 let latestLiveGame = null;
 
+// Evita re-intentar el join automático repetidamente para la misma partida
+let autoJoinAttemptedForGameId = null;
+
 // Evita repetir el banner vistoso de fin de partida en cada re-render
 let lastAnnouncedGameEndKey = null;
 
@@ -326,6 +329,10 @@ function loadGameFromAPI(gameId) {
     clockedGameId = gameId;
   }
 
+  if (currentGameId !== gameId) {
+    autoJoinAttemptedForGameId = null;
+  }
+
   currentGameId = gameId;
   updateGameUrl(gameId);
 
@@ -343,6 +350,7 @@ function loadGameFromAPI(gameId) {
         if (!isHistoryMode) {
           renderGameState(res.data);
           checkAutoBotMove(res.data);
+          joinCurrentGame(res.data);
         } else {
           // Si estaba en modo historial, solo actualizar la lista de movimientos y controles
           renderMovementsTable(allMovements, currentMovementsPage);
@@ -416,6 +424,44 @@ function resetGameAPI(gameId) {
 }
 
 /**
+ * Tiempo base de "pensado" por nivel de dificultad (en milisegundos), calibrado
+ * para acercarse al tiempo promedio que tarda un jugador humano de esa fuerza
+ * en decidir una jugada casual: niveles bajos juegan por impulso/intuición,
+ * niveles altos calculan líneas más profundas y tardan más.
+ */
+const BOT_THINK_BASE_MS = {
+  1: 1200, 2: 1800, 3: 2500, 4: 3500, 5: 4500,
+  6: 6000, 7: 8000, 8: 11000, 9: 15000, 10: 20000
+};
+
+/**
+ * Estima cuánto debería "pensar" el robot antes de mostrar su jugada, combinando
+ * el tiempo base del nivel con la complejidad de la posición actual: más piezas
+ * vivas en el tablero (medio juego denso) y jaques/capturas en curso alargan el
+ * tiempo, simulando que el bot evalúa más líneas tácticas. Se añade además un
+ * ±20% de variación aleatoria para evitar tiempos robóticamente idénticos.
+ */
+function estimateBotThinkTime(gameState, difficulty) {
+  const level = Math.min(10, Math.max(1, parseInt(difficulty, 10) || 5));
+  const baseMs = BOT_THINK_BASE_MS[level];
+
+  // Complejidad por densidad de piezas: 32 piezas (apertura) = máxima complejidad,
+  // pocas piezas (final) = posiciones más claras y rápidas de evaluar.
+  const pieceCount = (gameState && gameState.active_pieces && gameState.active_pieces.length) || 24;
+  const densityFactor = 0.6 + (Math.min(32, pieceCount) / 32) * 0.6; // rango ~0.6x - 1.2x
+
+  // Tensión táctica: jaque actual o última jugada con captura sugieren que hubo
+  // más líneas forzadas que evaluar.
+  const lastMove = gameState && gameState.last_move;
+  const tacticalFactor = (gameState && gameState.in_check) || (lastMove && lastMove.captured) ? 1.25 : 1;
+
+  const variance = 0.8 + Math.random() * 0.4; // ±20%
+
+  const estimated = baseMs * densityFactor * tacticalFactor * variance;
+  return Math.round(Math.min(30000, Math.max(500, estimated)));
+}
+
+/**
  * Verifica si corresponde al robot mover automáticamente. El robot juega solo
  * como oponente: se mueve solo cuando es el turno del bando contrario al del
  * jugador humano. El botón "Mover Robot" sigue disponible para forzar ese
@@ -429,10 +475,12 @@ function checkAutoBotMove(gameState) {
 
   if (botSide && gameState.turn === botSide) {
     isBotMoving = true;
+    const difficulty = parseInt($("#bot-difficulty").val(), 10) || 5;
+    const thinkMs = estimateBotThinkTime(gameState, difficulty);
     $("#sync-status").text("🤖 Robot pensando...");
     setTimeout(() => {
       triggerBotMove();
-    }, 600);
+    }, thinkMs);
   }
 }
 
@@ -1150,6 +1198,42 @@ function claimCurrentGame() {
 }
 
 /**
+ * Une automáticamente al usuario autenticado al bando elegido (myPlayerSide)
+ * de la partida actual, cuando esta está esperando un segundo jugador y ese
+ * bando sigue libre. Se usa al abrir el link de una partida online compartida.
+ * No hace nada en modo "Ambos (Local)", sin sesión iniciada, o si ya se
+ * intentó para esta misma partida.
+ */
+function joinCurrentGame(gameState) {
+  if (!authToken || !currentUser || !currentGameId || myPlayerSide === "both") return;
+  if (!gameState || gameState.status !== 'WAITING_FOR_PLAYER') return;
+  if (autoJoinAttemptedForGameId === currentGameId) return;
+
+  const targetPlayer = myPlayerSide === 'white' ? gameState.white_player : gameState.black_player;
+  if (targetPlayer) return; // El bando elegido ya está ocupado (por mí u otro jugador)
+
+  autoJoinAttemptedForGameId = currentGameId;
+
+  fetch(`/api/games/${encodeURIComponent(currentGameId)}/join`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${authToken}`
+    },
+    body: JSON.stringify({ side: myPlayerSide })
+  })
+    .then((res) => res.json())
+    .then((res) => {
+      if (res.success && res.data) {
+        latestLiveGame = res.data;
+        renderGameState(res.data);
+        messageShow("Te has unido a la partida");
+      }
+    })
+    .catch(() => {});
+}
+
+/**
  * Actualiza la barra superior reflejando si hay usuario conectado o invitado
  */
 function renderAuthUI() {
@@ -1392,6 +1476,15 @@ function loadGamesForSelectedUser(userId) {
       if (res.success && res.data) {
         renderUserStatsCard(res.data.user, res.data.games);
         renderUserGamesTable(res.data.games);
+
+        // Se encadena tras renderizar las tarjetas de estadísticas, ya que esa
+        // función crea el contenedor #user-skill-index-box que aquí se rellena.
+        fetch(`/api/users/${encodeURIComponent(userId)}/skill-index`)
+          .then((r) => r.json())
+          .then((r) => {
+            if (r.success && r.data) renderSkillIndexCard(r.data);
+          })
+          .catch((err) => console.error("Error cargando índice de habilidad:", err));
       } else {
         $("#user-games-tbody").html('<tr><td colspan="7" style="text-align: center; color: #f44336; padding: 20px;">No se pudieron cargar las partidas</td></tr>');
       }
@@ -1400,6 +1493,37 @@ function loadGamesForSelectedUser(userId) {
       console.error("Error cargando partidas de usuario:", err);
       $("#user-games-tbody").html('<tr><td colspan="7" style="text-align: center; color: #f44336; padding: 20px;">Error al conectar con el servidor</td></tr>');
     });
+}
+
+/**
+ * Renderiza la tarjeta del índice de habilidad (0-100), calculado combinando
+ * efectividad (% victorias), nivel de rivales enfrentados y volumen de jugadas.
+ */
+function renderSkillIndexCard(skillData) {
+  const box = $("#user-skill-index-box");
+  if (!box.length) return;
+
+  if (skillData.skill_index == null) {
+    box.html(`
+      <div class="user-stat-value" style="color: #94a3b8;">--</div>
+      <div class="user-stat-label">Índice de Habilidad</div>
+    `);
+    return;
+  }
+
+  const idx = skillData.skill_index;
+  const color = idx >= 70 ? '#4CAF50' : (idx >= 40 ? '#ff9800' : '#f44336');
+  const b = skillData.breakdown || {};
+
+  box.attr('title',
+    `Efectividad: ${b.effectiveness_score ?? '--'}/100 · ` +
+    `Nivel de rivales: ${b.opponent_level_score ?? '--'}/100 · ` +
+    `Experiencia: ${b.experience_score ?? '--'}/100`
+  );
+  box.html(`
+    <div class="user-stat-value" style="color: ${color};">${idx}</div>
+    <div class="user-stat-label">Índice de Habilidad</div>
+  `);
 }
 
 /**
@@ -1433,6 +1557,10 @@ function renderUserStatsCard(user, games) {
     <div class="user-stat-box">
       <div class="user-stat-value" style="color: #ff9800;">${drawn}</div>
       <div class="user-stat-label">Tablas</div>
+    </div>
+    <div class="user-stat-box" id="user-skill-index-box" title="Calculado a partir de tu % de victorias, el nivel de tus rivales y tu volumen de jugadas">
+      <div class="user-stat-value" style="color: #94a3b8;">--</div>
+      <div class="user-stat-label">Índice de Habilidad</div>
     </div>
   `;
   $("#user-stats-summary").html(html);

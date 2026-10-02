@@ -80,6 +80,8 @@ function formatGameStatusResponse(game) {
     draw_reason: game.draw_reason || null,
     in_check: game.in_check || false,
     game_type: game.game_type || 'bot',
+    bot_difficulty: game.bot_difficulty || null,
+    bot_max_difficulty: game.bot_max_difficulty || null,
     mode: game.mode || 'async',
     time_control: game.time_control || null,
     turn: game.turn,
@@ -243,6 +245,49 @@ app.get('/api/my-games', (req, res) => {
       user: req.user,
       total_games: games.length,
       games
+    }
+  });
+});
+
+/**
+ * GET /api/users/:id/skill-index
+ * Calcula el índice de habilidad (0-100) de un usuario a partir de su historial:
+ * % de victorias, nivel de los rivales enfrentados y volumen de jugadas.
+ */
+app.get('/api/users/:id/skill-index', (req, res) => {
+  const user = userStore.getUserById(req.params.id, false);
+  if (!user) {
+    return res.status(404).json({ success: false, error: { message: 'Usuario no encontrado' } });
+  }
+
+  const skillData = userStore.computeSkillIndex(req.params.id);
+  res.json({
+    success: true,
+    data: {
+      user_id: req.params.id,
+      ...(skillData || { skill_index: null, breakdown: null, stats: null })
+    }
+  });
+});
+
+/**
+ * GET /api/my-skill-index
+ * Índice de habilidad del usuario actualmente autenticado
+ */
+app.get('/api/my-skill-index', (req, res) => {
+  if (!req.user) {
+    return res.status(401).json({
+      success: false,
+      error: { message: 'Debes iniciar sesión para consultar tu índice de habilidad.' }
+    });
+  }
+
+  const skillData = userStore.computeSkillIndex(req.user.id);
+  res.json({
+    success: true,
+    data: {
+      user_id: req.user.id,
+      ...(skillData || { skill_index: null, breakdown: null, stats: null })
     }
   });
 });
@@ -481,6 +526,16 @@ app.post('/api/games/:id/claim', (req, res) => {
   } else {
     game.black_player = userObj;
   }
+
+  const bothSlotsFilled = !!(game.white_player && game.black_player);
+  if (bothSlotsFilled && game.status === 'WAITING_FOR_PLAYER') {
+    game.status = 'IN_PROGRESS';
+    if (game.time_control) {
+      game.clocks.last_turn_started_at = new Date().toISOString();
+      game.clocks.running = true;
+    }
+  }
+
   saveGame(game);
 
   res.json({
@@ -720,6 +775,9 @@ const handleBotMove = (req, res) => {
       error: { message: 'Error interno al aplicar el movimiento del robot.' }
     });
   }
+
+  game.bot_difficulty = level;
+  game.bot_max_difficulty = Math.max(game.bot_max_difficulty || 0, level);
 
   saveGame(game);
 

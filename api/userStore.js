@@ -289,7 +289,9 @@ function getUserGames(userId) {
 
         if (isWhite || isBlack) {
           const userSide = isWhite ? 'white' : 'black';
-          const opponent = isWhite ? (game.black_player || { name: 'Robot / Rival' }) : (game.white_player || { name: 'Robot / Rival' });
+          const opponentPlayer = isWhite ? game.black_player : game.white_player;
+          const isBotOpponent = !opponentPlayer || !!opponentPlayer.is_bot;
+          const opponent = opponentPlayer || { name: 'Robot / Rival' };
 
           // Calcular resultado relativo al usuario
           let result = 'IN_PROGRESS';
@@ -309,6 +311,8 @@ function getUserGames(userId) {
             id: game.id,
             user_side: userSide,
             opponent,
+            is_bot_opponent: isBotOpponent,
+            opponent_level: isBotOpponent ? (game.bot_max_difficulty || game.bot_difficulty || null) : (opponent.rating || null),
             status: game.status,
             result,
             winner: game.winner || null,
@@ -329,6 +333,78 @@ function getUserGames(userId) {
   }
 
   return userGames;
+}
+
+/**
+ * Calcula un índice de habilidad (0-100) del usuario combinando tres señales:
+ *
+ * 1. Efectividad (peso 50%): % de victorias sobre partidas finalizadas
+ *    (las tablas puntúan medio, para no penalizar como una derrota).
+ * 2. Nivel de rivales (peso 35%): fuerza promedio de los oponentes enfrentados
+ *    -bots nivel 1-10 escalados a 0-100, o rating de rivales humanos-,
+ *    ponderada por si esas partidas se ganaron o no (vencer rivales fuertes
+ *    pesa más que perder contra rivales débiles).
+ * 3. Experiencia (peso 15%): volumen total de jugadas realizadas, con curva
+ *    logarítmica para que el crecimiento tenga retornos decrecientes.
+ *
+ * Retorna null si el usuario no tiene partidas finalizadas (sin datos suficientes).
+ */
+function computeSkillIndex(userId) {
+  const games = getUserGames(userId).filter((g) => g.result !== 'IN_PROGRESS');
+  if (games.length === 0) return null;
+
+  const totalGames = games.length;
+  const wins = games.filter((g) => g.result === 'WIN').length;
+  const draws = games.filter((g) => g.result === 'DRAW').length;
+
+  // 1. Efectividad: victoria = 1 punto, tablas = 0.5, derrota = 0
+  const effectivenessScore = ((wins + draws * 0.5) / totalGames) * 100;
+
+  // 2. Nivel de rivales enfrentados, normalizado a 0-100
+  let opponentLevelSum = 0;
+  let opponentLevelCount = 0;
+  let totalMovements = 0;
+
+  for (const g of games) {
+    totalMovements += g.movements_count || 0;
+
+    if (g.opponent_level == null) continue;
+
+    const normalizedLevel = g.is_bot_opponent
+      ? ((Math.min(10, Math.max(1, g.opponent_level)) - 1) / 9) * 100 // Nivel 1-10 -> 0-100
+      : Math.min(100, Math.max(0, ((g.opponent_level - 400) / (2400 - 400)) * 100)); // Rating ~400-2400 -> 0-100
+
+    opponentLevelSum += normalizedLevel;
+    opponentLevelCount += 1;
+  }
+
+  const opponentLevelScore = opponentLevelCount > 0 ? opponentLevelSum / opponentLevelCount : 30;
+
+  // 3. Experiencia por volumen de jugadas (curva logarítmica, tope práctico ~500 jugadas)
+  const experienceScore = Math.min(100, (Math.log10(totalMovements + 1) / Math.log10(500)) * 100);
+
+  const skillIndex = Math.round(
+    effectivenessScore * 0.5 +
+    opponentLevelScore * 0.35 +
+    experienceScore * 0.15
+  );
+
+  return {
+    skill_index: Math.min(100, Math.max(0, skillIndex)),
+    breakdown: {
+      effectiveness_score: Math.round(effectivenessScore),
+      opponent_level_score: Math.round(opponentLevelScore),
+      experience_score: Math.round(experienceScore)
+    },
+    stats: {
+      total_games: totalGames,
+      wins,
+      draws,
+      losses: totalGames - wins - draws,
+      total_movements: totalMovements,
+      avg_opponent_level: opponentLevelCount > 0 ? Math.round((opponentLevelSum / opponentLevelCount) * 10) / 10 : null
+    }
+  };
 }
 
 // Inicializar usuarios demo por defecto si la base de datos está vacía
@@ -363,5 +439,6 @@ module.exports = {
   listUsers,
   updateUserStats,
   getUserGames,
+  computeSkillIndex,
   sanitizeUser
 };
