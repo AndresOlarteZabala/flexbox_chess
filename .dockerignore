@@ -1,0 +1,11 @@
+node_modules
+.git
+.gitignore
+.vscode
+.claude
+.env
+deployment
+Dockerfile
+docker-compose.yml
+data/chess.db*
+*.log
