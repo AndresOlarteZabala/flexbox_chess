@@ -72,6 +72,12 @@ function initModalViewport() {
   update();
 }
 
+function toggleGameControls() {
+  const header = document.querySelector('.glass-header');
+  const expanded = header.classList.toggle('controls-expanded');
+  document.getElementById('btn-toggle-game-controls').setAttribute('aria-expanded', String(expanded));
+}
+
 // Navegación con los botones atrás/adelante del navegador entre URLs de partidas
 window.addEventListener('popstate', () => {
   const pathMatch = window.location.pathname.match(/^\/game\/([^/]+)\/?$/);
@@ -577,6 +583,8 @@ function onGameModeChange() {
 
 function onPlayerSideChange() {
   myPlayerSide = $("#player-side-select").val();
+  clearBoardSelection();
+  updateBoardTouchTargets();
   fetch(`/api/status/${encodeURIComponent(currentGameId)}`)
     .then(r => r.json())
     .then(r => { if (r.success) checkAutoBotMove(r.data); });
@@ -733,6 +741,7 @@ function renderGameState(gameState) {
   renderMovementsTable(allMovements, currentMovementsPage);
   updateHistoryNavigationUI();
   refreshBoardSelection();
+  updateBoardTouchTargets();
 }
 
 /**

@@ -120,6 +120,7 @@ async function movePiece(pieceId, target) {
     messageShow("Error de comunicación con la API");
   } finally {
     movePending = false;
+    updateBoardTouchTargets();
   }
 }
 
@@ -129,6 +130,14 @@ let ignoreBoardClickUntil = 0;
 
 function boardPositionKey() {
   return `${currentGameId}:${data.turn}:${data.side}`;
+}
+
+// Solo las piezas que el jugador puede mover reservan el gesto de arrastre.
+// Las casillas vacías y las piezas rivales permiten desplazar la página.
+function updateBoardTouchTargets() {
+  document.querySelectorAll('#chess icon').forEach(piece => {
+    piece.classList.toggle('touch-movable', canMovePiece(piece, false));
+  });
 }
 
 function clearBoardSelection(cancelGesture = true) {
@@ -214,11 +223,11 @@ function initBoardInput() {
     }
     const cell = event.target.closest('.cell');
     if (!cell) return;
-    event.preventDefault();
     ignoreBoardClickUntil = Date.now() + 800;
     refreshBoardSelection();
     const piece = cell.querySelector('icon');
     const pieceId = piece && canMovePiece(piece, false) ? piece.id : null;
+    if (pieceId) event.preventDefault();
     boardGesture = { board, pointerId: event.pointerId, pieceId, square: cell.id,
       x: event.clientX, y: event.clientY, key: boardPositionKey(), dragged: false };
     board.setPointerCapture(event.pointerId);

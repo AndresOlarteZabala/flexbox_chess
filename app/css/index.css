@@ -477,11 +477,14 @@ body {
 
 /* Square / Cell */
 #chess {
-  touch-action: none;
+  touch-action: pan-y pinch-zoom;
   -webkit-user-select: none;
   user-select: none;
   -webkit-touch-callout: none;
 }
+
+icon.touch-movable { touch-action: none; }
+.mobile-controls-toggle { display: none; }
 
 .board-touch-hint {
   display: none;
@@ -1246,6 +1249,13 @@ table#movements tbody td.move-clock {
   .header-top-row { flex-wrap: wrap; }
   .auth-corner, #user-guest-controls, #user-logged-controls { max-width: 100%; flex-wrap: wrap; }
   .brand-title { white-space: normal; }
+  .brand-section { gap: 8px; flex-wrap: wrap; }
+  .brand-logo-icon { width: 32px; height: 32px; }
+  .brand-title { font-size: 15px; }
+  .brand-badge { display: none; }
+  .hud-status-indicator { font-size: 10px; padding: 3px 8px; }
+  .mobile-controls-toggle { display: inline-flex; justify-content: center; }
+  .glass-header:not(.controls-expanded) .header-controls { display: none; }
   .hud-control-group { flex-wrap: wrap; min-width: 0; max-width: 100%; width: 100%; }
   .hud-input, .hud-select { min-width: 0; max-width: 100%; }
   #game-id-input { flex: 1 1 150px; width: 100%; }
