@@ -5,7 +5,7 @@ const http = require('http');
 const { Server } = require('socket.io');
 const gameStore = require('./api/gameStore');
 const { getGame, saveGame, listGames, resetGame, createGame } = gameStore;
-const { applyMove, getBoardAtStep } = require('./api/chessEngine');
+const { applyMove, getBoardAtStep, getLegalMoves } = require('./api/chessEngine');
 const { getBotMove, LEVEL_CONFIGS } = require('./api/chessAI');
 const userStore = require('./api/userStore');
 const inviteStore = require('./api/inviteStore');
@@ -642,6 +642,21 @@ app.post('/api/invites/:id/cancel', (req, res) => {
   } catch (err) {
     res.status(400).json({ success: false, error: { message: err.message } });
   }
+});
+
+// Consulta sin modificar la partida: usa el mismo motor que valida las jugadas.
+app.get('/api/games/:id/legal-moves', (req, res) => {
+  const game = getGame(req.params.id);
+  if (!game) return res.status(404).json({ success: false, error: { message: 'Partida no encontrada.' } });
+  const from = req.query.from;
+  if (typeof from !== 'string' || !/^[a-h][1-8]$/.test(from)) {
+    return res.status(400).json({ success: false, error: { message: 'Casilla de origen inválida.' } });
+  }
+  const piece = game.board[from];
+  const destinations = game.status === 'IN_PROGRESS' && piece && piece.side === game.turn
+    ? getLegalMoves(game).filter(move => move.from === from).map(move => move.to)
+    : [];
+  res.json({ success: true, data: { from, destinations, turn: game.turn, turn_count: game.turn_count } });
 });
 
 /**

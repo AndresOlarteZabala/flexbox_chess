@@ -3,40 +3,55 @@
  * La lógica y validación de reglas se ejecuta en el backend.
  */
 
-async function drop(ev) {
-  ev.preventDefault();
+let movePending = false;
+
+function canMovePiece(member, notify = true) {
+  const reject = (message) => {
+    if (notify) messageShow(message);
+    return false;
+  };
+  if (movePending || isBotMoving) return false;
 
   if (isHistoryMode) {
-    messageShow("Modo historial activo (Solo lectura). No puedes modificar jugadas anteriores.");
-    return;
+    return reject("Modo historial activo (Solo lectura). No puedes modificar jugadas anteriores.");
   }
 
   if (typeof latestLiveGame !== 'undefined' && latestLiveGame && (latestLiveGame.status === 'CHECKMATE' || latestLiveGame.status === 'STALEMATE' || latestLiveGame.status === 'RESIGNED')) {
     const w = latestLiveGame.winner === 'white' ? 'Blancas' : (latestLiveGame.winner === 'black' ? 'Negras' : 'Tablas');
-    messageShow(`Partida finalizada por ${latestLiveGame.status}. Ganador: ${w}`);
-    return;
+    return reject(`Partida finalizada por ${latestLiveGame.status}. Ganador: ${w}`);
   }
-
-  const pieceId = ev.dataTransfer.getData("id");
-  const member = document.getElementById(pieceId);
-  if (!member) return;
-
+  if (!currentGameId || !member || member.getAttribute('draggable') !== 'true') return false;
+  if (latestLiveGame && latestLiveGame.status === 'WAITING_FOR_PLAYER') return false;
   const pieceSide = member.getAttribute("side");
-  if (!pieceSide.includes(data.side)) {
-    messageShow(`Turno de las ${data.side === 'white' ? 'blancas' : 'negras'}`);
-    return;
+  if (myPlayerSide !== 'both' && pieceSide !== myPlayerSide) {
+    return reject(`Tu bando es ${myPlayerSide === 'white' ? 'blancas' : 'negras'}`);
   }
+  if (pieceSide !== data.side) {
+    return reject(`Turno de las ${data.side === 'white' ? 'blancas' : 'negras'}`);
+  }
+  return true;
+}
 
-  const target = ev.target.localName === "icon" ? ev.target.parentNode : ev.target;
-  if (!target || !target.id) return;
+async function drop(ev) {
+  ev.preventDefault();
+  const target = ev.target.closest('.cell');
+  await movePiece(ev.dataTransfer.getData('id'), target);
+}
 
+// Ratón, toques y arrastre táctil comparten permisos y envío al servidor.
+async function movePiece(pieceId, target) {
+  const member = document.getElementById(pieceId);
+  if (!canMovePiece(member) || !target || !target.matches('#chess .cell')) return;
   const fromSquare = member.parentNode.id;
   const toSquare = target.id;
 
   if (fromSquare === toSquare) return;
+  const gameId = currentGameId;
+  movePending = true;
+  clearBoardSelection();
 
   try {
-    const response = await fetch(`/api/games/${encodeURIComponent(currentGameId)}/moves`, {
+    const response = await fetch(`/api/games/${encodeURIComponent(gameId)}/moves`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -49,6 +64,7 @@ async function drop(ev) {
     });
 
     const result = await response.json();
+    if (currentGameId !== gameId) return;
 
     if (!response.ok || !result.success) {
       // El motor de reglas de la API rechazó el movimiento
@@ -60,19 +76,9 @@ async function drop(ev) {
     const appliedMove = result.data.applied_move;
     const updatedGame = result.data.game;
 
-    // Si hubo captura validada por el servidor, retirar la pieza capturada del DOM
-    if (appliedMove.captured && target.children.length > 0) {
-      target.removeChild(target.children[0]);
-    }
-
-    // Mover la pieza al destino
-    member.setAttribute("state", "moved");
-    member.setAttribute("col", target.getAttribute("col"));
-    member.setAttribute("row", target.getAttribute("row"));
-    target.appendChild(member);
-
     // Actualizar estado en index.js y renderizar cambios
     latestLiveGame = updatedGame;
+    if (isHistoryMode) return;
     renderGameState(updatedGame);
 
     // Reproducir efecto sonoro adecuado
@@ -112,7 +118,152 @@ async function drop(ev) {
   } catch (error) {
     console.error("Error al enviar jugada a la API:", error);
     messageShow("Error de comunicación con la API");
+  } finally {
+    movePending = false;
   }
+}
+
+let boardSelection = null;
+let boardGesture = null;
+let ignoreBoardClickUntil = 0;
+
+function boardPositionKey() {
+  return `${currentGameId}:${data.turn}:${data.side}`;
+}
+
+function clearBoardSelection(cancelGesture = true) {
+  boardSelection = null;
+  document.querySelectorAll('#chess .piece-selected, #chess .possible-move').forEach(cell => cell.classList.remove('piece-selected', 'possible-move'));
+  if (cancelGesture) cancelBoardGesture();
+}
+
+function refreshBoardSelection() {
+  if (boardGesture && boardGesture.key !== boardPositionKey()) cancelBoardGesture();
+  if (!boardSelection) return;
+  const piece = document.getElementById(boardSelection.id);
+  if (boardSelection.key !== boardPositionKey() || !canMovePiece(piece, false) || piece.parentNode.id !== boardSelection.square) {
+    clearBoardSelection();
+    return;
+  }
+  piece.parentNode.classList.add('piece-selected');
+  boardSelection.destinations.forEach(square => document.getElementById(square)?.classList.add('possible-move'));
+}
+
+function selectBoardPiece(piece, preserveGesture = false) {
+  clearBoardSelection(!preserveGesture);
+  const selection = { id: piece.id, square: piece.parentNode.id, key: boardPositionKey(), destinations: [] };
+  boardSelection = selection;
+  piece.parentNode.classList.add('piece-selected');
+  fetch(`/api/games/${encodeURIComponent(currentGameId)}/legal-moves?from=${selection.square}`)
+    .then(response => response.ok ? response.json() : null)
+    .then(result => {
+      if (!result?.success || boardSelection !== selection || selection.key !== boardPositionKey()) return;
+      if (result.data.from !== selection.square || result.data.turn_count !== data.turn || result.data.turn !== data.side) return;
+      selection.destinations = result.data.destinations;
+      refreshBoardSelection();
+    })
+    .catch(error => console.error('Error al consultar movimientos posibles:', error));
+}
+
+function tapBoardCell(cell) {
+  refreshBoardSelection();
+  const piece = cell.querySelector('icon');
+  if (boardSelection) {
+    if (cell.id === boardSelection.square) {
+      clearBoardSelection();
+    } else if (piece && piece.getAttribute('side') === data.side) {
+      if (canMovePiece(piece)) selectBoardPiece(piece);
+    } else {
+      movePiece(boardSelection.id, cell);
+    }
+  } else if (piece && canMovePiece(piece)) {
+    selectBoardPiece(piece);
+  }
+}
+
+function cancelBoardGesture() {
+  const gesture = boardGesture;
+  boardGesture = null;
+  if (!gesture) return;
+  const piece = document.getElementById(gesture.pieceId);
+  if (piece) {
+    piece.style.transform = '';
+    piece.classList.remove('touch-dragging');
+  }
+  document.querySelectorAll('#chess .touch-target').forEach(cell => cell.classList.remove('touch-target'));
+  if (gesture.board.hasPointerCapture(gesture.pointerId)) gesture.board.releasePointerCapture(gesture.pointerId);
+}
+
+function boardCellAt(x, y) {
+  const element = document.elementFromPoint(x, y);
+  return element && element.closest('#chess .cell');
+}
+
+function initBoardInput() {
+  const board = document.getElementById('chess');
+  board.addEventListener('click', event => {
+    if (Date.now() < ignoreBoardClickUntil) return;
+    const cell = event.target.closest('.cell');
+    if (cell) tapBoardCell(cell);
+  });
+  board.addEventListener('pointerdown', event => {
+    if (event.pointerType === 'mouse') return;
+    if (!event.isPrimary) {
+      clearBoardSelection();
+      return;
+    }
+    const cell = event.target.closest('.cell');
+    if (!cell) return;
+    event.preventDefault();
+    ignoreBoardClickUntil = Date.now() + 800;
+    refreshBoardSelection();
+    const piece = cell.querySelector('icon');
+    const pieceId = piece && canMovePiece(piece, false) ? piece.id : null;
+    boardGesture = { board, pointerId: event.pointerId, pieceId, square: cell.id,
+      x: event.clientX, y: event.clientY, key: boardPositionKey(), dragged: false };
+    board.setPointerCapture(event.pointerId);
+  });
+  board.addEventListener('pointermove', event => {
+    const gesture = boardGesture;
+    if (!gesture || gesture.pointerId !== event.pointerId) return;
+    const dx = event.clientX - gesture.x;
+    const dy = event.clientY - gesture.y;
+    if (Math.hypot(dx, dy) < 8 && !gesture.dragged) return;
+    const piece = document.getElementById(gesture.pieceId);
+    if (!piece) { gesture.dragged = true; return; }
+    if (gesture.key !== boardPositionKey() || !canMovePiece(piece, false)) {
+      clearBoardSelection();
+      return;
+    }
+    if (!gesture.dragged) selectBoardPiece(piece, true);
+    gesture.dragged = true;
+    piece.classList.add('touch-dragging');
+    piece.style.transform = `translate(${dx}px, ${dy}px) scale(1.12)`;
+    document.querySelectorAll('#chess .touch-target').forEach(cell => cell.classList.remove('touch-target'));
+    const target = boardCellAt(event.clientX, event.clientY);
+    if (target) target.classList.add('touch-target');
+  });
+  board.addEventListener('pointerup', event => {
+    const gesture = boardGesture;
+    if (!gesture || gesture.pointerId !== event.pointerId) return;
+    event.preventDefault();
+    ignoreBoardClickUntil = Date.now() + 800;
+    const target = boardCellAt(event.clientX, event.clientY);
+    cancelBoardGesture();
+    if (!target || gesture.key !== boardPositionKey()) return;
+    if (gesture.dragged) {
+      if (gesture.pieceId && target.id !== gesture.square) movePiece(gesture.pieceId, target);
+    } else {
+      tapBoardCell(target);
+    }
+  });
+  board.addEventListener('pointercancel', clearBoardSelection);
+  board.addEventListener('lostpointercapture', cancelBoardGesture);
+  board.addEventListener('dragend', () => clearBoardSelection());
+  board.addEventListener('contextmenu', event => event.preventDefault());
+  document.addEventListener('click', event => {
+    if (!board.contains(event.target)) clearBoardSelection();
+  });
 }
 
 let whiteTime = 0;

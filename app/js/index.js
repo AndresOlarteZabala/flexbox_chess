@@ -53,10 +53,24 @@ let history = [];
 
 // Inicializar al cargar el documento
 $(document).ready(function () {
+  initModalViewport();
+  initBoardInput();
   load();
   initAuth();
   startSyncLoop();
 });
+
+// Mantener los formularios dentro del área visible al abrir el teclado móvil.
+function initModalViewport() {
+  if (!window.visualViewport) return;
+  const update = () => {
+    document.documentElement.style.setProperty('--modal-viewport-height', `${window.visualViewport.height}px`);
+    document.documentElement.style.setProperty('--modal-viewport-top', `${window.visualViewport.offsetTop}px`);
+  };
+  window.visualViewport.addEventListener('resize', update);
+  window.visualViewport.addEventListener('scroll', update);
+  update();
+}
 
 // Navegación con los botones atrás/adelante del navegador entre URLs de partidas
 window.addEventListener('popstate', () => {
@@ -187,6 +201,7 @@ function toggleSound() {
 }
 
 function flipBoard() {
+  clearBoardSelection();
   $("#chess").toggleClass("flipped");
   $(".board-coords-left, .board-coords-right, .board-coords-top, .board-coords-bottom").toggleClass("flipped");
   playChessSound('move');
@@ -717,6 +732,7 @@ function renderGameState(gameState) {
   $("#movements-total-counter").text(`${allMovements.length} Jugadas`);
   renderMovementsTable(allMovements, currentMovementsPage);
   updateHistoryNavigationUI();
+  refreshBoardSelection();
 }
 
 /**
@@ -751,6 +767,7 @@ function renderHistoricalStep(step) {
   }
 
   isHistoryMode = true;
+  clearBoardSelection();
   currentHistoryStep = Math.max(0, parseInt(step, 10));
 
   const historicalBoard = computeBoardAtStep(currentHistoryStep);
@@ -977,32 +994,13 @@ function allowDrop(ev) {
 }
 
 function drag(ev) {
-  // BLOQUEO SI LA PARTIDA YA TERMINÓ (Jaque Mate, Ahogado, Rendición)
-  if (latestLiveGame && (latestLiveGame.status === 'CHECKMATE' || latestLiveGame.status === 'STALEMATE' || latestLiveGame.status === 'RESIGNED')) {
+  clearBoardSelection();
+  if (!canMovePiece(ev.target)) {
     ev.preventDefault();
-    const win = latestLiveGame.winner === 'white' ? 'Blancas' : (latestLiveGame.winner === 'black' ? 'Negras' : 'Tablas');
-    messageShow(`Partida finalizada por ${latestLiveGame.status}. Ganador: ${win}`);
     return;
   }
-
-  // BLOQUEO ESTRICTO EN MODO HISTORIAL (SOLO LECTURA)
-  if (isHistoryMode) {
-    ev.preventDefault();
-    messageShow("Estás en modo historial (Solo Lectura). No puedes mover piezas.");
-    return;
-  }
-
-  const pieceSide = ev.target.getAttribute("side");
-
-  if (myPlayerSide !== "both" && pieceSide !== myPlayerSide) {
-    ev.preventDefault();
-    messageShow(`Tu bando es ${myPlayerSide === 'white' ? 'blancas' : 'negras'}`);
-    return;
-  }
-
-  if (pieceSide.includes(data.side)) {
-    ev.dataTransfer.setData("id", ev.target.id);
-  }
+  selectBoardPiece(ev.target);
+  ev.dataTransfer.setData("id", ev.target.id);
 }
 
 function messageShow(msg) {

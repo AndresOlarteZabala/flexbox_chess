@@ -7,6 +7,8 @@ Plataforma interactiva de ajedrez en la web construida con **CSS Flexbox**, **Ja
 ## 🌟 Características Principales
 
 - **🎮 Tablero Interactivo con HTML5 Drag & Drop:** Movimiento fluido de piezas, cálculo de trayectorias y detección de capturas con puntajes de material acumulados.
+- **📱 Controles táctiles para tablet:** Toca una pieza y después la casilla de destino, o arrástrala con el dedo. Toca de nuevo la pieza seleccionada para cancelar. Los movimientos respetan el turno, el bando y la validación del servidor, también con el tablero invertido.
+- **Movimientos posibles:** Al seleccionar o arrastrar una pieza, sus destinos legales se resaltan en gris usando el motor de reglas del servidor.
 - **🌐 Servidor Backend REST con Autoridad de Reglas (`server.js`):** Valida cada movimiento en el servidor, garantiza la legalidad de las jugadas e impide movimientos que dejen o mantengan al rey en jaque.
 - **💾 Persistencia de Partidas en Tiempo Real:** Las partidas se identifican por ID único y se almacenan automáticamente en caché de memoria y en disco en [`data/games/<id>.json`](./data/games/).
 - **👥 Modo Multi-Sesión / Multijugador Online:** Dos jugadores en navegadores, ventanas o pestañas diferentes pueden disputar la misma partida en vivo mediante el parámetro de URL `?game=<id>` con sincronización automática en bucle cada 1200ms.
