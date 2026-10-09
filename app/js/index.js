@@ -209,7 +209,6 @@ function toggleSound() {
 function flipBoard() {
   clearBoardSelection();
   $("#chess").toggleClass("flipped");
-  $(".board-coords-left, .board-coords-right, .board-coords-top, .board-coords-bottom").toggleClass("flipped");
   playChessSound('move');
 }
 
@@ -225,7 +224,7 @@ function buildGrid() {
       // En ajedrez estándar, a1 (i=0, j=0) es casilla oscura (dark), b1 es clara (light)
       const isLight = (i + j) % 2 === 1;
       const colorClass = isLight ? "light white" : "dark black";
-      colHtml += `<div id="${squareId}" col="${i + 1}" row="${j + 1}" class="cell ${colorClass}" ondrop="drop(event)" ondragover="allowDrop(event)"></div>`;
+      colHtml += `<div id="${squareId}" col="${i + 1}" row="${j + 1}" data-file="${data.cols[i]}" data-rank="${j + 1}" aria-label="${squareId}" class="cell ${colorClass}" ondrop="drop(event)" ondragover="allowDrop(event)"></div>`;
     }
     colHtml += `</div>`;
     chess.append(colHtml);
