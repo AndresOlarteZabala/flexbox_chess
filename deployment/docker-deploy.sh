@@ -63,6 +63,16 @@ rollback() {
 }
 printf 'Construyendo la nueva imagen; el servicio actual sigue activo.\n'
 "${new_compose[@]}" build flexbox-chess
+printf 'Verificando lectura del codigo y acceso a datos antes de reemplazar el servicio.\n'
+"${new_compose[@]}" run --rm --no-deps --entrypoint node flexbox-chess -e '
+  const fs = require("node:fs");
+  for (const file of ["package.json", "server.js", "app/index.html", "app/css/index.css", "app/js/index.js", "app/js/epic-narrator.js", "app/js/narrator-ui.js"]) {
+    fs.readFileSync("/app/" + file);
+  }
+  for (const dependency of ["express", "cors", "socket.io", "node:sqlite"]) require(dependency);
+  fs.accessSync("/app/data", fs.constants.R_OK | fs.constants.W_OK | fs.constants.X_OK);
+  console.log("Codigo y volumen de datos accesibles para el usuario del contenedor.");
+'
 if ! "${new_compose[@]}" up -d --no-deps --no-build flexbox-chess; then
   rollback
   fail "No se pudo arrancar la nueva version."
