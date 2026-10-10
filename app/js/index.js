@@ -56,6 +56,7 @@ $(document).ready(function () {
   initModalViewport();
   initBoardInput();
   initGameChat();
+  initActionIcons();
   load();
   initAuth();
   startSyncLoop();
@@ -202,7 +203,8 @@ function toggleSound() {
   isSoundEnabled = !isSoundEnabled;
   const btn = document.getElementById("btn-toggle-sound");
   if (btn) {
-    btn.innerHTML = isSoundEnabled ? "🔊 Sonido: ON" : "🔇 Sonido: OFF";
+    setActionIcon(btn, isSoundEnabled ? 'sound' : 'muted', isSoundEnabled ? 'Desactivar sonido' : 'Activar sonido');
+    btn.setAttribute('aria-pressed', String(isSoundEnabled));
   }
   if (isSoundEnabled) playChessSound('bot');
 }
