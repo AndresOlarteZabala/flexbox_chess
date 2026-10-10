@@ -12,6 +12,12 @@ fail() { printf 'ERROR: %s\n' "$*" >&2; exit 1; }
 [[ -f "$archive" ]] || fail "No existe el paquete: $archive"
 [[ "$port" =~ ^[0-9]+$ ]] && (( port >= 1024 && port <= 65535 )) || fail "PORT debe estar entre 1024 y 65535."
 [[ "$base" != *[[:space:]]* ]] || fail "La ruta HOME no puede contener espacios."
+if command -v docker >/dev/null; then
+  docker_containers="$(docker ps -a --filter label=com.docker.compose.service=flexbox-chess --format '{{.ID}}')" || fail "No se pudo consultar Docker. Revisa los permisos del usuario SSH."
+  if [[ -n "$docker_containers" ]]; then
+    exec bash "$(dirname "$0")/docker-deploy.sh" "$archive"
+  fi
+fi
 for tool in node npm tar curl systemctl sudo; do
   command -v "$tool" >/dev/null || fail "Falta $tool. Instala Node.js 22.13+ (o 24 LTS), npm, curl y systemd antes de continuar."
 done
