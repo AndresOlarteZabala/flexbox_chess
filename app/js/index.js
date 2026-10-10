@@ -811,13 +811,8 @@ function renderHistoricalStep(step) {
 
   // Actualizar turno visible según jugada histórica
   const histSide = currentHistoryStep % 2 === 0 ? "white" : "black";
-  turnLabel.html(`${histSide} (Historial)`);
+  turnLabel.text(histSide === 'white' ? '⚪ Blancas' : '⚫ Negras');
   quantityLabel.html(currentHistoryStep);
-
-  // Mostrar aviso de Solo Lectura
-  $("#history-banner").show();
-  $("#history-step-num").text(currentHistoryStep);
-  $("#history-indicator").text(`Jugada #${currentHistoryStep} / ${total}`).css("color", "#ff9800");
 
   updateHistoryNavigationUI();
   renderMovementsTable(allMovements, currentMovementsPage);
@@ -830,9 +825,6 @@ function renderHistoricalStep(step) {
 function exitHistoryMode() {
   isHistoryMode = false;
   currentHistoryStep = null;
-
-  $("#history-banner").hide();
-  $("#history-indicator").text(`En vivo (#${allMovements.length})`).css("color", "#4CAF50");
 
   updateHistoryNavigationUI();
 
@@ -883,6 +875,9 @@ function navigateHistory(action) {
  */
 function updateHistoryNavigationUI() {
   const total = allMovements.length;
+  $(".history-nav-hud").toggleClass("is-history", isHistoryMode);
+  $("#history-banner").text(isHistoryMode ? "Historial · Solo lectura" : "En vivo");
+  $("#history-indicator").attr("aria-label", isHistoryMode ? `Jugada ${currentHistoryStep} de ${total}` : `En vivo, ${total} jugadas`);
 
   if (total === 0) {
     $("#btn-hist-start, #btn-hist-prev, #btn-hist-next, #btn-hist-end").prop("disabled", true);
@@ -894,8 +889,9 @@ function updateHistoryNavigationUI() {
 
   if (!isHistoryMode) {
     $("#btn-hist-next, #btn-hist-end").prop("disabled", true);
-    $("#history-indicator").text(`En vivo (#${total})`).css("color", "#4CAF50");
+    $("#history-indicator").text(`En vivo · ${total}`);
   } else {
+    $("#history-indicator").text(`${currentHistoryStep} / ${total}`);
     if (currentHistoryStep <= 0) {
       $("#btn-hist-start, #btn-hist-prev").prop("disabled", true);
     }
@@ -940,10 +936,8 @@ function renderMovementsTable(movements, page) {
       const val = mov.san || mov.classic_val || (mov.id + " -> " + mov.to);
       const timeStr = mov.time || "";
       const isSelected = isHistoryMode && currentHistoryStep === mov.turn;
-      const rowStyle = isSelected ? "background: #ffe082; font-weight: bold; border-left: 4px solid #ff9800; cursor: pointer;" : "cursor: pointer;";
-
-      const row = `<tr onclick="renderHistoricalStep(${mov.turn})" style="${rowStyle}" title="Clic para ver tablero tras la jugada #${mov.turn}">
-        <td style="font-weight: bold; color: #1976D2;">#${mov.turn}</td>
+      const row = `<tr onclick="renderHistoricalStep(${mov.turn})" class="${isSelected ? 'highlight-historical' : ''}" ${isSelected ? 'aria-current="step"' : ''} title="Clic para ver tablero tras la jugada #${mov.turn}">
+        <td class="move-num">#${mov.turn}</td>
         <td>${mov.side === "white" ? val : ""}</td>
         <td>${mov.side === "black" ? val : ""}</td>
         <td>${timeStr}</td>

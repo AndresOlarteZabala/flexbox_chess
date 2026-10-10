@@ -876,18 +876,26 @@ icon.king.black {
   border: 1px solid var(--surface-glass-border);
   border-radius: var(--radius-md);
   padding: 8px 14px;
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
   align-items: center;
   gap: 8px;
 }
 
-.history-nav-buttons {
+.history-nav-summary {
   display: flex;
   align-items: center;
-  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 24px;
+}
+
+.history-nav-buttons {
+  display: grid;
+  grid-template-columns: 40px 40px minmax(0, 1fr) 40px 40px;
+  align-items: center;
   gap: 6px;
+  min-width: 0;
 }
 
 .btn-scrub {
@@ -917,24 +925,31 @@ icon.king.black {
   font-family: var(--font-mono);
   font-size: 12px;
   font-weight: 600;
-  min-width: 90px;
+  min-width: 0;
+  min-height: 40px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   text-align: center;
   color: var(--neon-cyan);
 }
 
-/* History Mode Warning Banner */
+/* El estado ocupa el mismo espacio en vivo y en historial. */
 #history-banner {
-  background: linear-gradient(135deg, rgba(245, 158, 11, 0.18), rgba(234, 88, 12, 0.18));
-  border: 1px solid rgba(245, 158, 11, 0.4);
-  color: #fef08a;
-  padding: 10px 14px;
-  border-radius: var(--radius-md);
-  font-size: 13px;
+  color: #94a3b8;
+  font-size: 11px;
   font-weight: 600;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.15);
+  white-space: nowrap;
+}
+.history-nav-hud.is-history #history-banner {
+  color: #a5f3fc;
+}
+.history-nav-hud.is-history .scrub-indicator {
+  color: #e0f2fe;
+}
+@media (any-pointer: coarse), (max-width: 700px) {
+  .history-nav-buttons { grid-template-columns: 44px 44px minmax(0, 1fr) 44px 44px; }
+  .scrub-indicator { min-height: 44px; font-size: 11px; }
 }
 
 #welcome-banner {
@@ -1025,8 +1040,17 @@ table#movements tbody tr:hover {
 }
 
 table#movements tbody tr.highlight-historical {
-  background-color: rgba(245, 158, 11, 0.14) !important;
-  box-shadow: inset 3px 0 0 #f59e0b;
+  background-color: #1c4054;
+  box-shadow: inset 3px 0 0 #67e8f9;
+}
+table#movements tbody tr.highlight-historical:hover {
+  background-color: #244e64;
+}
+table#movements tbody tr.highlight-historical td {
+  color: #f8fafc;
+}
+table#movements tbody tr.highlight-historical td.move-num {
+  color: #a5f3fc;
 }
 
 table#movements tbody td {
