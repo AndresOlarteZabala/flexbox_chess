@@ -6,6 +6,7 @@ Plataforma interactiva de ajedrez en la web construida con **CSS Flexbox**, **Ja
 
 ## 🌟 Características Principales
 
+- **📜 Narrador épico opcional:** Debajo del tablero, activa una crónica de campaña con texto y voz en español. Desmarca **Voz** para leer en silencio. Apagar el narrador detiene la voz inmediatamente. Los peones son infantería; los caballos, caballería; los alfiles, consejeros de guerra; las torres, fortalezas; la dama, comandante; y el rey, soberano. La crónica conecta pérdidas y respuestas al combate, relata maniobras de cada pieza y dramatiza enroques, promociones, jaque y desenlaces.
 - **🎮 Tablero Interactivo con HTML5 Drag & Drop:** Movimiento fluido de piezas, cálculo de trayectorias y detección de capturas con puntajes de material acumulados.
 - **📱 Controles táctiles para tablet:** Toca una pieza y después la casilla de destino, o arrástrala con el dedo. Toca de nuevo la pieza seleccionada para cancelar. Los movimientos respetan el turno, el bando y la validación del servidor, también con el tablero invertido.
 - **Movimientos posibles:** Al seleccionar o arrastrar una pieza, sus destinos legales se resaltan en gris usando el motor de reglas del servidor.
@@ -23,6 +24,12 @@ Plataforma interactiva de ajedrez en la web construida con **CSS Flexbox**, **Ja
 ---
 
 ## 🚀 Inicio Rápido
+
+El narrador empieza apagado. Usa las voces disponibles en el navegador/sistema, sin un proveedor de IA ni una clave adicional; su disponibilidad y sonido dependen del dispositivo. Si la voz no está disponible, permanece el texto. Al activar la función en una partida ya avanzada se presenta un resumen actual; no se reproducen las jugadas antiguas. Consultar el historial pausa la voz, y cambiar de partida o reiniciar limpia la crónica visible. Se conservan hasta ocho entradas recientes en pantalla; las pérdidas se calculan desde todo el historial del servidor, incluso mientras el narrador está apagado. Si llegan varias jugadas juntas, se relata únicamente el estado más reciente para evitar acumular voces.
+
+Puedes activar el narrador incluso antes de cargar una partida para escuchar su bienvenida. **Probar voz** reproduce una muestra de enroque y coronación; **Voz del cronista** permite elegir una voz española del sistema cuando se cargan las voces del navegador. El estado muestra cuándo está preparando o reproduciendo audio, y explica los errores de reproducción. El tono de campaña utiliza frases originales inspiradas en la narración de juegos de estrategia épica; el timbre lo aporta la voz instalada, con ritmo pausado y tono ligeramente grave.
+
+La lógica narrativa vive en `app/js/epic-narrator.js`, separada de los controles y la síntesis de voz de `app/js/narrator-ui.js`. Se integra con los estados validados de jugadas humanas, robot y sincronización multijugador. Para comprobarla sin modificar la base de datos: `node --test scripts/test-narrator.js`.
 
 ### Requisitos Previos
 

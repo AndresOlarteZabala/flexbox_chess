@@ -112,23 +112,8 @@
 
   <!-- Arena Principal: 3 Columnas (Movimientos | Tablero | Jugadores) -->
   <main class="chess-arena">
-    <!-- Columna Izquierda: Registro de Movimientos y Navegación Histórica -->
+    <!-- Columna Izquierda: Registro de Movimientos -->
     <div class="movements-column">
-      <!-- Barra de Scrub / Navegación Histórica -->
-      <div class="history-nav-hud">
-        <div class="history-nav-summary">
-          <span class="hud-label">Navegación</span>
-          <span id="history-banner" role="status">En vivo</span>
-        </div>
-        <div class="history-nav-buttons" role="group" aria-label="Navegación de jugadas">
-          <button id="btn-hist-start" onclick="navigateHistory('start')" class="btn-scrub" title="Inicio (Jugada #0)">|◀</button>
-          <button id="btn-hist-prev" onclick="navigateHistory('prev')" class="btn-scrub" title="Jugada anterior">◀ Anterior</button>
-          <span id="history-indicator" class="scrub-indicator" aria-live="polite">Sin jugadas</span>
-          <button id="btn-hist-next" onclick="navigateHistory('next')" class="btn-scrub" title="Siguiente jugada">Siguiente ▶</button>
-          <button id="btn-hist-end" onclick="navigateHistory('end')" class="btn-scrub active-live" title="Volver al juego en vivo">▶| En Vivo</button>
-        </div>
-      </div>
-
       <!-- Tarjeta de Historial de Movimientos -->
       <div class="movements-card">
         <div class="movements-header-bar">
@@ -171,18 +156,55 @@
         <div id="chess"></div>
       </div>
 
-      <!-- Barra de Acciones del Tablero -->
+      <section class="board-controls-hud" aria-label="Controles del tablero">
+        <div class="history-nav-hud">
+          <div class="history-nav-summary">
+            <span class="hud-label">Navegación</span>
+            <span id="history-banner" role="status">En vivo</span>
+          </div>
+          <div class="history-nav-buttons" role="group" aria-label="Navegación de jugadas">
+            <button id="btn-hist-start" onclick="navigateHistory('start')" class="btn-scrub" title="Inicio (Jugada #0)">|◀</button>
+            <button id="btn-hist-prev" onclick="navigateHistory('prev')" class="btn-scrub" title="Jugada anterior">◀ Anterior</button>
+            <span id="history-indicator" class="scrub-indicator" aria-live="polite">Sin jugadas</span>
+            <button id="btn-hist-next" onclick="navigateHistory('next')" class="btn-scrub" title="Siguiente jugada">Siguiente ▶</button>
+            <button id="btn-hist-end" onclick="navigateHistory('end')" class="btn-scrub active-live" title="Volver al juego en vivo">▶| En Vivo</button>
+          </div>
+        </div>
+        <div class="board-action-bar">
+          <div class="board-action-buttons">
+            <button id="btn-flip-board" onclick="flipBoard()" class="btn-hud btn-hud-secondary" aria-pressed="false" title="Invertir perspectiva del tablero">🔄 Voltear Tablero</button>
+            <button id="btn-toggle-sound" onclick="toggleSound()" class="btn-hud btn-hud-secondary" title="Activar/desactivar audio sintetizado">🔊 Sonido: ON</button>
+            <button id="btn-photo-board" onclick="captureBoardPhoto()" class="btn-hud btn-hud-photo" title="Tomar foto del tablero en cualquier momento">📸 Tomar Foto</button>
+          </div>
+          <div class="board-action-buttons">
+            <button id="btn-resign" onclick="resignGameAPI(currentGameId)" class="btn-hud btn-hud-danger" title="Rendirse en este turno">🏳️ Rendirse</button>
+          </div>
+        </div>
+      <section class="narrator-card" aria-label="Narrador épico">
+        <h2 class="narrator-title">Narrador épico</h2>
+        <div class="narrator-controls">
+          <button id="btn-toggle-narrator" type="button" class="btn-hud btn-hud-secondary" aria-pressed="false" aria-controls="narrator-log">Activar narrador</button>
+          <label class="narrator-voice-label"><input id="narrator-voice" type="checkbox" checked> Voz</label>
+          <button id="btn-test-narrator" type="button" class="btn-hud btn-hud-secondary">Probar voz</button>
+        </div>
+        <label class="narrator-voice-picker" for="narrator-voice-select">Voz del cronista <select id="narrator-voice-select" class="form-input"><option value="">Español · automática</option></select></label>
+        <p id="narrator-status" class="hud-label">Crónica medieval opcional</p>
+        <details class="narrator-legend">
+          <summary>Los ejércitos del tablero</summary>
+          <dl>
+            <div><dt>Peones · Infantería</dt><dd>Soldados que abren camino y ascienden al cruzar el campo.</dd></div>
+            <div><dt>Caballos · Caballería</dt><dd>Jinetes que saltan las líneas del enemigo.</dd></div>
+            <div><dt>Alfiles · Consejeros de guerra</dt><dd>Estrategas que recorren las diagonales.</dd></div>
+            <div><dt>Torres · Fortalezas</dt><dd>Bastiones que dominan filas y columnas.</dd></div>
+            <div><dt>Dama · Comandante</dt><dd>Dirige la ofensiva más poderosa del reino.</dd></div>
+            <div><dt>Rey · Soberano</dt><dd>Su protección decide el destino de la campaña.</dd></div>
+          </dl>
+        </details>
+        <div id="narrator-log" class="narrator-log" role="log" aria-live="polite" aria-relevant="additions" aria-label="Crónica de la partida" tabindex="0"></div>
+      </section>
+      </section>
       <p class="board-touch-hint">Toca una pieza y luego su destino, o arrástrala con el dedo.</p>
-      <div class="board-action-bar">
-        <div class="board-action-buttons">
-          <button id="btn-flip-board" onclick="flipBoard()" class="btn-hud btn-hud-secondary" aria-pressed="false" title="Invertir perspectiva del tablero">🔄 Voltear Tablero</button>
-          <button id="btn-toggle-sound" onclick="toggleSound()" class="btn-hud btn-hud-secondary" title="Activar/desactivar audio sintetizado">🔊 Sonido: ON</button>
-          <button id="btn-photo-board" onclick="captureBoardPhoto()" class="btn-hud btn-hud-photo" title="Tomar foto del tablero en cualquier momento">📸 Tomar Foto</button>
-        </div>
-        <div class="board-action-buttons">
-          <button id="btn-resign" onclick="resignGameAPI(currentGameId)" class="btn-hud btn-hud-danger" title="Rendirse en este turno">🏳️ Rendirse</button>
-        </div>
-      </div>
+
     </div>
 
     <!-- Columna Derecha: Jugadores, cada uno junto a su lado del tablero -->
@@ -469,6 +491,8 @@
     </div>
   </div>
 
+  <script src="/js/epic-narrator.js"></script>
+  <script src="/js/narrator-ui.js"></script>
   <script src="/js/index.js"></script>
   <script src="/js/game-chat.js"></script>
   <script src="/js/action-icons.js"></script>

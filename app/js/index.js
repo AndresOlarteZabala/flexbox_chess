@@ -57,6 +57,7 @@ $(document).ready(function () {
   initBoardInput();
   initGameChat();
   initActionIcons();
+  initNarrator();
   load();
   initAuth();
   startSyncLoop();
@@ -359,6 +360,7 @@ function loadGameFromAPI(gameId) {
   }
 
   if (currentGameId !== gameId) {
+    if (epicNarrator) epicNarrator.leaveGame();
     autoJoinAttemptedForGameId = null;
     updateGameChat(null);
   }
@@ -374,6 +376,7 @@ function loadGameFromAPI(gameId) {
     })
     .then((res) => {
       if (res.success && res.data) {
+        if (currentGameId !== gameId) return;
         latestLiveGame = res.data;
         allMovements = res.data.movements || [];
 
@@ -383,6 +386,7 @@ function loadGameFromAPI(gameId) {
           joinCurrentGame(res.data);
         } else {
           // Si estaba en modo historial, solo actualizar la lista de movimientos y controles
+          updateNarrator(res.data);
           renderMovementsTable(allMovements, currentMovementsPage);
         }
 
@@ -404,16 +408,20 @@ function startSyncLoop() {
 
   syncTimer = setInterval(() => {
     if (!currentGameId || isBotMoving) return;
+    const syncingGameId = currentGameId;
 
     fetch(`/api/status/${encodeURIComponent(currentGameId)}`)
       .then((res) => res.json())
       .then((res) => {
         if (res.success && res.data) {
+          if (currentGameId !== syncingGameId) return;
+          const previousLiveStatus = latestLiveGame?.status;
           latestLiveGame = res.data;
           allMovements = res.data.movements || [];
 
           // Si el servidor avanzó de jugada y NO estamos en modo historial, actualizar
-          if (!isHistoryMode && res.data.turn_count !== data.turn) {
+          updateNarrator(res.data);
+          if (!isHistoryMode && (res.data.turn_count !== data.turn || res.data.status !== previousLiveStatus)) {
             renderGameState(res.data);
             checkAutoBotMove(res.data);
           }
@@ -615,6 +623,7 @@ function drawReasonLabel(drawReason) {
  * Renderiza el estado completo retornado por la API en la interfaz gráfica (Modo En Vivo)
  */
 function renderGameState(gameState) {
+  updateNarrator(gameState);
   updateGameChat(gameState);
   $("#welcome-banner").hide();
 
@@ -786,6 +795,10 @@ function renderHistoricalStep(step) {
   }
 
   isHistoryMode = true;
+  if (epicNarrator) {
+    epicNarrator.setPaused(true);
+    epicNarrator.refreshStatus();
+  }
   clearBoardSelection();
   currentHistoryStep = Math.max(0, parseInt(step, 10));
 
