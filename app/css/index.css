@@ -517,7 +517,9 @@ icon.touch-dragging {
 }
 
 .cell.possible-move {
-  background-color: #6b7280;
+  background-image: linear-gradient(rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.06));
+  outline: 2px solid #cbd5e1;
+  outline-offset: -2px;
 }
 
 .cell:hover {
