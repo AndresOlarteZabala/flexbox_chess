@@ -162,26 +162,26 @@
             <span class="hud-label">Navegación</span>
             <span id="history-banner" role="status">En vivo</span>
           </div>
-          <div class="history-nav-buttons" role="group" aria-label="Navegación de jugadas">
+          <div class="history-nav-buttons" role="group" aria-label="Navegación y acciones del tablero">
             <button id="btn-hist-start" onclick="navigateHistory('start')" class="btn-scrub" title="Inicio (Jugada #0)">|◀</button>
             <button id="btn-hist-prev" onclick="navigateHistory('prev')" class="btn-scrub" title="Jugada anterior">◀ Anterior</button>
             <span id="history-indicator" class="scrub-indicator" aria-live="polite">Sin jugadas</span>
             <button id="btn-hist-next" onclick="navigateHistory('next')" class="btn-scrub" title="Siguiente jugada">Siguiente ▶</button>
             <button id="btn-hist-end" onclick="navigateHistory('end')" class="btn-scrub active-live" title="Volver al juego en vivo">▶| En Vivo</button>
+            <div class="board-action-bar" role="group" aria-label="Acciones del tablero">
+              <div class="board-action-buttons">
+                <button id="btn-flip-board" onclick="flipBoard()" class="btn-hud btn-hud-secondary" aria-pressed="false" title="Invertir perspectiva del tablero">🔄 Voltear Tablero</button>
+                <button id="btn-toggle-sound" onclick="toggleSound()" class="btn-hud btn-hud-secondary" title="Activar/desactivar audio sintetizado">🔊 Sonido: ON</button>
+                <button id="btn-photo-board" onclick="captureBoardPhoto()" class="btn-hud btn-hud-photo" title="Tomar foto del tablero en cualquier momento">📸 Tomar Foto</button>
+              </div>
+              <div class="board-action-buttons">
+                <button id="btn-resign" onclick="resignGameAPI(currentGameId)" class="btn-hud btn-hud-danger" title="Rendirse en este turno">🏳️ Rendirse</button>
+              </div>
+            </div>
           </div>
         </div>
-        <div class="board-action-bar">
-          <div class="board-action-buttons">
-            <button id="btn-flip-board" onclick="flipBoard()" class="btn-hud btn-hud-secondary" aria-pressed="false" title="Invertir perspectiva del tablero">🔄 Voltear Tablero</button>
-            <button id="btn-toggle-sound" onclick="toggleSound()" class="btn-hud btn-hud-secondary" title="Activar/desactivar audio sintetizado">🔊 Sonido: ON</button>
-            <button id="btn-photo-board" onclick="captureBoardPhoto()" class="btn-hud btn-hud-photo" title="Tomar foto del tablero en cualquier momento">📸 Tomar Foto</button>
-          </div>
-          <div class="board-action-buttons">
-            <button id="btn-resign" onclick="resignGameAPI(currentGameId)" class="btn-hud btn-hud-danger" title="Rendirse en este turno">🏳️ Rendirse</button>
-          </div>
-        </div>
-      <section class="narrator-card" aria-label="Narrador épico">
-        <h2 class="narrator-title">Narrador épico</h2>
+      <details class="narrator-card" aria-label="Narrador épico">
+        <summary class="narrator-title">Narrador épico</summary>
         <div class="narrator-controls">
           <button id="btn-toggle-narrator" type="button" class="btn-hud btn-hud-secondary" aria-pressed="false" aria-controls="narrator-log">Activar narrador</button>
           <label class="narrator-voice-label"><input id="narrator-voice" type="checkbox" checked> Voz</label>
@@ -201,7 +201,7 @@
           </dl>
         </details>
         <div id="narrator-log" class="narrator-log" role="log" aria-live="polite" aria-relevant="additions" aria-label="Crónica de la partida" tabindex="0"></div>
-      </section>
+      </details>
       </section>
       <p class="board-touch-hint">Toca una pieza y luego su destino, o arrástrala con el dedo.</p>
 
