@@ -209,6 +209,12 @@ function toggleSound() {
 function flipBoard() {
   clearBoardSelection();
   $("#chess").toggleClass("flipped");
+  const flipped = $("#chess").hasClass("flipped");
+  const deck = document.querySelector(".telemetry-deck");
+  const status = deck.querySelector(".game-status-hud");
+  deck.insertBefore(document.getElementById(flipped ? "white-player-card" : "black-player-card"), status);
+  deck.appendChild(document.getElementById(flipped ? "black-player-card" : "white-player-card"));
+  document.getElementById("btn-flip-board").setAttribute("aria-pressed", String(flipped));
   playChessSound('move');
 }
 

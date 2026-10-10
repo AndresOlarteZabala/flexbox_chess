@@ -341,17 +341,17 @@ body {
   margin: 0 auto 30px auto;
   padding: 0 20px;
   display: grid;
-  grid-template-columns: minmax(300px, 380px) minmax(auto, 680px) minmax(360px, 440px);
+  grid-template-columns: minmax(260px, 340px) 576px minmax(300px, 340px);
   grid-template-areas: "movements board telemetry";
   justify-content: center;
-  gap: 32px;
+  gap: 24px;
   align-items: start;
 }
 
 /* Por debajo de este ancho, la columna de movimientos pasa a compartir fila con el tablero */
 @media (max-width: 1480px) {
   .chess-arena {
-    grid-template-columns: minmax(auto, 680px) minmax(300px, 440px);
+    grid-template-columns: 576px minmax(300px, 340px);
     grid-template-areas:
       "board telemetry"
       "movements movements";
@@ -666,11 +666,10 @@ icon.king.black {
   grid-area: telemetry;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 10px;
   width: 100%;
-  /* Iguala la altura total del bisel del tablero para que las tarjetas de
-     jugador puedan repartirse el espacio disponible en su mismo lado */
-  min-height: 678px;
+  max-width: 576px;
+  min-width: 0;
 }
 
 /* Player HUD Card */
@@ -679,16 +678,13 @@ icon.king.black {
   backdrop-filter: var(--glass-blur);
   border: 1px solid var(--surface-glass-border);
   border-radius: var(--radius-md);
-  padding: 14px 18px;
+  padding: 14px;
   box-shadow: var(--shadow-hud);
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
-  gap: 14px;
-  transition: all 0.25s ease;
-  /* Ocupa el espacio disponible junto a su lado del tablero, con reparto exacto 50/50 */
-  flex: 1 1 0;
+  gap: 12px;
+  transition: border-color 0.25s ease, box-shadow 0.25s ease;
   min-height: 0;
 }
 
@@ -700,17 +696,18 @@ icon.king.black {
 .player-info-side {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
+  min-width: 0;
 }
 
 .player-avatar {
-  width: 64px;
-  height: 64px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 30px;
+  font-size: 24px;
   border: 2px solid rgba(255, 255, 255, 0.15);
   flex-shrink: 0;
   transition: all 0.25s ease;
@@ -733,22 +730,42 @@ icon.king.black {
 .player-meta {
   display: flex;
   flex-direction: column;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.player-side-label {
+  font-size: 10px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
 }
 
 .player-name {
-  font-size: 18px;
+  font-size: 15px;
   font-weight: 700;
   color: var(--text-main);
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 6px;
 }
 
 .player-rating {
   font-family: var(--font-mono);
-  font-size: 13px;
+  font-size: 12px;
   color: var(--text-muted);
   margin-top: 2px;
+}
+
+.player-captures-section {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  border-top: 1px solid var(--surface-glass-border);
+  padding-top: 10px;
+  min-width: 0;
 }
 
 .player-captures-rack {
@@ -756,8 +773,14 @@ icon.king.black {
   align-items: center;
   flex-wrap: wrap;
   gap: 4px;
-  margin-top: 8px;
+  min-width: 0;
   min-height: 18px;
+}
+
+.player-captures-rack:empty::after {
+  content: "Sin capturas";
+  color: var(--text-muted);
+  font-size: 11px;
 }
 
 .captured-icon {
@@ -785,12 +808,12 @@ icon.king.black {
 
 .hud-clock {
   font-family: var(--font-mono);
-  font-size: 26px;
+  font-size: 18px;
   font-weight: 700;
-  letter-spacing: 1px;
+  letter-spacing: 0;
   color: #e2e8f0;
   background: #090e17;
-  padding: 8px 16px;
+  padding: 6px 8px;
   border-radius: var(--radius-sm);
   border: 1px solid #1e293b;
   text-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
@@ -810,12 +833,14 @@ icon.king.black {
   backdrop-filter: var(--glass-blur);
   border: 1px solid var(--surface-glass-border);
   border-radius: var(--radius-md);
-  padding: 10px 18px;
+  padding: 10px 14px;
   display: flex;
   justify-content: space-between;
   align-items: center;
   font-size: 13px;
   flex-shrink: 0;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 
 .game-status-title {

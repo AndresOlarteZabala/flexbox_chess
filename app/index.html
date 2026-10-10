@@ -180,7 +180,7 @@
       <p class="board-touch-hint">Toca una pieza y luego su destino, o arrástrala con el dedo.</p>
       <div class="board-action-bar">
         <div class="board-action-buttons">
-          <button id="btn-flip-board" onclick="flipBoard()" class="btn-hud btn-hud-secondary" title="Invertir perspectiva del tablero">🔄 Voltear Tablero</button>
+          <button id="btn-flip-board" onclick="flipBoard()" class="btn-hud btn-hud-secondary" aria-pressed="false" title="Invertir perspectiva del tablero">🔄 Voltear Tablero</button>
           <button id="btn-toggle-sound" onclick="toggleSound()" class="btn-hud btn-hud-secondary" title="Activar/desactivar audio sintetizado">🔊 Sonido: ON</button>
           <button id="btn-photo-board" onclick="captureBoardPhoto()" class="btn-hud btn-hud-photo" title="Tomar foto del tablero en cualquier momento">📸 Tomar Foto</button>
         </div>
@@ -193,22 +193,24 @@
     <!-- Columna Derecha: Jugadores, cada uno junto a su lado del tablero -->
     <div class="telemetry-deck">
 
-      <!-- Tarjeta HUD: Jugador Negras (alineada con la fila 8, arriba del tablero) -->
+      <!-- Las tarjetas siguen la perspectiva del tablero al voltearlo. -->
       <div id="black-player-card" class="player-hud-card">
         <div class="player-info-side">
           <div class="player-avatar black-avatar">♚</div>
           <div class="player-meta">
+            <span class="player-side-label">Negras</span>
             <span class="player-name" id="black-player-name">Negras <span id="black-bot-badge" style="display:none; font-size:10px; color:#a855f7;">(Robot)</span></span>
             <span class="player-rating">Rating: <strong id="black-player-elo">1200</strong></span>
-            <div class="player-captures-rack" id="black-captures-rack">
-              <!-- Piezas capturadas por negras -->
-            </div>
           </div>
         </div>
         <div class="hud-clock-container">
           <span class="hud-label">Tiempo</span>
           <div id="black-clock" class="hud-clock">00:00:00</div>
           <span id="black_points" style="display: none;">0</span>
+        </div>
+        <div class="player-captures-section">
+          <span class="hud-label">Capturas</span>
+          <div class="player-captures-rack" id="black-captures-rack" aria-label="Piezas capturadas por negras"></div>
         </div>
       </div>
 
@@ -225,22 +227,24 @@
         </div>
       </div>
 
-      <!-- Tarjeta HUD: Jugador Blancas (alineada con la fila 1, abajo del tablero) -->
+      <!-- Tarjeta HUD: Jugador Blancas -->
       <div id="white-player-card" class="player-hud-card active-turn">
         <div class="player-info-side">
           <div class="player-avatar white-avatar">♔</div>
           <div class="player-meta">
+            <span class="player-side-label">Blancas</span>
             <span class="player-name" id="white-player-name">Blancas</span>
             <span class="player-rating">Rating: <strong id="white-player-elo">1200</strong></span>
-            <div class="player-captures-rack" id="white-captures-rack">
-              <!-- Piezas capturadas por blancas -->
-            </div>
           </div>
         </div>
         <div class="hud-clock-container">
           <span class="hud-label">Tiempo</span>
           <div id="white-clock" class="hud-clock">00:00:00</div>
           <span id="white_points" style="display: none;">0</span>
+        </div>
+        <div class="player-captures-section">
+          <span class="hud-label">Capturas</span>
+          <div class="player-captures-rack" id="white-captures-rack" aria-label="Piezas capturadas por blancas"></div>
         </div>
       </div>
 
