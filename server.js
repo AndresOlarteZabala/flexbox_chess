@@ -11,6 +11,7 @@ const userStore = require('./api/userStore');
 const inviteStore = require('./api/inviteStore');
 const socketGateway = require('./api/socketGateway');
 const chatStore = require('./api/chatStore');
+const { snapshotClocks, settleClock, startGameClock } = require('./api/gameClocks');
 
 const app = express();
 const httpServer = http.createServer(app);
@@ -91,7 +92,7 @@ function formatGameStatusResponse(game) {
     active_pieces: activePieces,
     captured_pieces: game.captured_pieces || { white: [], black: [] },
     points: game.points || { white: 0, black: 0 },
-    clocks: game.clocks || { white: 0, black: 0, last_turn_started_at: null, running: false },
+    clocks: snapshotClocks(game),
     movements: game.movements || [],
     last_move: game.movements && game.movements.length > 0 ? game.movements[game.movements.length - 1] : null,
     white_player: game.white_player || null,
@@ -461,10 +462,7 @@ function joinGameAsUser(game, userObj, targetSide) {
   const bothSlotsFilled = !!(game.white_player && game.black_player);
   if (bothSlotsFilled && game.status === 'WAITING_FOR_PLAYER') {
     game.status = 'IN_PROGRESS';
-    if (game.time_control) {
-      game.clocks.last_turn_started_at = new Date().toISOString();
-      game.clocks.running = true;
-    }
+    startGameClock(game);
   }
 
   saveGame(game);
@@ -553,10 +551,7 @@ app.post('/api/games/:id/claim', (req, res) => {
   const bothSlotsFilled = !!(game.white_player && game.black_player);
   if (bothSlotsFilled && game.status === 'WAITING_FOR_PLAYER') {
     game.status = 'IN_PROGRESS';
-    if (game.time_control) {
-      game.clocks.last_turn_started_at = new Date().toISOString();
-      game.clocks.running = true;
-    }
+    startGameClock(game);
   }
 
   saveGame(game);
@@ -880,12 +875,21 @@ app.post('/api/games/:id/resign', (req, res) => {
     return res.status(403).json({ success: false, error: { message: 'No perteneces a esta partida.' } });
   }
 
-  const { side } = req.body || {};
-  const resigningSide = side || game.turn;
+  if (game.status !== 'IN_PROGRESS') {
+    return res.status(409).json({ success: false, error: { message: 'Solo puedes rendirte en una partida en curso.' } });
+  }
+
+  // La identidad autenticada determina el bando, incluso durante el turno rival.
+  const resigningSide = game.white_player?.id === req.user.id ? 'white' : 'black';
   const winningSide = resigningSide === 'white' ? 'black' : 'white';
 
+  settleClock(game);
   game.status = 'RESIGNED';
   game.winner = winningSide;
+  if (game.clocks) {
+    game.clocks.running = false;
+    game.clocks.last_turn_started_at = null;
+  }
   saveGame(game);
 
   res.json({

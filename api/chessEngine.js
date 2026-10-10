@@ -4,6 +4,7 @@
  * turnos, relojes y persistencia de estados.
  */
 
+const { settleClock } = require('./gameClocks');
 const COLS = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
 
 const PIECE_NAMES = {
@@ -490,8 +491,9 @@ function getPositionKey(board, turn) {
 function createGameState(gameId, options = {}) {
   const now = new Date();
   const gameType = options.game_type === 'online' ? 'online' : 'bot';
-  const whitePlayer = options.white_player || null;
-  const blackPlayer = options.black_player || (gameType === 'bot' ? { id: 'bot', username: 'robot', name: 'Robot IA', is_bot: true } : null);
+  const robot = { id: 'bot', username: 'robot', name: 'Robot IA', is_bot: true };
+  const whitePlayer = options.white_player || (gameType === 'bot' && options.black_player ? robot : null);
+  const blackPlayer = options.black_player || (gameType === 'bot' ? robot : null);
   const bothSlotsFilled = !!(whitePlayer && blackPlayer);
 
   return {
@@ -519,11 +521,13 @@ function createGameState(gameId, options = {}) {
       black: 0
     },
     clocks: {
+      elapsed_white: 0,
+      elapsed_black: 0,
       white: options.time_control ? options.time_control.initial_seconds * 1000 : 0,
       black: options.time_control ? options.time_control.initial_seconds * 1000 : 0,
       // Solo arranca cuando la partida realmente inicia (ambos jugadores reales presentes)
       last_turn_started_at: bothSlotsFilled ? now.toISOString() : null,
-      running: bothSlotsFilled && !!options.time_control
+      running: bothSlotsFilled
     },
     movements: [],
     white_player: whitePlayer,
@@ -598,6 +602,7 @@ function applyMove(gameState, { from, to, promotion }) {
   const now = new Date();
   const dateStr = now.toLocaleDateString('es-CO');
   const timeStr = now.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
+  settleClock(gameState, now.getTime());
 
   // Procesar captura si hubo
   let capturedInfo = null;
@@ -787,6 +792,8 @@ function applyMove(gameState, { from, to, promotion }) {
   if (gameState.status === 'IN_PROGRESS') {
     gameState.turn = nextSide;
   }
+  gameState.clocks.running = gameState.status === 'IN_PROGRESS';
+  gameState.clocks.last_turn_started_at = gameState.clocks.running ? now.toISOString() : null;
   gameState.updated_at = now.toISOString();
 
   return {

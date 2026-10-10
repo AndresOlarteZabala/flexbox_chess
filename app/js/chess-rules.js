@@ -109,9 +109,6 @@ async function movePiece(pieceId, target) {
       messageShow(`⚠️ ¡JAQUE a ${updatedGame.turn === 'white' ? 'Blancas' : 'Negras'}!`);
     }
 
-    // Iniciar o actualizar el reloj si el juego sigue en curso
-    startClock(data);
-
     // Si está en modo robot, disparar el movimiento automático del robot
     checkAutoBotMove(updatedGame);
 
@@ -278,14 +275,28 @@ function initBoardInput() {
 let whiteTime = 0;
 let blackTime = 0;
 let intervalId;
+let clockSnapshot = null;
+const clockResponseTimes = new WeakMap();
 
-function startClock(data) {
-  if (intervalId) clearInterval(intervalId);
-  intervalId = setInterval(() => updateClock(data), 1000);
+function syncClocks(gameState) {
+  stopClock();
+  const clocks = gameState.clocks;
+  if (!clocks) return;
+  if (!clockResponseTimes.has(gameState)) clockResponseTimes.set(gameState, performance.now());
+  clockSnapshot = {
+    white: Math.max(0, clocks.elapsed_white || 0),
+    black: Math.max(0, clocks.elapsed_black || 0),
+    side: gameState.turn,
+    running: !!clocks.running && gameState.status === 'IN_PROGRESS',
+    receivedAt: clockResponseTimes.get(gameState)
+  };
+  updateClock();
+  if (clockSnapshot.running) intervalId = setInterval(updateClock, 250);
 }
 
 function stopClock() {
   if (intervalId) clearInterval(intervalId);
+  intervalId = null;
 }
 
 /**
@@ -295,15 +306,17 @@ function stopClock() {
  */
 function resetClocks() {
   stopClock();
+  clockSnapshot = null;
   whiteTime = 0;
   blackTime = 0;
   updateClockDisplay();
 }
 
-function updateClock(data) {
-  if (data.side === "white") whiteTime++;
-  if (data.side === "black") blackTime++;
-
+function updateClock() {
+  if (!clockSnapshot) return;
+  const elapsed = clockSnapshot.running ? Math.max(0, performance.now() - clockSnapshot.receivedAt) : 0;
+  whiteTime = Math.floor((clockSnapshot.white + (clockSnapshot.side === 'white' ? elapsed : 0)) / 1000);
+  blackTime = Math.floor((clockSnapshot.black + (clockSnapshot.side === 'black' ? elapsed : 0)) / 1000);
   data.whiteTime = whiteTime;
   data.blackTime = blackTime;
   updateClockDisplay();

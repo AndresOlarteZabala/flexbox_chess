@@ -108,6 +108,7 @@ function load() {
     myPlayerSide = paramSide;
     $("#player-side-select").val(myPlayerSide);
   }
+  setBoardPerspective(myPlayerSide === 'black');
   const paramMode = urlParams.get('mode');
   if (paramMode) {
     gameMode = paramMode;
@@ -211,15 +212,27 @@ function toggleSound() {
 }
 
 function flipBoard() {
+  setBoardPerspective(!$("#chess").hasClass("flipped"));
+  playChessSound('move');
+}
+
+function setBoardPerspective(flipped) {
   clearBoardSelection();
-  $("#chess").toggleClass("flipped");
-  const flipped = $("#chess").hasClass("flipped");
+  $("#chess").toggleClass("flipped", flipped);
   const deck = document.querySelector(".telemetry-deck");
   const status = deck.querySelector(".game-status-hud");
   deck.insertBefore(document.getElementById(flipped ? "white-player-card" : "black-player-card"), status);
   deck.appendChild(document.getElementById(flipped ? "black-player-card" : "white-player-card"));
   document.getElementById("btn-flip-board").setAttribute("aria-pressed", String(flipped));
-  playChessSound('move');
+}
+
+function restorePlayerPerspective(gameState) {
+  if (myPlayerSide !== 'both' && currentUser && gameState) {
+    if (gameState.white_player?.id === currentUser.id) myPlayerSide = 'white';
+    else if (gameState.black_player?.id === currentUser.id) myPlayerSide = 'black';
+  }
+  $("#player-side-select").val(myPlayerSide);
+  setBoardPerspective(myPlayerSide === 'black');
 }
 
 /**
@@ -381,12 +394,14 @@ function loadGameFromAPI(gameId) {
         allMovements = res.data.movements || [];
 
         if (!isHistoryMode) {
+          restorePlayerPerspective(res.data);
           renderGameState(res.data);
           checkAutoBotMove(res.data);
           joinCurrentGame(res.data);
         } else {
           // Si estaba en modo historial, solo actualizar la lista de movimientos y controles
           updateNarrator(res.data);
+          syncClocks(res.data);
           renderMovementsTable(allMovements, currentMovementsPage);
         }
 
@@ -421,6 +436,7 @@ function startSyncLoop() {
 
           // Si el servidor avanzó de jugada y NO estamos en modo historial, actualizar
           updateNarrator(res.data);
+          syncClocks(res.data);
           if (!isHistoryMode && (res.data.turn_count !== data.turn || res.data.status !== previousLiveStatus)) {
             renderGameState(res.data);
             checkAutoBotMove(res.data);
@@ -529,6 +545,10 @@ function checkAutoBotMove(gameState) {
  */
 function triggerBotMove() {
   if (isHistoryMode) return;
+  if (!currentGameId || !latestLiveGame || latestLiveGame.status !== 'IN_PROGRESS') {
+    isBotMoving = false;
+    return;
+  }
 
   if (gameMode === "bot" && latestLiveGame) {
     const botSide = myPlayerSide === "white" ? "black" : (myPlayerSide === "black" ? "white" : null);
@@ -587,6 +607,45 @@ function triggerBotMove() {
     });
 }
 
+let resignPending = false;
+
+async function resignGameAPI(gameId) {
+  if (resignPending) return;
+  if (!gameId || !latestLiveGame) return messageShow('Carga o crea una partida antes de rendirte.');
+  if (!authToken || !currentUser) return messageShow('Debes iniciar sesión para rendirte.');
+  if (isHistoryMode) return messageShow('Vuelve al juego en vivo para rendirte.');
+  if (latestLiveGame.status !== 'IN_PROGRESS') return messageShow('Solo puedes rendirte en una partida en curso.');
+  const isParticipant = latestLiveGame.white_player?.id === currentUser.id || latestLiveGame.black_player?.id === currentUser.id;
+  if (!isParticipant) return messageShow('No perteneces a esta partida.');
+  if (!window.confirm('¿Confirmas que quieres rendirte? Tu rival ganará la partida. Esta acción no se puede deshacer.')) return;
+
+  resignPending = true;
+  const button = document.getElementById('btn-resign');
+  button.disabled = true;
+  try {
+    const response = await fetch(`/api/games/${encodeURIComponent(gameId)}/resign`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${authToken}` }
+    });
+    const result = await response.json();
+    if (currentGameId !== gameId) return;
+    if (!response.ok || !result.success || !result.data) {
+      messageShow(result.error?.message || 'No se pudo registrar la rendición.');
+      return;
+    }
+    latestLiveGame = result.data;
+    allMovements = result.data.movements || [];
+    clearBoardSelection();
+    renderGameState(result.data);
+    messageShow('Partida finalizada por rendición.');
+  } catch (error) {
+    if (currentGameId === gameId) messageShow('Error de conexión al rendirte. Intenta de nuevo.');
+  } finally {
+    resignPending = false;
+    button.disabled = false;
+  }
+}
+
 function onGameModeChange() {
   gameMode = $("#play-mode-select").val();
   if (gameMode === "bot") {
@@ -600,8 +659,9 @@ function onGameModeChange() {
 
 function onPlayerSideChange() {
   myPlayerSide = $("#player-side-select").val();
-  clearBoardSelection();
+  setBoardPerspective(myPlayerSide === 'black');
   updateBoardTouchTargets();
+  if (!currentGameId) return;
   fetch(`/api/status/${encodeURIComponent(currentGameId)}`)
     .then(r => r.json())
     .then(r => { if (r.success) checkAutoBotMove(r.data); });
@@ -715,7 +775,13 @@ function renderGameState(gameState) {
   }
 
   // Actualizar tarjetas HUD de jugadores
-  if (gameState.white_player) {
+  const botSide = gameState.game_type === 'bot' && gameState.black_player && gameState.black_player.id !== 'bot' && !gameState.black_player.is_bot ? 'white' : 'black';
+  if (gameState.game_type === 'bot' && botSide === 'white') {
+    const diff = $("#bot-difficulty").val() || "5";
+    const diffText = $(`#bot-difficulty option[value='${diff}']`).text().split(':')[0] || `Nivel ${diff}`;
+    $("#white-player-name").html(`Robot IA <span style="font-size:10px; color:#a855f7; font-weight:600;">(${diffText})</span>`);
+    $("#white-player-elo").text(1000 + parseInt(diff, 10) * 120);
+  } else if (gameState.white_player) {
     $("#white-player-name").text(gameState.white_player.name);
     $("#white-player-elo").text(gameState.white_player.rating || 1200);
   } else {
@@ -723,7 +789,7 @@ function renderGameState(gameState) {
     $("#white-player-elo").text("--");
   }
 
-  if (gameState.game_type === "bot") {
+  if (gameState.game_type === "bot" && botSide === 'black') {
     const diff = $("#bot-difficulty").val() || "5";
     const diffText = $(`#bot-difficulty option[value='${diff}']`).text().split(':')[0] || `Nivel ${diff}`;
     $("#black-player-name").html(`Robot IA <span style="font-size:10px; color:#a855f7; font-weight:600;">(${diffText})</span>`);
@@ -761,6 +827,7 @@ function renderGameState(gameState) {
   updateHistoryNavigationUI();
   refreshBoardSelection();
   updateBoardTouchTargets();
+  syncClocks(gameState);
 }
 
 /**
@@ -1873,6 +1940,7 @@ function submitCreateGame() {
         onGameModeChange();
         myPlayerSide = playerSide;
         $("#player-side-select").val(myPlayerSide);
+        setBoardPerspective(myPlayerSide === 'black');
         $("#game-id-input").val(res.data.id);
         loadGameFromAPI(res.data.id);
         messageShow(gameType === 'online' ? 'Partida online creada. Esperando rival...' : '¡Partida contra el robot creada!');
