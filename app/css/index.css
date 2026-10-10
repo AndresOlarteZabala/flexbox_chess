@@ -509,11 +509,11 @@ icon.touch-dragging {
   top: 3px;
   left: 3px;
 }
-#chess:not(.flipped) .cell[row="8"]::after,
-#chess.flipped .cell[row="1"]::after {
+#chess:not(.flipped) .cell[row="1"]::after,
+#chess.flipped .cell[row="8"]::after {
   content: attr(data-file);
   right: 3px;
-  top: 3px;
+  bottom: 3px;
 }
 
 .cell.possible-move {
