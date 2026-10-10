@@ -43,7 +43,17 @@ function notifyUser(username, event, payload) {
   ioInstance.to(`user:${user.id}`).emit(event, payload);
 }
 
+function notifyGameChat(game, message) {
+  if (!ioInstance) return;
+  const participants = [game.white_player.id, game.black_player.id];
+  for (const socket of ioInstance.sockets.sockets.values()) {
+    const user = userStore.getUserByToken(socket.handshake.auth.token);
+    if (user && participants.includes(user.id)) socket.emit('chat:message', message);
+  }
+}
+
 module.exports = {
   initSocketGateway,
-  notifyUser
+  notifyUser,
+  notifyGameChat
 };

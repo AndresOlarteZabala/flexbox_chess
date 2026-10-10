@@ -10,6 +10,7 @@ const { getBotMove, LEVEL_CONFIGS } = require('./api/chessAI');
 const userStore = require('./api/userStore');
 const inviteStore = require('./api/inviteStore');
 const socketGateway = require('./api/socketGateway');
+const chatStore = require('./api/chatStore');
 
 const app = express();
 const httpServer = http.createServer(app);
@@ -318,6 +319,28 @@ const handleGetGameStatus = (req, res) => {
 app.get('/api/status/:id', handleGetGameStatus);
 app.get('/api/games/:id/status', handleGetGameStatus);
 app.get('/api/games/:id', handleGetGameStatus);
+
+// El chat solo es accesible a los dos jugadores registrados de la partida.
+app.get('/api/games/:id/chat', (req, res) => {
+  if (!req.user) return res.status(401).json({ success: false, error: 'Inicia sesión para usar el chat.' });
+  const game = getGame(req.params.id);
+  if (!chatStore.canChat(game, req.user)) return res.status(403).json({ success: false, error: 'El chat es privado entre los dos jugadores.' });
+  const after = Number(req.query.after || 0);
+  if (!Number.isSafeInteger(after) || after < 0) return res.status(400).json({ success: false, error: 'Cursor inválido.' });
+  res.json({ success: true, data: chatStore.listMessages(game.id, after) });
+});
+
+app.post('/api/games/:id/chat', (req, res) => {
+  if (!req.user) return res.status(401).json({ success: false, error: 'Inicia sesión para usar el chat.' });
+  const game = getGame(req.params.id);
+  if (!chatStore.canChat(game, req.user)) return res.status(403).json({ success: false, error: 'El chat es privado entre los dos jugadores.' });
+  const text = typeof req.body.text === 'string' ? req.body.text.trim() : '';
+  if (!text || text.length > 500) return res.status(400).json({ success: false, error: 'Escribe un mensaje de 1 a 500 caracteres.' });
+  const message = chatStore.addMessage(game.id, req.user, text);
+  if (!message) return res.status(429).json({ success: false, error: 'Espera un momento antes de enviar otro mensaje.' });
+  socketGateway.notifyGameChat(game, message);
+  res.status(201).json({ success: true, data: message });
+});
 
 /**
  * GET /api/games/:id/history/:step

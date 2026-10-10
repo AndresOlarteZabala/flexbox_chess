@@ -55,6 +55,7 @@ let history = [];
 $(document).ready(function () {
   initModalViewport();
   initBoardInput();
+  initGameChat();
   load();
   initAuth();
   startSyncLoop();
@@ -357,6 +358,7 @@ function loadGameFromAPI(gameId) {
 
   if (currentGameId !== gameId) {
     autoJoinAttemptedForGameId = null;
+    updateGameChat(null);
   }
 
   currentGameId = gameId;
@@ -611,6 +613,7 @@ function drawReasonLabel(drawReason) {
  * Renderiza el estado completo retornado por la API en la interfaz gráfica (Modo En Vivo)
  */
 function renderGameState(gameState) {
+  updateGameChat(gameState);
   $("#welcome-banner").hide();
 
   if ($(".cell").length === 0) {
@@ -1409,6 +1412,7 @@ function logoutUser(notify = true) {
 
   authToken = null;
   currentUser = null;
+  updateGameChat(null);
   localStorage.removeItem('chess_auth_token');
   localStorage.removeItem('chess_auth_user');
   pendingInvites = [];
@@ -1647,6 +1651,8 @@ function connectAppSocket() {
   if (appSocket) appSocket.disconnect();
 
   appSocket = io({ auth: { token: authToken } });
+  appSocket.on('chat:message', receiveChatMessage);
+  appSocket.on('connect', refreshGameChat);
 
   appSocket.on('invite:received', (invite) => {
     pendingInvites.push(invite);

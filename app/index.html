@@ -249,6 +249,16 @@
       </div>
 
     </div>
+    <section class="game-chat" aria-label="Chat de la partida">
+      <div class="chat-heading"><strong>💬 Chat de la partida</strong><span class="hud-label">Solo jugadores</span></div>
+      <div id="chat-messages" class="chat-messages" role="log" aria-live="polite" aria-relevant="additions"></div>
+      <p id="chat-status" class="chat-status">Disponible entre dos jugadores registrados.</p>
+      <form id="chat-form" class="chat-form">
+        <label class="sr-only" for="chat-input">Mensaje para tu rival</label>
+        <input id="chat-input" class="form-input" maxlength="500" placeholder="Escribe a tu rival…" autocomplete="off" disabled>
+        <button id="chat-send" type="submit" class="btn-hud btn-hud-primary" disabled>Enviar</button>
+      </form>
+    </section>
   </main>
 
   <!-- Toast Notification Overlay -->
@@ -465,6 +475,7 @@
   </div>
 
   <script src="/js/index.js"></script>
+  <script src="/js/game-chat.js"></script>
   <script src="/js/chess-rules.js"></script>
 </body>
 </html>

@@ -126,6 +126,12 @@ flexbox_chess/
 | `GET` | `/api/bot/levels` | Retorna el catálogo de los 10 niveles de dificultad con descripciones y parámetros. |
 | `POST` | `/api/games/:id/reset` | Reinicia la partida a la posición inicial. |
 | `POST` | `/api/games/:id/resign` | Declara rendición para el jugador en turno. |
+| `GET` | `/api/games/:id/chat?after=0` | Últimos 100 mensajes posteriores al ID indicado; solo los dos participantes registrados. |
+| `POST` | `/api/games/:id/chat` | Envía `{ text }` (1–500 caracteres) al rival. Se guarda en SQLite y notifica por `chat:message`. |
+
+Las tarjetas de jugadores siguen la orientación del tablero: en escritorio forman una franja vertical del mismo alto, con cada jugador en su mitad. En pantallas estrechas se apilan debajo. Conservan bando, nombre, rating, reloj, capturas y ventaja de puntos.
+
+El chat privado está disponible cuando ambos jugadores registrados están en la partida. Recupera los últimos 100 mensajes al recargar, recibe mensajes por Socket.IO y comprueba mensajes pendientes cada cinco segundos. No está disponible contra el robot ni para espectadores. Ejecuta `node scripts/test-chat.js` para verificar autorización, persistencia, validación y destinatarios usando SQLite en memoria.
 
 ---
 
