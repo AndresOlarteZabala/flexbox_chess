@@ -13,6 +13,7 @@ let isBotMoving = false;
 // Variables de Autenticación de Usuario
 let authToken = localStorage.getItem('chess_auth_token') || null;
 let currentUser = null;
+let sessionVerified = false;
 let appSocket = null;
 let pendingInvites = [];
 try {
@@ -116,13 +117,8 @@ function load() {
     onGameModeChange();
   }
 
-  // Sin ID explícito en la URL: no se auto-carga ninguna partida real (crear/
-  // unirse requiere sesión), pero se muestra el tablero inicial como vitrina.
-  if (currentGameId) {
-    loadGameFromAPI(currentGameId);
-  } else {
-    showWelcomeBoard();
-  }
+  // La partida enlazada se carga después de verificar la sesión.
+  updateHomeView();
 }
 
 // Audio Synthesizer con Web Audio API
@@ -366,6 +362,9 @@ function updateGameUrl(gameId) {
  */
 function loadGameFromAPI(gameId) {
   if (!gameId) return;
+  if (!sessionVerified) return openAuthModal('login');
+  homeRequested = false;
+  closeFeaturedReplay();
 
   if (clockedGameId !== gameId) {
     resetClocks();
@@ -379,6 +378,7 @@ function loadGameFromAPI(gameId) {
   }
 
   currentGameId = gameId;
+  updateHomeView();
   updateGameUrl(gameId);
 
   fetch(`/api/status/${encodeURIComponent(gameId)}`)
@@ -389,7 +389,7 @@ function loadGameFromAPI(gameId) {
     })
     .then((res) => {
       if (res.success && res.data) {
-        if (currentGameId !== gameId) return;
+        if (!sessionVerified || currentGameId !== gameId) return;
         latestLiveGame = res.data;
         allMovements = res.data.movements || [];
 
@@ -409,6 +409,9 @@ function loadGameFromAPI(gameId) {
       }
     })
     .catch((err) => {
+      if (!sessionVerified || currentGameId !== gameId) return;
+      currentGameId = null;
+      updateHomeView();
       console.error("Error al cargar la partida desde la API:", err);
       $("#api-status-badge").text("Error de Conexión").css("background", "#f44336");
       messageShow("Error al conectar con la API");
@@ -422,14 +425,14 @@ function startSyncLoop() {
   if (syncTimer) clearInterval(syncTimer);
 
   syncTimer = setInterval(() => {
-    if (!currentGameId || isBotMoving) return;
+    if (!sessionVerified || !currentGameId || isBotMoving) return;
     const syncingGameId = currentGameId;
 
     fetch(`/api/status/${encodeURIComponent(currentGameId)}`)
       .then((res) => res.json())
       .then((res) => {
         if (res.success && res.data) {
-          if (currentGameId !== syncingGameId) return;
+          if (!sessionVerified || currentGameId !== syncingGameId) return;
           const previousLiveStatus = latestLiveGame?.status;
           latestLiveGame = res.data;
           allMovements = res.data.movements || [];
@@ -683,6 +686,7 @@ function drawReasonLabel(drawReason) {
  * Renderiza el estado completo retornado por la API en la interfaz gráfica (Modo En Vivo)
  */
 function renderGameState(gameState) {
+  updateHomeView();
   updateNarrator(gameState);
   updateGameChat(gameState);
   $("#welcome-banner").hide();
@@ -1245,8 +1249,10 @@ function initAuth() {
       .then((res) => {
         if (res.success && res.data) {
           currentUser = res.data;
+          sessionVerified = true;
           localStorage.setItem('chess_auth_user', JSON.stringify(currentUser));
           renderAuthUI();
+          if (currentGameId) loadGameFromAPI(currentGameId);
           claimCurrentGame();
           connectAppSocket();
           refreshPendingInvites();
@@ -1328,7 +1334,8 @@ function joinCurrentGame(gameState) {
  * Actualiza la barra superior reflejando si hay usuario conectado o invitado
  */
 function renderAuthUI() {
-  if (currentUser) {
+  updateHomeView();
+  if (currentUser && sessionVerified) {
     $("#user-guest-controls").hide();
     $("#user-logged-controls").css("display", "inline-flex");
     $("#current-user-name").text(currentUser.name || currentUser.username);
@@ -1399,10 +1406,12 @@ function submitLogin() {
       if (res.success && res.data) {
         authToken = res.data.token;
         currentUser = res.data.user;
+        sessionVerified = true;
         localStorage.setItem('chess_auth_token', authToken);
         localStorage.setItem('chess_auth_user', JSON.stringify(currentUser));
         renderAuthUI();
         closeAuthModal();
+        if (currentGameId && !latestLiveGame) loadGameFromAPI(currentGameId);
         messageShow(`¡Bienvenido, ${currentUser.name || currentUser.username}!`);
         claimCurrentGame();
         connectAppSocket();
@@ -1444,10 +1453,12 @@ function submitRegister() {
       if (res.success && res.data) {
         authToken = res.data.token;
         currentUser = res.data.user;
+        sessionVerified = true;
         localStorage.setItem('chess_auth_token', authToken);
         localStorage.setItem('chess_auth_user', JSON.stringify(currentUser));
         renderAuthUI();
         closeAuthModal();
+        if (currentGameId && !latestLiveGame) loadGameFromAPI(currentGameId);
         messageShow(`¡Cuenta creada con éxito! Bienvenido, ${currentUser.name}!`);
         claimCurrentGame();
         connectAppSocket();
@@ -1488,6 +1499,13 @@ function logoutUser(notify = true) {
 
   authToken = null;
   currentUser = null;
+  sessionVerified = false;
+  currentGameId = null;
+  latestLiveGame = null;
+  isHistoryMode = false;
+  resetClocks();
+  if (epicNarrator) epicNarrator.leaveGame();
+  window.history.replaceState({}, '', '/');
   updateGameChat(null);
   localStorage.removeItem('chess_auth_token');
   localStorage.removeItem('chess_auth_user');

@@ -19,14 +19,14 @@
   <script src="/js/html2canvas.min.js"></script>
   <script src="/socket.io/socket.io.js"></script>
 </head>
-<body>
+<body class="home-view">
 
   <!-- Barra Superior Flotante Glassmorphic -->
   <header class="glass-header">
     <!-- Fila Superior: Logo + Auth, siempre a la misma altura -->
     <div class="header-top-row">
       <div class="brand-section">
-        <a href="/" class="brand-logo">
+        <a href="/" class="brand-logo" onclick="showHomePage(event)">
           <img src="/img/logo-white.svg" alt="Club Estrategia" class="brand-logo-icon" />
           <h1 class="brand-title">CLUB ESTRATEGIA</h1>
         </a>
@@ -39,6 +39,9 @@
 
       <!-- Barra de Autenticación y Perfil (esquina superior derecha) -->
       <div id="user-auth-bar" class="auth-corner">
+        <nav class="home-navigation" aria-label="Navegación principal">
+          <a id="nav-home" class="btn-hud btn-hud-secondary" href="/" onclick="showHomePage(event)" aria-current="page" aria-label="Inicio" title="Inicio">Inicio</a>
+        </nav>
         <!-- Estado Invitado -->
         <div id="user-guest-controls" style="display: inline-flex; gap: 8px; align-items: center;">
           <button id="btn-open-login" onclick="openAuthModal('login')" class="btn-hud btn-hud-secondary">Iniciar Sesión</button>
@@ -47,6 +50,7 @@
 
         <!-- Estado Autenticado -->
         <div id="user-logged-controls" style="display: none; gap: 8px; align-items: center;">
+          <button id="nav-resume-game" class="btn-hud btn-hud-secondary" onclick="resumeCurrentGame()" hidden>Volver a mi partida</button>
           <div id="invite-badge" onclick="openInvitesModal()" class="user-badge-pill" style="display: none; background: var(--accent-crimson, #f43f5e);" title="Invitaciones pendientes">
             <span>✉️</span>
             <span id="invite-badge-count">0</span>
@@ -109,6 +113,75 @@
       </div>
     </div>
   </header>
+
+  <main id="home-page" class="home-page">
+    <section class="home-hero">
+      <span class="home-eyebrow">EL AJEDREZ SE VIVE, JUGADA A JUGADA</span>
+      <h2>Grandes partidas.<br><span>Ideas para tu próxima victoria.</span></h2>
+      <p>Descubre los encuentros destacados del club y revive sus movimientos automáticamente, desde la apertura hasta el desenlace.</p>
+      <button id="home-play" class="btn-hud btn-hud-primary" onclick="startFromHome()">Iniciar sesión para jugar</button>
+      <span class="home-hint">Puedes ver las partidas sin registrarte.</span>
+    </section>
+    <section class="course-section" aria-labelledby="course-heading">
+      <div class="featured-heading"><div><span class="home-eyebrow">APRENDE CON CADA JUGADA</span><h2 id="course-heading">Tu primer curso de ajedrez</h2></div><span id="course-progress">3 lecciones gratuitas · Sin registro</span></div>
+      <p class="course-description">Ejemplos didácticos preparados para aprender: reproduce la secuencia, lee las ideas y comprueba lo aprendido. Tu progreso se guarda en este navegador.</p>
+      <div id="course-lessons" class="featured-games" aria-live="polite"></div>
+    </section>
+    <section aria-labelledby="featured-heading">
+      <div class="featured-heading"><div><span class="home-eyebrow">HISTORIAL DEL CLUB</span><h2 id="featured-heading">Partidas destacadas</h2></div><span>Mates primero, luego encuentros con más jugadas</span></div>
+      <div id="featured-games" class="featured-games" aria-live="polite"><p class="home-empty">Cargando partidas destacadas…</p></div>
+    </section>
+    <section class="articles-section" aria-labelledby="articles-heading">
+      <div class="featured-heading"><div><span class="home-eyebrow">LECTURAS PARA MEJORAR</span><h2 id="articles-heading">Ajedrez más allá del tablero</h2></div><span>Artículos para quienes empiezan</span></div>
+      <p class="course-description">Abre un artículo para leerlo aquí y lleva una idea nueva a tu próxima partida.</p>
+      <div class="articles-grid">
+        <details class="article-card">
+          <summary><span class="home-eyebrow">ESTRATEGIA · 2 MIN DE LECTURA</span><h3>Una buena apertura empieza con un plan</h3><p>Centro, desarrollo y rey seguro: tres preguntas para tus primeras jugadas.</p><span class="article-read">Leer artículo <span aria-hidden="true">↓</span></span></summary>
+          <div class="article-body">
+            <p>En las primeras jugadas necesitas preparar tus piezas para trabajar juntas. Una guía útil es preguntarte: ¿disputo el centro?, ¿estoy activando mis piezas?, ¿mi rey está seguro? Estas preguntas ayudan más que memorizar una secuencia sin entenderla.</p>
+            <h4>Activa piezas que todavía no participan</h4>
+            <p>Los peones centrales pueden ganar espacio y abrir diagonales para los alfiles. Los caballos suelen encontrar más opciones cerca del centro. Si no existe una amenaza urgente, considera desarrollar una pieza nueva antes de mover otra vez la misma. Salir pronto con la dama puede hacerte perder tiempos cuando el rival la ataque mientras desarrolla.</p>
+            <h4>La seguridad también forma parte del plan</h4>
+            <p>El enroque puede proteger al rey y acercar una torre al centro. Antes de hacerlo, revisa las líneas abiertas y las amenazas del rival. Ningún principio reemplaza mirar la posición: si hay una pieza amenazada o un jaque, atiéndelo primero.</p>
+            <p class="article-exercise"><strong>En tu próxima partida:</strong> después de cada movimiento de apertura, identifica qué pieza activaste o qué casilla importante empezaste a controlar.</p>
+            <button class="btn-hud btn-hud-primary" onclick="startCourseLesson('opening')">Ver el ejemplo de apertura</button>
+          </div>
+        </details>
+        <details class="article-card">
+          <summary><span class="home-eyebrow">TÁCTICA · 2 MIN DE LECTURA</span><h3>Antes de mover, mira la amenaza</h3><p>Una rutina breve para evitar regalar piezas y detectar ataques al rey.</p><span class="article-read">Leer artículo <span aria-hidden="true">↓</span></span></summary>
+          <div class="article-body">
+            <p>Es fácil concentrarse en un ataque propio y olvidar la respuesta del rival. Antes de elegir una jugada, observa qué cambió con su último movimiento: una pieza pudo dejar de defender otra, una diagonal pudo abrirse o una amenaza contra tu rey pudo aparecer.</p>
+            <h4>Revisa jaques, capturas y amenazas</h4>
+            <p>Empieza por los jaques que tiene el rival y las piezas que puede capturar. Después mira las amenazas que exigirían una respuesta inmediata, como un ataque de mate. Haz la misma revisión para tu bando. Un jaque merece atención, pero no es automáticamente la mejor jugada.</p>
+            <h4>Comprueba tu idea antes de ejecutarla</h4>
+            <p>Imagina tu movimiento y busca una respuesta fuerte del adversario. ¿Tu dama queda expuesta? ¿Una pieza pierde su único defensor? ¿Hay un mate que no estás evitando? Esta comprobación no garantiza encontrar todo, pero te ayuda a decidir con una razón concreta.</p>
+            <p class="article-exercise"><strong>En tu próxima partida:</strong> antes de soltar una pieza, di para ti cuál es la amenaza del rival y cómo responde tu jugada.</p>
+            <button class="btn-hud btn-hud-primary" onclick="startCourseLesson('scholar')">Reconocer una amenaza de mate</button>
+          </div>
+        </details>
+        <details class="article-card">
+          <summary><span class="home-eyebrow">ENTRENAMIENTO · 2 MIN DE LECTURA</span><h3>Cómo aprender de una partida perdida</h3><p>Convierte el historial en un hábito de mejora con una revisión sencilla.</p><span class="article-read">Leer artículo <span aria-hidden="true">↓</span></span></summary>
+          <div class="article-body">
+            <p>Una derrota puede servir para reconocer un problema que se repite. No hace falta explicar cada jugada: empieza por encontrar un momento en el que perdiste material, tu rey quedó expuesto o dejaste pasar una amenaza importante.</p>
+            <h4>Vuelve a la posición anterior al error</h4>
+            <p>Reproduce la partida con calma y detente justo antes de ese momento. Describe qué querías conseguir y qué respuesta no viste. Después busca una alternativa y comprueba también la respuesta del rival. La idea es entender una decisión, no juzgar toda tu partida por el resultado.</p>
+            <h4>Elige una sola cosa para practicar</h4>
+            <p>Anota una conclusión concreta, como «revisar piezas sin defensa antes de atacar». Aplícala en tus siguientes encuentros y vuelve al historial para comprobar si reconociste situaciones parecidas. Si juegas contra el robot, puedes usar un nivel que te permita pensar y practicar esa idea.</p>
+            <p class="article-exercise"><strong>Después de tu próxima partida:</strong> guarda una posición, una alternativa y una frase sobre lo aprendido. Es suficiente para empezar una revisión útil.</p>
+          </div>
+        </details>
+      </div>
+    </section>
+    <section id="featured-replay" class="featured-replay" aria-labelledby="replay-title" hidden>
+      <div class="replay-copy"><span id="replay-eyebrow" class="home-eyebrow">REPRODUCCIÓN DEL HISTORIAL</span><h2 id="replay-title" tabindex="-1"></h2><p id="replay-result"></p><p id="replay-progress" role="status"></p>
+        <div id="lesson-commentary" class="lesson-commentary" hidden><span class="home-eyebrow">LA IDEA DE ESTA JUGADA</span><p id="lesson-note"></p><p id="lesson-takeaway" hidden></p></div>
+        <div class="replay-steps"><button id="replay-prev" class="btn-hud btn-hud-secondary" onclick="navigateFeaturedReplay(-1)">← Anterior</button><button id="replay-next" class="btn-hud btn-hud-secondary" onclick="navigateFeaturedReplay(1)">Siguiente →</button></div>
+        <div class="replay-actions"><button id="replay-toggle" class="btn-hud btn-hud-primary" onclick="toggleFeaturedReplay()">Pausar</button><button class="btn-hud btn-hud-secondary" onclick="restartFeaturedReplay()">Reiniciar</button><label>Velocidad <select id="replay-speed" class="hud-select"><option value="5000">Guiada</option><option value="1800">Lenta</option><option value="1000" selected>Normal</option><option value="450">Rápida</option></select></label><button class="btn-hud btn-hud-secondary" onclick="closeFeaturedReplay()">Cerrar</button></div>
+        <div id="lesson-quiz" class="lesson-quiz" hidden><h3 id="lesson-question"></h3><div id="lesson-answers"></div><p id="lesson-feedback" role="status"></p><button id="lesson-next" class="btn-hud btn-hud-primary" hidden onclick="startNextLesson()">Siguiente lección →</button></div>
+      </div>
+      <div id="replay-board" class="replay-board" role="img" aria-label="Posición de la partida en reproducción"></div>
+    </section>
+  </main>
 
   <!-- Arena Principal: 3 Columnas (Movimientos | Tablero | Jugadores) -->
   <main class="chess-arena">
@@ -497,5 +570,6 @@
   <script src="/js/game-chat.js"></script>
   <script src="/js/action-icons.js"></script>
   <script src="/js/chess-rules.js"></script>
+  <script src="/js/home.js"></script>
 </body>
 </html>

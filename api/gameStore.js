@@ -148,7 +148,24 @@ function resetGame(gameId) {
   return newGame;
 }
 
+// Solo encuentros terminados con movimientos; no se publican datos de sesión.
+function listFeaturedGames() {
+  return db.prepare(`SELECT data FROM games
+    WHERE status IN ('CHECKMATE', 'STALEMATE', 'DRAW', 'RESIGNED', 'TIMEOUT') AND movements_count > 0
+    ORDER BY CASE WHEN status = 'CHECKMATE' THEN 0 ELSE 1 END,
+      movements_count DESC, updated_at DESC, id ASC LIMIT 6`).all().map(row => {
+    const game = JSON.parse(row.data);
+    const playerName = (player, side) => player?.name || player?.username ||
+      (game.game_type === 'bot' && player?.id?.startsWith('bot') ? 'Robot' : side);
+    return { id: game.id, status: game.status, winner: game.winner || null,
+      movements_count: game.movements.length, updated_at: game.updated_at,
+      white_name: playerName(game.white_player, 'Blancas'),
+      black_name: playerName(game.black_player, 'Negras') };
+  });
+}
+
 module.exports = {
+  listFeaturedGames,
   generateGameId,
   createGame,
   saveGame,

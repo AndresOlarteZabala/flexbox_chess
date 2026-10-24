@@ -4,6 +4,7 @@ const path = require('path');
 const http = require('http');
 const { Server } = require('socket.io');
 const gameStore = require('./api/gameStore');
+const lessons = require('./api/lessons');
 const { getGame, saveGame, listGames, resetGame, createGame } = gameStore;
 const { applyMove, getBoardAtStep, getLegalMoves } = require('./api/chessEngine');
 const { getBotMove, LEVEL_CONFIGS } = require('./api/chessAI');
@@ -319,6 +320,17 @@ const handleGetGameStatus = (req, res) => {
 
 app.get('/api/status/:id', handleGetGameStatus);
 app.get('/api/games/:id/status', handleGetGameStatus);
+app.get('/api/lessons', (req, res) => {
+  res.json({ success: true, data: lessons.listLessons() });
+});
+app.get('/api/lessons/:id', (req, res) => {
+  const lesson = lessons.getLesson(req.params.id);
+  if (!lesson) return res.status(404).json({ success: false, error: { message: 'Lección no encontrada.' } });
+  res.json({ success: true, data: lesson });
+});
+app.get('/api/games/featured', (req, res) => {
+  res.json({ success: true, data: gameStore.listFeaturedGames() });
+});
 app.get('/api/games/:id', handleGetGameStatus);
 
 // El chat solo es accesible a los dos jugadores registrados de la partida.

@@ -1,4 +1,5 @@
 const actionIcons = {
+  home: '<path d="M3 10l9-7 9 7M5 9v12h5v-7h4v7h5V9"/>',
   login: '<path d="M10 17l5-5-5-5M3 12h12M15 3h5a1 1 0 0 1 1 1v16a1 1 0 0 1-1 1h-5"/>',
   register: '<circle cx="9" cy="7" r="4"/><path d="M2 21v-2a7 7 0 0 1 14 0v2M20 8v6M17 11h6"/>',
   games: '<rect x="5" y="3" width="15" height="18" rx="2"/><path d="M9 7h7M9 12h7M9 17h4M2 6v13"/>',
@@ -61,6 +62,7 @@ function initActionIcons() {
   actionTooltip.hidden = true;
   document.body.append(actionTooltip);
   const buttons = {
+    'nav-home': ['home', 'Inicio'],
     'btn-open-login': ['login', 'Iniciar sesión'],
     'btn-open-register': ['register', 'Registrarse'],
     'btn-user-games': ['games', 'Mis partidas'],

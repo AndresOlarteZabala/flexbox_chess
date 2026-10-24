@@ -842,11 +842,25 @@ function getBoardAtStep(movements, step) {
       const toCoord = squareToCoord(mov.to);
       board[mov.to] = {
         ...piece,
+        ...(mov.promotion ? {
+          name: mov.promotion,
+          symbol: PIECE_SYMBOLS[piece.side][mov.promotion],
+          points: PIECE_POINTS[mov.promotion]
+        } : {}),
         col: toCoord ? toCoord.col : piece.col,
         row: toCoord ? toCoord.row : piece.row,
         state: 'moved'
       };
       board[mov.from] = null;
+      if (mov.castling) {
+        const { rookFrom, rookTo } = mov.castling;
+        const rook = board[rookFrom];
+        if (rook) {
+          const rookCoord = squareToCoord(rookTo);
+          board[rookTo] = { ...rook, col: rookCoord.col, row: rookCoord.row, state: 'moved' };
+          board[rookFrom] = null;
+        }
+      }
     }
   }
 
