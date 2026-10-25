@@ -11,7 +11,10 @@ function initGameChat() {
 
 function updateGameChat(game) {
   const players = game ? [game.white_player, game.black_player] : [];
-  const eligible = authToken && currentUser && players.length === 2 &&
+  const isBotGame = !!game && (game.game_type === 'bot' ||
+    players.some(p => p && (p.is_bot || p.id === 'bot')));
+  document.querySelector('.game-chat').hidden = !game || isBotGame;
+  const eligible = !isBotGame && authToken && currentUser && players.length === 2 &&
     players.every(p => p && p.id && p.id.startsWith('usr-')) &&
     players.some(p => p.id === currentUser.id);
   const context = eligible ? `${game.id}:${authToken}` : '';

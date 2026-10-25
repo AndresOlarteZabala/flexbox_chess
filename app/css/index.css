@@ -26,6 +26,21 @@ body.guest-view #game-controls { display: none !important; }
 .article-card summary:focus-visible, .home-navigation a:focus-visible, .home-navigation button:focus-visible { outline: 2px solid var(--neon-cyan); outline-offset: -3px; }
 @media (max-width: 800px) { .articles-grid { grid-template-columns: 1fr; } }
 .home-page { max-width: 1180px; margin: 0 auto; padding: 24px 24px 64px; }
+.site-footer { max-width: 1360px; margin: 40px auto 0; padding: 28px 24px 20px; border-top: 1px solid var(--surface-glass-border); color: var(--text-muted); }
+.footer-main { display: flex; justify-content: space-between; align-items: center; gap: 28px; padding-bottom: 24px; }
+.footer-brand { display: inline-flex; align-items: center; gap: 12px; text-decoration: none; color: var(--text-main); font-weight: 800; letter-spacing: .5px; }
+.footer-brand small { display: block; margin-top: 4px; color: var(--text-muted); font-size: 12px; font-weight: 400; letter-spacing: 0; }
+.footer-links { display: flex; align-items: center; justify-content: flex-end; gap: 8px 20px; flex-wrap: wrap; }
+.footer-links a { color: var(--text-muted); text-decoration: none; padding: 8px 0; font-size: 13px; }
+.footer-links a:hover { color: var(--neon-cyan); }
+.footer-links a:focus-visible, .footer-brand:focus-visible { outline: 2px solid var(--neon-cyan); outline-offset: 5px; border-radius: 3px; }
+.footer-bottom { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 10px; padding-top: 18px; border-top: 1px solid var(--surface-glass-border); font-size: 11px; }
+#course-heading, #featured-heading, #articles-heading { scroll-margin-top: 180px; }
+@media (max-width: 700px) {
+  .site-footer { padding: 24px 16px 20px; margin-top: 24px; }
+  .footer-main { align-items: flex-start; flex-direction: column; gap: 18px; }
+  .footer-links { justify-content: flex-start; gap: 4px 18px; }
+}
 .home-hero { padding: 42px 0 52px; max-width: 780px; }
 .home-eyebrow { color: var(--neon-cyan); font-family: var(--font-mono); font-size: 11px; letter-spacing: 1.6px; }
 .home-hero h2 { font-size: clamp(32px, 4.5vw, 58px); line-height: 1.12; letter-spacing: -1.7px; margin: 20px 0; }

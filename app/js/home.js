@@ -22,13 +22,16 @@ function updateHomeView() {
   else document.getElementById('nav-home').setAttribute('aria-current', 'page');
 }
 
-function showHomePage(event) {
+function showHomePage(event, sectionId) {
   if (event && (event.ctrlKey || event.metaKey || event.shiftKey || event.altKey || event.button > 0)) return;
   if (event) event.preventDefault();
   homeRequested = true;
-  if (window.location.pathname !== '/' || window.location.search) window.history.pushState({}, '', '/');
+  const targetPath = sectionId ? `/#${sectionId}` : '/';
+  if (window.location.pathname !== '/' || window.location.search || sectionId || window.location.hash) window.history.pushState({}, '', targetPath);
   updateHomeView();
-  window.scrollTo({ top: 0, behavior: 'smooth' });
+  const section = sectionId && document.getElementById(sectionId);
+  if (section) section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  else window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 function resumeCurrentGame() {
@@ -316,4 +319,8 @@ function startNextLesson() {
   if (index >= 0 && courseLessons[index + 1]) startCourseLesson(courseLessons[index + 1].id);
 }
 
-$(document).ready(function () { loadFeaturedGames(); loadCourseLessons(); });
+$(document).ready(function () {
+  document.getElementById('footer-year').textContent = new Date().getFullYear();
+  loadFeaturedGames();
+  loadCourseLessons();
+});
